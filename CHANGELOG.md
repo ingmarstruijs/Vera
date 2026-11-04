@@ -4,8 +4,13 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Merged
+
+- [#17](https://github.com/ingmarstruijs/Vera/pull/17) — feat: richer care-plan mocks + inline decode (VER-19) (2026-11-04)
+
 ### Added
 
+- CI/repo hygiene: KMP smoke only on `pull_request`/`push` → `main` (no `cursor/**` push double-runs); changelog-on-merge workflow; contributing guide with `main` branch-protection clicks
 - Vera app icon: shield + stylized V on DesignTokens sage (`#2F5D50`); master `assets/icons/vera-app-icon-1024.png`, Android adaptive `@mipmap/ic_launcher`, iOS `AppIcon` asset catalog
 
 ### Changed (P11 / Phase 6 leftover hardening)
