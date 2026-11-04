@@ -85,7 +85,7 @@ struct BlueprintView: View {
                     .onAppear {
                         centerCurrentItem(proxy: proxy)
                     }
-                    .onChange(of: expandedId) { _, newValue in
+                    .onChange(of: expandedId) { newValue in
                         guard let id = newValue else { return }
                         withAnimation(.easeInOut(duration: 0.25)) {
                             proxy.scrollTo(id, anchor: .center)
