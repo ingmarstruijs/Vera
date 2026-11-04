@@ -12,6 +12,9 @@
 		A10000000000000000000003 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* AuthCoordinator.swift */; };
 		A10000000000000000000004 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* AuthGateView.swift */; };
 		A10000000000000000000005 /* BlueprintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* BlueprintView.swift */; };
+		A10000000000000000000006 /* DecoderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* DecoderView.swift */; };
+		A10000000000000000000007 /* AppointmentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* AppointmentsView.swift */; };
+		A10000000000000000000008 /* SpeechCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* SpeechCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +25,9 @@
 		A10000000000000000000014 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
 		A10000000000000000000015 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
 		A10000000000000000000016 /* BlueprintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintView.swift; sourceTree = "<group>"; };
+		A10000000000000000000017 /* DecoderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoderView.swift; sourceTree = "<group>"; };
+		A10000000000000000000018 /* AppointmentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppointmentsView.swift; sourceTree = "<group>"; };
+		A10000000000000000000019 /* SpeechCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +57,9 @@
 				A10000000000000000000015 /* AuthGateView.swift */,
 				A10000000000000000000012 /* RootTabView.swift */,
 				A10000000000000000000016 /* BlueprintView.swift */,
+				A10000000000000000000017 /* DecoderView.swift */,
+				A10000000000000000000018 /* AppointmentsView.swift */,
+				A10000000000000000000019 /* SpeechCoordinator.swift */,
 				A10000000000000000000013 /* Info.plist */,
 			);
 			path = Vera;
@@ -137,6 +146,9 @@
 				A10000000000000000000004 /* AuthGateView.swift in Sources */,
 				A10000000000000000000002 /* RootTabView.swift in Sources */,
 				A10000000000000000000005 /* BlueprintView.swift in Sources */,
+				A10000000000000000000006 /* DecoderView.swift in Sources */,
+				A10000000000000000000007 /* AppointmentsView.swift in Sources */,
+				A10000000000000000000008 /* SpeechCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

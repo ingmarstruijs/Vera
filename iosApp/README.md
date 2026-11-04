@@ -34,3 +34,8 @@ Timeline · Decoder · Appointments — no Sync/Webviewer tab.
 - `BlueprintView` — horizontal CarePlan timeline (mock aligned with shared `MockDataService`).
 
 When `Shared.framework` is linked, replace `AuthCoordinator` with the Kotlin `AuthViewModel` StateFlow bridge.
+
+## P6 decoder / appointments
+
+- `DecoderView` — glossary search + expand (NL; other languages stub until P7 ML Kit).
+- `AppointmentsView` + `SpeechCoordinator` — CarePlan appointments, pocket guide, SFSpeech / AVSpeech.

@@ -1,7 +1,7 @@
 package net.moonbaseone.vera.shared.ui
 
 /**
- * Dutch-primary UI copy for the P5 shell / auth / blueprint port.
+ * Dutch-primary UI copy for shell / auth / blueprint / decoder / appointments.
  * Full i18n (EN/NL/DE/FR) lands in a later phase.
  */
 object UiCopy {
@@ -46,8 +46,50 @@ object UiCopy {
     const val BLUEPRINT_IKNL_LINK = "IKNL Richtlijn raadplegen"
     const val BLUEPRINT_SCHEDULED_PREFIX = "Gepland: "
 
-    const val DECODER_PLACEHOLDER =
-        "Medische vaktaal-decoder volgt in een latere fase."
-    const val APPOINTMENTS_PLACEHOLDER =
-        "Afspraaknavigator volgt in een latere fase."
+    const val DECODER_TITLE = "Slim Systeem Decoder"
+    const val DECODER_SUBTITLE =
+        "Medische vaktaal vertaald naar begrijpelijk Nederlands"
+    const val DECODER_SEARCH_HINT = "Zoek medische term…"
+    const val DECODER_LANGUAGE_LABEL = "Doeltaal"
+    const val DECODER_PRIVACY_NOTE =
+        "Vertaling vindt volledig op uw apparaat plaats. " +
+            "Geen tekst wordt naar externe servers verstuurd."
+    const val DECODER_ACTION_LABEL = "Actiepunt"
+    const val DECODER_IKNL_BUTTON = "IKNL Richtlijn"
+    const val DECODER_TRANSLATION_PENDING =
+        "On-device vertaling naar andere talen volgt in P7 (ML Kit). " +
+            "De Nederlandse uitleg blijft beschikbaar."
+    const val DECODER_NO_RESULTS = "Geen termen gevonden voor deze zoekopdracht."
+
+    const val APPOINTMENTS_TITLE = "Afspraak Navigator"
+    const val APPOINTMENTS_SUBTITLE = "Uw gepersonaliseerde afsprakengids"
+    const val APPOINTMENTS_POCKET_GUIDE = "Genereer Pocket Gids"
+    const val APPOINTMENTS_POCKET_TITLE = "# Pocket Gids voor uw afspraak"
+    const val APPOINTMENTS_POCKET_PANEL = "Uw Pocket Gids"
+    const val APPOINTMENTS_POCKET_FOOTER =
+        "Gegenereerd door Vera – IKNL Richtlijn Borstkanker 2023"
+    const val APPOINTMENTS_REASON = "Reden van bezoek"
+    const val APPOINTMENTS_SYMPTOMS_HEADER = "Uw ingesproken symptomen"
+    const val APPOINTMENTS_SYMPTOMS_EMPTY =
+        "(geen symptomen geregistreerd – gebruik de spraakfunctie)"
+    const val APPOINTMENTS_SYMPTOMS_SECTION = "Symptomen registreren"
+    const val APPOINTMENTS_VOICE_LOG = "Symptomen inspreken"
+    const val APPOINTMENTS_VOICE_LISTENING = "Luistert…"
+    const val APPOINTMENTS_VOICE_STOP = "Stop opname"
+    const val APPOINTMENTS_SUGGESTED_QUESTIONS =
+        "Aanbevolen vragen voor uw arts"
+    const val APPOINTMENTS_NO_DATA = "Geen aankomende afspraken gevonden."
+    const val APPOINTMENTS_SPEECH_UNAVAILABLE =
+        "Spraakregistratie is niet beschikbaar op dit apparaat."
+    const val APPOINTMENTS_CLEAR = "Wissen"
+    const val APPOINTMENTS_READ_ALOUD = "Voorlezen"
+    const val APPOINTMENTS_NOTES_LABEL = "Geregistreerde symptomen:"
+
+    val APPOINTMENTS_DEFAULT_QUESTIONS: List<String> = listOf(
+        "Wat zijn de resultaten van mijn laatste LVEF-meting?",
+        "Zijn er bijwerkingen die ik moet melden?",
+        "Wanneer verwacht u de volgende behandelstap?",
+        "Wat kan ik zelf doen om mijn herstel te bevorderen?",
+        "Zijn er richtlijnwijzigingen die invloed hebben op mijn zorgplan?",
+    )
 }
