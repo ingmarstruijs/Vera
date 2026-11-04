@@ -22,10 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Stop
-import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -200,7 +200,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         UiCopy.APPOINTMENTS_POCKET_PANEL,
@@ -213,7 +213,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                             contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD
                         },
                     ) {
-                        Icon(Icons.Outlined.VolumeUp, contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD)
+                        Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
