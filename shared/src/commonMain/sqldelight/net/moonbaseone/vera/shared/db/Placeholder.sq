@@ -1,4 +1,0 @@
--- SQLDelight stub for P1. Real schema arrives in later migration phases.
-CREATE TABLE placeholder (
-  id INTEGER NOT NULL PRIMARY KEY
-);

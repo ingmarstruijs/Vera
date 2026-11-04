@@ -1,7 +1,7 @@
 package net.moonbaseone.vera.shared.failure
 
 /** Typed failure hierarchy for Vera (exhaustive when sealed). */
-sealed class Failure(val message: String)
+sealed class Failure(message: String) : Exception(message)
 
 // ── Vault ──────────────────────────────────────────────────────────────────
 
