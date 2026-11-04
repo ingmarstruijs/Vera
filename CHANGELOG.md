@@ -6,6 +6,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Merged
 
+- [#24](https://github.com/ingmarstruijs/Vera/pull/24) — Update README.md (2026-11-04)
 - [#21](https://github.com/ingmarstruijs/Vera/pull/21) — docs: Actions must be allowed to create PRs for changelog bot (2026-11-04)
 - [#19](https://github.com/ingmarstruijs/Vera/pull/19) — fix(ci): changelog bot opens PR instead of pushing main (2026-11-04)
 - [#18](https://github.com/ingmarstruijs/Vera/pull/18) — chore(VER-20): CI triggers, main protection docs, changelog on merge (2026-11-04)
