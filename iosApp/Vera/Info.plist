@@ -35,5 +35,9 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Vera gebruikt Face ID om uw medische kluis te ontgrendelen.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Vera gebruikt spraakherkenning om symptomen voor uw afspraak lokaal vast te leggen.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Vera heeft de microfoon nodig om symptomen in te spreken voor uw pocket gids.</string>
 </dict>
 </plist>

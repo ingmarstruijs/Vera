@@ -33,11 +33,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
+import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.ui.appointments.AppointmentsScreen
 import net.moonbaseone.vera.ui.blueprint.BlueprintScreen
-import net.moonbaseone.vera.ui.common.PlaceholderScreen
+import net.moonbaseone.vera.ui.decoder.DecoderScreen
 
 private data class TabDest(
     val route: String,
@@ -49,6 +52,8 @@ private data class TabDest(
 @Composable
 fun AppShell(
     blueprintViewModel: BlueprintViewModel,
+    decoderViewModel: DecoderViewModel,
+    appointmentsViewModel: AppointmentsViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
     val tabs = listOf(
@@ -108,16 +113,10 @@ fun AppShell(
                 BlueprintScreen(viewModel = blueprintViewModel)
             }
             composable("decoder") {
-                PlaceholderScreen(
-                    title = UiCopy.NAV_DECODER,
-                    body = UiCopy.DECODER_PLACEHOLDER,
-                )
+                DecoderScreen(viewModel = decoderViewModel)
             }
             composable("appointments") {
-                PlaceholderScreen(
-                    title = UiCopy.NAV_APPOINTMENTS,
-                    body = UiCopy.APPOINTMENTS_PLACEHOLDER,
-                )
+                AppointmentsScreen(viewModel = appointmentsViewModel)
             }
         }
     }

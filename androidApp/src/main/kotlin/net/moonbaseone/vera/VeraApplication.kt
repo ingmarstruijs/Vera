@@ -2,6 +2,10 @@ package net.moonbaseone.vera
 
 import android.app.Application
 import net.moonbaseone.vera.shared.di.initKoin
+import net.moonbaseone.vera.shared.speech.AndroidSpeechToText
+import net.moonbaseone.vera.shared.speech.AndroidTextToSpeech
+import net.moonbaseone.vera.shared.speech.SpeechToText
+import net.moonbaseone.vera.shared.speech.TextToSpeech
 import net.moonbaseone.vera.shared.vault.AndroidSecureKeyStore
 import net.moonbaseone.vera.shared.vault.MedicalRecordStore
 import net.moonbaseone.vera.shared.vault.SecureKeyStore
@@ -22,6 +26,8 @@ class VeraApplication : Application() {
                     single<MedicalRecordStore> {
                         SqlDelightMedicalRecordStore(createAndroidVeraDatabase(get()))
                     }
+                    single<SpeechToText> { AndroidSpeechToText(get()) }
+                    single<TextToSpeech> { AndroidTextToSpeech(get()) }
                 },
             )
         }

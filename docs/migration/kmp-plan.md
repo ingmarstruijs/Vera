@@ -85,7 +85,8 @@ Vera/
 - [x] Shared tests for BSN redaction + vault AES-GCM round-trip (P3)
 - [x] Android EncryptedSharedPreferences + BiometricPrompt; iOS Keychain + LocalAuthentication (P4); iOS AES-GCM CryptoKit bridge still follow-up  
 - [x] Android + iOS: unlock → timeline shell (decoder/appointments placeholders) (P5)  
-- [ ] Decoder + appointments feature port (P6)  
+- [x] Decoder + appointments feature port (P6); speech STT/TTS actuals on mobile; ML Kit translation still P7  
+
 - [x] Stack direction: Koin + StateFlow; SQLDelight stubs; IDs `net.moonbaseone.vera`  
 - [x] No desktop/web KMP modules in v1  
 - [ ] App i18n EN/NL/DE/FR  
