@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.moonbaseone.vera.shared.careplan.CarePlanRepository
+import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.fhir.FhirResource
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.speech.FakeSpeechToText
@@ -39,11 +41,18 @@ data class AppointmentsUiState(
 )
 
 class AppointmentsViewModel(
-    private val mockData: MockDataService,
+    private val carePlanRepository: CarePlanRepository,
     private val speechToText: SpeechToText = FakeSpeechToText(),
     private val textToSpeech: TextToSpeech = FakeTextToSpeech(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
+    constructor(
+        mockData: MockDataService,
+        speechToText: SpeechToText = FakeSpeechToText(),
+        textToSpeech: TextToSpeech = FakeTextToSpeech(),
+        scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    ) : this(LocalCarePlanRepository(mockData), speechToText, textToSpeech, scope)
+
     private val _state = MutableStateFlow(AppointmentsUiState())
     val state: StateFlow<AppointmentsUiState> = _state.asStateFlow()
 
@@ -52,7 +61,7 @@ class AppointmentsViewModel(
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 val available = speechToText.isAvailable()
-                val summaries = mockData.fetchAppointments().map { it.toSummary() }
+                val summaries = carePlanRepository.fetchAppointments().map { it.toSummary() }
                 _state.update {
                     it.copy(
                         isLoading = false,

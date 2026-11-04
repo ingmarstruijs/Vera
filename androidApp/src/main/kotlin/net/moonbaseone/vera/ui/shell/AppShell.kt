@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -36,6 +38,7 @@ import androidx.navigation.compose.rememberNavController
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
+import net.moonbaseone.vera.shared.navigation.AppDestination
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.ui.appointments.AppointmentsScreen
@@ -43,7 +46,7 @@ import net.moonbaseone.vera.ui.blueprint.BlueprintScreen
 import net.moonbaseone.vera.ui.decoder.DecoderScreen
 
 private data class TabDest(
-    val route: String,
+    val destination: AppDestination,
     val label: String,
     val icon: ImageVector,
 )
@@ -57,25 +60,27 @@ fun AppShell(
     navController: NavHostController = rememberNavController(),
 ) {
     val tabs = listOf(
-        TabDest("timeline", UiCopy.NAV_BLUEPRINT, Icons.AutoMirrored.Outlined.EventNote),
-        TabDest("decoder", UiCopy.NAV_DECODER, Icons.Outlined.Translate),
-        TabDest("appointments", UiCopy.NAV_APPOINTMENTS, Icons.Outlined.CalendarMonth),
+        TabDest(AppDestination.CarePlan, UiCopy.NAV_CARE_PLAN, Icons.AutoMirrored.Outlined.EventNote),
+        TabDest(AppDestination.Decoder, UiCopy.NAV_DECODER, Icons.Outlined.Translate),
+        TabDest(AppDestination.Appointments, UiCopy.NAV_APPOINTMENTS, Icons.Outlined.CalendarMonth),
     )
     val backStack by navController.currentBackStackEntryAsState()
     val currentDestination = backStack?.destination
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(UiCopy.APP_NAME, style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            " ·",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                        )
-                    }
+                    Text(
+                        UiCopy.APP_NAME,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.semantics { heading() },
+                    )
                 },
                 actions = {
                     PrivacySentinelDot()
@@ -83,13 +88,16 @@ fun AppShell(
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ) {
                 tabs.forEach { tab ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                    val selected =
+                        currentDestination?.hierarchy?.any { it.route == tab.destination.route } == true
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
-                            navController.navigate(tab.route) {
+                            navController.navigate(tab.destination.route) {
                                 popUpTo(navController.graph.startDestinationId) {
                                     saveState = true
                                 }
@@ -106,16 +114,16 @@ fun AppShell(
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = "timeline",
+            startDestination = AppDestination.CarePlan.route,
             modifier = Modifier.padding(padding),
         ) {
-            composable("timeline") {
+            composable(AppDestination.CarePlan.route) {
                 BlueprintScreen(viewModel = blueprintViewModel)
             }
-            composable("decoder") {
+            composable(AppDestination.Decoder.route) {
                 DecoderScreen(viewModel = decoderViewModel)
             }
-            composable("appointments") {
+            composable(AppDestination.Appointments.route) {
                 AppointmentsScreen(viewModel = appointmentsViewModel)
             }
         }

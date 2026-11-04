@@ -3,8 +3,12 @@ package net.moonbaseone.vera.shared.di
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
 import net.moonbaseone.vera.shared.auth.AuthViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
+import net.moonbaseone.vera.shared.careplan.CarePlanRepository
+import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
+import net.moonbaseone.vera.shared.fhir.FhirClient
 import net.moonbaseone.vera.shared.fhir.MockDataService
+import net.moonbaseone.vera.shared.fhir.UnsupportedFhirClient
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
 import net.moonbaseone.vera.shared.shield.NerEngine
 import net.moonbaseone.vera.shared.shield.NoOpNerEngine
@@ -28,42 +32,65 @@ import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
 /**
- * Shared Koin modules.
- * Android/iOS apps override [SecureKeyStore] / [MedicalRecordStore] / speech /
- * [OnDeviceTranslator] / [NerEngine] with platform actuals.
+ * Shared Koin modules split by feature boundary (P11 incremental).
+ * Android/iOS apps override platform actuals (keys, speech, ML, biometrics).
  */
 fun sharedModules(): List<Module> = listOf(
-    module {
-        single { SharedAppInfo(appId = "net.moonbaseone.vera") }
-        single { MockDataService() }
-        single<NerEngine> { NoOpNerEngine() }
-        single { IdentityShieldService(ner = get()) }
-        single<OnDeviceTranslator> { FakeOnDeviceTranslator() }
-        single { LocalTranslationService(engine = get(), shield = get()) }
-        single<SecureKeyStore> { InMemorySecureKeyStore() }
-        single<MedicalRecordStore> { InMemoryMedicalRecordStore() }
-        single<BiometricAuthenticator> { FakeBiometricAuthenticator() }
-        single<SpeechToText> { FakeSpeechToText() }
-        single<TextToSpeech> { FakeTextToSpeech() }
-        single {
-            LocalVaultService(
-                keyStore = get(),
-                recordStore = get(),
-                biometricAuthenticator = get(),
-            )
-        }
-        single { AuthViewModel(vault = get()) }
-        single { BlueprintViewModel(mockData = get()) }
-        single { DecoderViewModel(translation = get()) }
-        single {
-            AppointmentsViewModel(
-                mockData = get(),
-                speechToText = get(),
-                textToSpeech = get(),
-            )
-        }
-    },
+    coreModule(),
+    vaultModule(),
+    shieldModule(),
+    carePlanModule(),
+    decoderModule(),
+    appointmentsModule(),
 )
+
+fun coreModule(): Module = module {
+    single { SharedAppInfo(appId = "net.moonbaseone.vera") }
+    single { MockDataService() }
+    single<FhirClient> { UnsupportedFhirClient() }
+}
+
+fun vaultModule(): Module = module {
+    single<SecureKeyStore> { InMemorySecureKeyStore() }
+    single<MedicalRecordStore> { InMemoryMedicalRecordStore() }
+    single<BiometricAuthenticator> { FakeBiometricAuthenticator() }
+    single {
+        LocalVaultService(
+            keyStore = get(),
+            recordStore = get(),
+            biometricAuthenticator = get(),
+        )
+    }
+    single { AuthViewModel(vault = get()) }
+}
+
+fun shieldModule(): Module = module {
+    single<NerEngine> { NoOpNerEngine() }
+    single { IdentityShieldService(ner = get()) }
+}
+
+fun carePlanModule(): Module = module {
+    single<CarePlanRepository> { LocalCarePlanRepository(mockData = get()) }
+    single { BlueprintViewModel(carePlanRepository = get()) }
+}
+
+fun decoderModule(): Module = module {
+    single<OnDeviceTranslator> { FakeOnDeviceTranslator() }
+    single { LocalTranslationService(engine = get(), shield = get()) }
+    single { DecoderViewModel(translation = get()) }
+}
+
+fun appointmentsModule(): Module = module {
+    single<SpeechToText> { FakeSpeechToText() }
+    single<TextToSpeech> { FakeTextToSpeech() }
+    single {
+        AppointmentsViewModel(
+            carePlanRepository = get(),
+            speechToText = get(),
+            textToSpeech = get(),
+        )
+    }
+}
 
 fun initKoin(extraDeclaration: KoinAppDeclaration = {}) {
     startKoin {

@@ -54,9 +54,13 @@ Vera/
 | Crypto / keys | AES-GCM + EncryptedSharedPreferences / Keychain |
 | ML | Android ML Kit Translate + Entity Extraction; iOS NLTagger (+ Translate stub) |
 
-**Not in v1:** Compose Multiplatform shared UI, `desktopApp`, `webApp`.
+**Not in v1:** `desktopApp`, `webApp`.
 
-Migration history and Phase 6 / P11 (optional post-parity hardening): [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md).
+### CMP vs dual-native (Phase 6 / P11 product gate)
+
+Compose Multiplatform **shared UI is not adopted** until an explicit product decision. Until then Vera stays **dual-native** (Jetpack Compose + SwiftUI) with shared Kotlin logic only. Unifying UI under CMP is optional post-parity work and must not be forced for design-drift reasons alone. See [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) and [docs/migration/module-map.md](docs/migration/module-map.md).
+
+Migration history and Phase 6 / P11: [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md).
 
 ---
 
@@ -105,9 +109,10 @@ CI smoke workflow: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smo
 | [docs/setup/ios.md](docs/setup/ios.md) | iOS setup & build |
 | [docs/testing.md](docs/testing.md) | How to run tests |
 | [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) | Migration plan (in-repo mirror) |
+| [docs/migration/module-map.md](docs/migration/module-map.md) | Feature package → module map (P11) |
 | [CHANGELOG.md](CHANGELOG.md) | Notable changes |
 
-App UI copy targets EN, NL, DE, FR (stubs OK through parity; resource packs in Phase 6).
+App UI copy: EN / NL / DE / FR via shared `StringCatalog` (+ Android `values-*` packs).
 
 ---
 

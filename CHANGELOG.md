@@ -4,6 +4,15 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Changed (P11 / Phase 6 first slice)
+
+- Documented **CMP vs dual-native product gate** (stay dual-native until explicit decision)
+- Koin split into feature modules; `CarePlanRepository` vs `FhirClient` boundary prep
+- Typed shell destinations (`AppDestination`); IA unlock → care plan → decoder/appointments
+- EN/NL/DE/FR `StringCatalog` (+ Android `values-*`); calmer clinical DesignTokens / theme
+- Accessibility defaults (content descriptions, iOS Dynamic Type caps); removed unused placeholder screen
+- Module map: [docs/migration/module-map.md](docs/migration/module-map.md)
+
 ### Removed (P10 / VER-14)
 
 - Flutter application tree: `lib/`, Flutter `test/`, `pubspec.yaml`, `analysis_options.yaml`, Flutter hosts `android/`, `ios/`, `web/`, and `.metadata`
