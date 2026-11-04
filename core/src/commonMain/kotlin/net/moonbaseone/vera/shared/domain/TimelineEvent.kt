@@ -16,13 +16,29 @@ data class TimelineEvent(
     val phase: TimelinePhase,
     val fhirResourceType: String,
     val iknlGuidelineRef: String? = null,
-    /** Plain-language action items derived from the Decoder. */
+    /** Plain-language action items derived from the CarePlan / Decoder. */
     val actionItems: List<String> = emptyList(),
     val fhirStatus: String? = null,
+    /** What the patient should know / do around this step. */
+    val patientInstruction: String? = null,
+    /** Concrete next clinical step after this activity. */
+    val nextSteps: String? = null,
 ) {
+    /** Haystack used for inline glossary linking. */
+    fun glossaryHaystack(): String = listOfNotNull(
+        title,
+        description,
+        patientInstruction,
+        nextSteps,
+        actionItems.joinToString(" "),
+    ).joinToString(" ")
+
     companion object {
         /**
          * Maps CarePlan.activity entries (FHIR-ish maps) into timeline events.
+         *
+         * Recognises Vera mock extensions on `detail`:
+         * `patientInstruction`, `nextStep`, `actionItem` (list), `iknlGuidelineRef`.
          */
         @Suppress("UNCHECKED_CAST")
         fun fromCarePlanActivities(
@@ -42,6 +58,12 @@ data class TimelineEvent(
                     else -> TimelinePhase.Future
                 }
 
+                val actionItems = (detail["actionItem"] as? List<*>)
+                    ?.mapNotNull { it as? String }
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotEmpty() }
+                    .orEmpty()
+
                 TimelineEvent(
                     id = code.hashCode().toString(),
                     title = code.split("–").first().trim(),
@@ -50,6 +72,13 @@ data class TimelineEvent(
                     phase = phase,
                     fhirResourceType = detail["kind"] as? String ?: "ServiceRequest",
                     fhirStatus = status,
+                    patientInstruction = (detail["patientInstruction"] as? String)?.trim()
+                        ?.takeIf { it.isNotEmpty() },
+                    nextSteps = (detail["nextStep"] as? String)?.trim()
+                        ?.takeIf { it.isNotEmpty() },
+                    actionItems = actionItems,
+                    iknlGuidelineRef = (detail["iknlGuidelineRef"] as? String)?.trim()
+                        ?.takeIf { it.isNotEmpty() },
                 )
             }
         }

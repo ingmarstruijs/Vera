@@ -14,6 +14,10 @@ import net.moonbaseone.vera.shared.failure.FhirParseFailure
 class MockDataService(
     private val ioDelayMs: Long = 0L,
 ) {
+    private companion object {
+        const val IKNL_BORSTKANKER_REF = "https://www.iknl.nl/richtlijnen/borstkanker"
+    }
+
     suspend fun fetchOncologyBundle(): OncologyBundleResult {
         if (ioDelayMs > 0) delay(ioDelayMs)
         return try {
@@ -632,95 +636,179 @@ class MockDataService(
             "intent" to "plan",
             "title" to "Oncologisch zorgplan – IKNL Richtlijn Borstkanker 2023",
             "description" to
-                "Persoonlijk zorgplan op basis van HER2-positief invasief ductaal " +
-                "carcinoom stadium IIA. Gebaseerd op IKNL-richtlijn 2023.",
+                "Persoonlijk zorgplan voor HER2-positief invasief ductaal carcinoom " +
+                "mammae links, Stadium IIA (cT2N0M0), ER-negatief, Ki-67 38%. " +
+                "Gebaseerd op IKNL Richtlijn Borstkanker 2023 en MDO UMC Utrecht 2024-12-12.",
             "subject" to mapOf("reference" to "Patient/patient-001"),
             "period" to mapOf(
                 "start" to "2024-12-01",
                 "end" to "2026-12-01",
             ),
             "activity" to listOf(
-                mapOf(
-                    "detail" to mapOf(
-                        "kind" to "ServiceRequest",
-                        "code" to mapOf(
-                            "text" to "Neoadjuvante chemotherapie (TCHP schema) – VOLTOOID",
-                        ),
-                        "status" to "completed",
-                        "scheduledPeriod" to mapOf(
-                            "start" to "2024-12-20",
-                            "end" to "2025-01-10",
-                        ),
-                        "description" to
-                            "IKNL: Neoadjuvante HER2-gerichte therapie aanbevolen bij " +
-                            "cT2 HER2-positieve tumoren.",
-                    ),
-                ),
-                mapOf(
-                    "detail" to mapOf(
-                        "kind" to "ServiceRequest",
-                        "code" to mapOf(
-                            "text" to "Borstsparende chirurgie + schildwachtklierprocedure – VOLTOOID",
-                        ),
-                        "status" to "completed",
-                        "scheduledPeriod" to mapOf(
-                            "start" to "2025-01-14",
-                            "end" to "2025-01-14",
-                        ),
-                    ),
-                ),
-                mapOf(
-                    "detail" to mapOf(
-                        "kind" to "ServiceRequest",
-                        "code" to mapOf("text" to "Adjuvante radiotherapie – ACTIEF"),
-                        "status" to "in-progress",
-                        "scheduledPeriod" to mapOf(
-                            "start" to "2025-03-01",
-                            "end" to "2025-03-21",
-                        ),
-                        "description" to
-                            "IKNL §6.3: Hypofractionering (40 Gy / 15 fracties) na BCS.",
-                    ),
-                ),
-                mapOf(
-                    "detail" to mapOf(
-                        "kind" to "MedicationRequest",
-                        "code" to mapOf(
-                            "text" to "Adjuvant trastuzumab + pertuzumab (1 jaar) – ACTIEF",
-                        ),
-                        "status" to "in-progress",
-                        "scheduledPeriod" to mapOf(
-                            "start" to "2025-01-20",
-                            "end" to "2026-01-20",
-                        ),
-                        "description" to
-                            "IKNL: 18 cycli trastuzumab + pertuzumab. LVEF-monitoring q3m.",
-                    ),
-                ),
-                mapOf(
-                    "detail" to mapOf(
-                        "kind" to "ServiceRequest",
-                        "code" to mapOf(
-                            "text" to "Jaarlijkse mammografie controle-plan – GEPLAND",
-                        ),
-                        "status" to "scheduled",
-                        "scheduledPeriod" to mapOf(
-                            "start" to "2026-06-01",
-                            "end" to "2031-06-01",
-                        ),
-                        "description" to
-                            "IKNL: Jaarlijkse mammografie gedurende 5 jaar na behandeling. " +
-                            "Echocardiografie LVEF q6m t/m einde trastuzumab.",
-                    ),
-                ),
+                carePlanNeoadjuvantChemo(),
+                carePlanSurgery(),
+                carePlanRadiotherapy(),
+                carePlanHer2Therapy(),
+                carePlanSurveillance(),
             ),
             "note" to listOf(
                 mapOf(
                     "text" to
-                        "Richtlijn: https://www.iknl.nl/richtlijnen/borstkanker. " +
-                        "MDO-besluit: 2024-12-12 Multidisciplinair Overleg UMC Utrecht.",
+                        "Richtlijn: $IKNL_BORSTKANKER_REF. " +
+                        "MDO-besluit: 2024-12-12 Multidisciplinair Overleg UMC Utrecht. " +
+                        "Diagnosecontext: HER2-positief, ER-negatief, Ki-67 38%, " +
+                        "invasief ductaal carcinoom Stadium IIA.",
                 ),
             ),
+        ),
+    )
+
+    private fun carePlanActivity(
+        kind: String,
+        codeText: String,
+        status: String,
+        start: String,
+        end: String,
+        description: String,
+        patientInstruction: String,
+        nextStep: String,
+        actionItems: List<String>,
+    ): Map<String, Any?> = mapOf(
+        "detail" to mapOf(
+            "kind" to kind,
+            "code" to mapOf("text" to codeText),
+            "status" to status,
+            "scheduledPeriod" to mapOf("start" to start, "end" to end),
+            "description" to description,
+            "patientInstruction" to patientInstruction,
+            "nextStep" to nextStep,
+            "actionItem" to actionItems,
+            "iknlGuidelineRef" to IKNL_BORSTKANKER_REF,
+        ),
+    )
+
+    private fun carePlanNeoadjuvantChemo(): Map<String, Any?> = carePlanActivity(
+        kind = "ServiceRequest",
+        codeText = "Neoadjuvante chemotherapie (TCHP schema) – VOLTOOID",
+        status = "completed",
+        start = "2024-12-20",
+        end = "2025-01-10",
+        description =
+            "Zes cycli TCHP (taxaan + carboplatine + trastuzumab + pertuzumab) " +
+                "als neoadjuvante HER2-gerichte therapie bij cT2N0M0 Stadium IIA. " +
+                "Pathologie toonde pCR in de axilla; resttumor in de mamma " +
+                "was beperkt. IKNL beveelt neoadjuvante HER2-blokkade aan bij " +
+                "HER2-positief invasief ductaal carcinoom ≥cT2.",
+        patientInstruction =
+            "Noteer koorts >38,5°C, aanhoudende misselijkheid of " +
+                "neurologische tintelingen in het bijwerkingendagboek. " +
+                "Neem contact op bij kortademigheid tijdens trastuzumab.",
+        nextStep =
+            "Door naar borstsparende chirurgie (BCS) met schildwachtklierprocedure " +
+                "(SLNB) zodra bloedbeeld hersteld is.",
+        actionItems = listOf(
+            "Bewaar het TCHP-infuusschema en de bijsluiter trastuzumab.",
+            "Vraag op het MDO-verslag wat pCR in de axilla betekent voor uw prognose.",
+        ),
+    )
+
+    private fun carePlanSurgery(): Map<String, Any?> = carePlanActivity(
+        kind = "ServiceRequest",
+        codeText = "Borstsparende chirurgie + schildwachtklierprocedure – VOLTOOID",
+        status = "completed",
+        start = "2025-01-14",
+        end = "2025-01-14",
+        description =
+            "Borstsparende chirurgie (BCS / lumpectomie) linker mamma met " +
+                "gelijktijdige schildwachtklierprocedure (SLNB). " +
+                "Resectiemarges R0; schildwachtklier pN0 SN – geen " +
+                "okselkliertoilet nodig. Operatie bevestigt Stadium IIA-beeld " +
+                "zonder lymfekliermetastasen.",
+        patientInstruction =
+            "Wondzorg: droog houden tot hechtingen zijn verwijderd. " +
+                "Meld roodheid, zwelling of koorts. Vermijd zwaar tillen " +
+                "met de linkerarm de eerste twee weken.",
+        nextStep =
+            "Start adjuvante radiotherapie (hypofractionering) en hervat " +
+                "trastuzumab + pertuzumab volgens schema.",
+        actionItems = listOf(
+            "Vraag of de snijvlakken ruim genoeg vrij waren.",
+            "Bespreek wanneer u mag starten met oefeningen voor de schouder.",
+        ),
+    )
+
+    private fun carePlanRadiotherapy(): Map<String, Any?> = carePlanActivity(
+        kind = "ServiceRequest",
+        codeText = "Adjuvante radiotherapie – ACTIEF",
+        status = "in-progress",
+        start = "2025-03-01",
+        end = "2025-03-21",
+        description =
+            "Adjuvante radiotherapie linker mamma na BCS volgens " +
+                "hypofractionering / FAST-Forward: 40 Gy in 15 fracties over " +
+                "ongeveer drie weken. IKNL §6.3: hypofractionering is standaard " +
+                "na borstsparende chirurgie bij Stadium IIA zonder " +
+                "lymfeklieruitzaaiing.",
+        patientInstruction =
+            "Smeer alleen de door de radiotherapeut goedgekeurde crème. " +
+                "Vermijd zonlicht en strakke BH’s op de bestraalde huid. " +
+                "Noteer huidreacties (roodheid, jeuk, schilfering) dagelijks.",
+        nextStep =
+            "Nacontrole radiotherapie na de laatste fractie; daarna " +
+                "verder met trastuzumab + pertuzumab en LVEF-controles.",
+        actionItems = listOf(
+            "Noteer huidreacties in uw bijwerkingendagboek.",
+            "Vraag hoeveel fracties u nog heeft en wanneer vermoeidheid piekt.",
+        ),
+    )
+
+    private fun carePlanHer2Therapy(): Map<String, Any?> = carePlanActivity(
+        kind = "MedicationRequest",
+        codeText = "Adjuvant trastuzumab + pertuzumab (1 jaar) – ACTIEF",
+        status = "in-progress",
+        start = "2025-01-20",
+        end = "2026-01-20",
+        description =
+            "Achttien cycli trastuzumab (Herceptin) + pertuzumab (Perjeta) " +
+                "als adjuvante HER2-blokkade gedurende één jaar. " +
+                "Cardiotoxiciteitsbewaking via echocardiografie: LVEF elke " +
+                "drie maanden. Bij daling van de ejectiefractie kan de kuur " +
+                "tijdelijk worden onderbroken.",
+        patientInstruction =
+            "Meld kortademigheid, enkeloedeem of snelle hartslag meteen. " +
+                "Neem echocardiografie-uitslagen mee naar elk oncologieconsult. " +
+                "Vaccinaties en tandheelkunde: stem af met de oncoloog.",
+        nextStep =
+            "Volgende LVEF-meting plannen; bij stabiele LVEF schema " +
+                "voortzetten tot 18 cycli zijn voltooid.",
+        actionItems = listOf(
+            "Plan echocardiografie elke 3 maanden tijdens trastuzumab.",
+            "Vraag wat uw laatste LVEF-waarde was en wat de ondergrens is.",
+        ),
+    )
+
+    private fun carePlanSurveillance(): Map<String, Any?> = carePlanActivity(
+        kind = "ServiceRequest",
+        codeText = "Jaarlijkse mammografie controle-plan – GEPLAND",
+        status = "scheduled",
+        start = "2026-06-01",
+        end = "2031-06-01",
+        description =
+            "Nacontroleschema na afronding van systemische therapie: " +
+                "jaarlijkse mammografie gedurende vijf jaar, plus klinische " +
+                "nacontrole. Zolang trastuzumab loopt blijft echocardiografie " +
+                "voor LVEF onderdeel van de follow-up; daarna op indicatie. " +
+                "IKNL: survivorship-zorg na Stadium IIA borstkanker.",
+        patientInstruction =
+            "Zet mammografie en huisartscontroles in uw agenda. " +
+                "Blijf borstzelfonderzoek doen en meld nieuwe knobbels of " +
+                "huidveranderingen zonder te wachten op de jaarcontrole.",
+        nextStep =
+            "Eerste surveillance-mammografie plannen ongeveer één jaar " +
+                "na afronding van radiotherapie / HER2-therapie.",
+        actionItems = listOf(
+            "Vraag wie uw vaste aanspreekpunt is in de nacontrole.",
+            "Noteer de datum van de eerste controle-mammografie.",
         ),
     )
 

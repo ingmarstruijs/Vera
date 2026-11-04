@@ -110,6 +110,26 @@ class MockDataServiceTest {
     }
 
     @Test
+    fun carePlan_activities_haveRichPatientFacingFields() = runBlocking {
+        val carePlan = service.fetchCarePlan()
+
+        @Suppress("UNCHECKED_CAST")
+        val activities = carePlan.data["activity"] as List<Map<String, Any?>>
+        assertEquals(5, activities.size)
+        activities.forEach { activity ->
+            @Suppress("UNCHECKED_CAST")
+            val detail = activity["detail"] as Map<String, Any?>
+            val description = detail["description"] as String
+            assertTrue(description.length > 80, "description too thin: $description")
+            assertTrue((detail["patientInstruction"] as String).isNotBlank())
+            assertTrue((detail["nextStep"] as String).isNotBlank())
+            @Suppress("UNCHECKED_CAST")
+            assertTrue((detail["actionItem"] as List<*>).isNotEmpty())
+            assertTrue((detail["iknlGuidelineRef"] as String).contains("iknl.nl"))
+        }
+    }
+
+    @Test
     fun appointments_isoStartAndParticipants() = runBlocking {
         val appts = bundle().resources.filter { it.resourceType == "Appointment" }
         assertTrue(appts.size >= 3)

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.moonbaseone.vera.shared.careplan.CarePlanRepository
 import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
-import net.moonbaseone.vera.shared.domain.BuiltInGlossary
+import net.moonbaseone.vera.shared.domain.GlossaryLinker
 import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.domain.TimelineEvent
 import net.moonbaseone.vera.shared.fhir.MockDataService
@@ -21,6 +21,8 @@ sealed class BlueprintUiState {
     data class Ready(
         val events: List<TimelineEvent>,
         val expandedId: String? = null,
+        /** Term currently expanded inline (tap-to-explain); null = chips only. */
+        val expandedJargonTerm: String? = null,
     ) : BlueprintUiState()
     data class Error(val message: String) : BlueprintUiState()
 }
@@ -55,7 +57,11 @@ class BlueprintViewModel(
                 val currentId = events.firstOrNull {
                     it.phase == net.moonbaseone.vera.shared.domain.TimelinePhase.Current
                 }?.id
-                _state.value = BlueprintUiState.Ready(events = events, expandedId = currentId)
+                _state.value = BlueprintUiState.Ready(
+                    events = events,
+                    expandedId = currentId,
+                    expandedJargonTerm = null,
+                )
             } catch (e: Exception) {
                 _state.value = BlueprintUiState.Error(e.message ?: UiCopy.BLUEPRINT_NO_DATA)
             }
@@ -66,15 +72,20 @@ class BlueprintViewModel(
         val current = _state.value as? BlueprintUiState.Ready ?: return
         _state.value = current.copy(
             expandedId = if (current.expandedId == eventId) null else eventId,
+            expandedJargonTerm = null,
         )
     }
 
-    fun jargonMatches(event: TimelineEvent): List<JargonEntry> {
-        val hay = "${event.title} ${event.description}".lowercase()
-        return BuiltInGlossary.filter { entry ->
-            hay.contains(entry.term.lowercase())
-        }
+    /** Tap-to-explain a linked glossary term inside the open timeline item. */
+    fun toggleJargon(term: String) {
+        val current = _state.value as? BlueprintUiState.Ready ?: return
+        _state.value = current.copy(
+            expandedJargonTerm = if (current.expandedJargonTerm == term) null else term,
+        )
     }
+
+    fun jargonMatches(event: TimelineEvent): List<JargonEntry> =
+        GlossaryLinker.findEntries(event.glossaryHaystack())
 
     fun dispose() {
         scope.cancel()
