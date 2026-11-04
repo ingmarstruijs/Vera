@@ -1,14 +1,18 @@
 # Vera documentation
 
-English docs for the Kotlin Multiplatform migration.
+English documentation for the Kotlin Multiplatform app (Android + iOS).
 
-| Path | Status |
-|------|--------|
-| [migration/kmp-plan.md](migration/kmp-plan.md) | In-repo mirror of the migration plan (v1 decisions) |
-| `architecture/`, `setup/`, `security/`, `testing.md` | Coming in later docs phases |
+| Path | Description |
+|------|-------------|
+| [setup/android.md](setup/android.md) | Android SDK, Gradle, assemble / install |
+| [setup/ios.md](setup/ios.md) | Xcode project, Shared framework link |
+| [testing.md](testing.md) | Shared unit tests and CI smoke |
+| [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror (P0–P11 / Phase 6) |
 
-The Flutter tree (`lib/`, `pubspec.yaml`, Flutter `android/` / `ios/` / `web/`) remains until cutover (P10). Prefer the Gradle modules below for new work:
+## Modules
 
-- `shared/` — Kotlin Multiplatform business logic
-- `androidApp/` — Jetpack Compose UI
+- `shared/` — Kotlin Multiplatform business logic (domain, vault, shield, FHIR mock, ViewModels)
+- `androidApp/` — Jetpack Compose UI (`net.moonbaseone.vera`)
 - `iosApp/` — SwiftUI UI
+
+Webviewer / P2P sharing and Flutter hosts are **removed**. No desktop or web KMP modules in v1.

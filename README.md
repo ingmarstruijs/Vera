@@ -1,123 +1,116 @@
 # Vera
 
-> **WIP — Kotlin Multiplatform migration in progress.**  
-> New work targets Gradle modules `shared/` (Kotlin Multiplatform logic), `androidApp/` (Jetpack Compose), and `iosApp/` (SwiftUI). The Flutter tree remains as **legacy** until cutover (P10). See [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) and [docs/README.md](docs/README.md).
+**Your personal oncology compass.** Clear, private, trusted medical guidance — on your device.
 
-**Your personal oncology compass.** Clear, private, trusted medical guidance at your fingertips.
+Vera is a **Kotlin Multiplatform** app: shared Kotlin logic with **native UI** (Android Jetpack Compose, iOS SwiftUI). Product IDs use `net.moonbaseone.vera` (`vera.moonbase-one.net`).
 
-### **The Vera Manifesto**
-
-**Vision:** Transform cancer diagnosis data into a clear, personalized roadmap. Vera puts patient understanding first through privacy-focused design and seamless medical integration.
+> **v1 platforms:** Android + iOS only. Web and desktop are deferred.  
+> **Not shipped:** Webviewer / P2P sharing (removed); signalling host `signal.vera-app.nl` is decommissioned outside this repo.
 
 ---
 
-## **1. The Problem & Solution**
+## Product
 
-Patients are currently caught between complex clinical data (Guidelines, Scientific Reports) and generic internet advice. **Vera** uses AI to bridge this gap, connecting **IKNL’s trusted knowledge sources** directly to the individual patient's journey—without ever compromising their privacy.
+### Problem & solution
 
-## **2. Core Features**
-*   **The Blueprint:** A visual, interactive timeline mapping the patient's specific diagnosis against national guidelines.
+Patients sit between complex clinical data and generic internet advice. Vera turns diagnosis and care-plan data into a clear, personalized roadmap — without sending identifiable records to a central server.
 
-*   **Plain-Language Decoder:** Local NLP translates technical pathology and guideline jargon into understandable "Action Items."
+### Core features
 
-*   **Regional Care-Mapping:** Uses the *Cancer Atlas* to highlight local expertise and support specific to the patient's area.
+- **Blueprint** — Interactive care-plan timeline (mock FHIR CarePlan today)
+- **Plain-Language Decoder** — On-device jargon glossary + translation (ML Kit on Android; NLTagger / Translate stub on iOS)
+- **Appointment Navigator** — Pocket guide and voice symptom logging (STT/TTS on device)
+- **Identity Shield** — Local PII redaction (regex + NER) before analysis
+- **Local Vault** — AES-256-GCM encrypted records + biometric gate
 
-*   **Proactive "Next-Step" Prep:** Generates personalized questions for the doctor based on upcoming milestones in the *Richtlijnendatabase*.
+### Privacy
 
-## **3. Security & Radical Privacy**
+- **Local-first** — Analysis stays on device; no cloud ML for v1
+- **Encrypted vault** — AES-256-GCM + Android Keystore / iOS Keychain
+- **Privacy sentinel** — Local-only status (no remote share path)
 
-Vera is built on a **Zero-Knowledge Architecture**. Your medical journey is yours alone.
-*   **Local-First Processing (Edge AI):** All analysis happens in the user's browser or device via [TensorFlow.js](https://tensorflow.org) or [ONNX Runtime](https://onnxruntime.ai). Sensitive records never touch a central server.
+MedMij / production FHIR sync is a later compliance track; the app uses a mock FHIR R4 oncology bundle today.
 
-*   **The Identity Shield:** Local **Named Entity Recognition (NER)** automatically redacts personal identifiers (names, BSNs) before the Blueprint is generated.
+---
 
-*   **Zero-Knowledge Storage:** Identifiable data stays in an encrypted **Local Vault**. Only anonymized medical markers are used to cross-reference national data.
-
-## **4. Seamless Medical Sync**
-
-Vera is a living system that stays in sync with your actual care via standardized data exchange.
-
-*   **MedMij & FHIR Integration:** Vera uses the [MedMij framework](https://medmij.nl) and **HL7 FHIR R4** standards to securely "pull" updates directly from hospital Electronic Health Records (EPD).
-
-*   **Real-Time Updating:** By using standardized **Oncology Data Models (ODM)**, Vera ensures that your roadmap shifts instantly when new results arrive.
-
-## **5. The Vera Experience (User Journey)**
-
-*   **The Clarity Timeline:** Instead of a list of documents, patients see a horizontal, interactive roadmap. Completed treatments are archived, the "Present" is highlighted with daily action items from **Kanker.nl**, and the "Future" is visualized based on **IKNL Guidelines**.
-
-*   **The Appointment Navigator:** With one click, Vera generates a **"Contextual Pocket Guide"** for the patient’s next doctor visit. It summarizes record changes, logs patient-reported symptoms, and suggests questions based on national guidelines.
-
-## Features
-
-- **Timeline Blueprint** — Visual roadmap of diagnosis & treatment aligned with national IKNL guidelines
-- **Plain-Language Decoder** — Medical jargon translated into actionable next steps  
-- **Privacy Sentinel** — Real-time confirmation that data stays on your device (local-only)
-- **Local AI Shield** — NER-based PII redaction before any analysis
-- **Appointment Navigator** — Contextual pocket guide and voice symptom logging
-- **FHIR Integration** — MedMij-compatible HL7 FHIR R4 sync from hospital EPDs (roadmap; mock data in app today)
-
-## Privacy Architecture
-
-✅ **Zero-Knowledge Design**
-- Device-local processing (ML Kit on mobile)
-- AES-256-GCM encrypted vault + biometric gate
-- Deterministic PII redaction (BSNs, postcodes, emails) on device
-- Local-only Privacy Sentinel (no P2P / remote share path)
-
-## Tech Stack
+## Architecture
 
 ```
-Dart 3.3+ / Flutter ≥3.19.0 | Riverpod 2.5.1 | Material 3 (WCAG AA)
-Google ML Kit | AES-256-GCM | Isar 3.1.0+1 | GoRouter
+Vera/
+├── shared/          # KMP: domain, SQLDelight, Koin, ViewModels, expect/actual
+├── androidApp/      # Jetpack Compose (applicationId net.moonbaseone.vera)
+├── iosApp/          # SwiftUI + Shared framework
+├── docs/            # English documentation
+├── assets/fonts/    # Atkinson Hyperlegible (wire into app resources as needed)
+├── settings.gradle.kts
+└── gradle/
 ```
 
-> Flutter stack is legacy during migration to Kotlin Multiplatform (Android + iOS). See migration plan.
+| Layer | Stack |
+|-------|--------|
+| Shared logic | Kotlin Multiplatform, Koin, ViewModel / StateFlow, SQLDelight |
+| Android UI | Jetpack Compose, Material 3 |
+| iOS UI | SwiftUI |
+| Crypto / keys | AES-GCM + EncryptedSharedPreferences / Keychain |
+| ML | Android ML Kit Translate + Entity Extraction; iOS NLTagger (+ Translate stub) |
 
-## Key Services
+**Not in v1:** Compose Multiplatform shared UI, `desktopApp`, `webApp`.
 
-| Service | Purpose |
-|---------|---------|
-| `LocalVaultService` | AES-256-GCM storage + biometric auth |
-| `IdentityShieldService` | NER-based PII redaction |
-| `LocalTranslationService` | On-device ML translation (11 langs) |
-| `MockDataService` | FHIR R4 oncology bundle (testing) |
+Migration history and Phase 6 / P11 (optional post-parity hardening): [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md).
 
-### Database (Isar)
+---
 
-Auto-initialized on startup (mobile only). Schema generated by build_runner.
-```dart
-// Access in widgets:
-final vault = ref.watch(localVaultServiceProvider);
-final records = await vault.getAllRecords();
+## Prerequisites
+
+- **JDK 21** (CI uses Temurin 21)
+- **Android SDK** with platform 35 / build-tools 35 (for `androidApp`)
+- **Xcode 15+** on macOS (for `iosApp`)
+
+See [docs/setup/android.md](docs/setup/android.md) and [docs/setup/ios.md](docs/setup/ios.md).
+
+---
+
+## Build & run
+
+```bash
+# Shared unit tests (JVM / Android host)
+./gradlew :shared:testDebugUnitTest
+
+# Android debug APK
+./gradlew :androidApp:assembleDebug
+
+# Install / run on a connected device or emulator (Android Studio or):
+./gradlew :androidApp:installDebug
 ```
-### **Project Structure**
 
+**iOS** (macOS + Xcode):
+
+```bash
+./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+open iosApp/Vera.xcodeproj
 ```
-lib/
-├── core/                         # Infrastructure & utilities
-│   ├── constants/                # App-wide constants, strings (Dutch)
-│   ├── error/                    # Error handling, sealed Failure classes
-│   ├── router/                   # GoRouter navigation configuration
-│   └── platform/                 # Platform detection utilities
-│
-├── services/                     # Domain services (crypto, translation, vault)
-│   ├── local_vault_service.dart  # AES-256-GCM encryption + biometric auth
-│   ├── identity_shield_service.dart  # NER-based PII redaction
-│   ├── local_translation_service.dart # On-device ML translation
-│   └── mock_data_service.dart    # FHIR R4 mock bundle
-│
-├── features/                     # Feature modules (Clean Architecture)
-│   ├── auth/                     # Authentication (biometric, PIN, self-destruct)
-│   ├── blueprint/                # Timeline UI (De Tijdlijn)
-│   ├── decoder/                  # Jargon translator (Smart System Decoder)
-│   ├── appointments/             # Appointment navigator + voice logging
-│   └── vault/                    # MedicalRecord entity + Isar models
-│
-├── shared/                       # Shared UI components & theme
-│   ├── widgets/                  # PrivacySentinel, AppShell, etc.
-│   ├── theme/                    # Material 3 + WCAG AA theme
-│   └── models/                   # Domain entities (TimelineEvent, JargonEntry)
-│
-├── main.dart                     # Entry point with platform-guarded Isar init
-└── app.dart                      # Root widget (MaterialApp.router)
-```
+
+Details: [iosApp/README.md](iosApp/README.md).
+
+CI smoke workflow: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smoke.yml) — shared tests + `assembleDebug`.
+
+---
+
+## Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [docs/README.md](docs/README.md) | Doc index |
+| [docs/setup/android.md](docs/setup/android.md) | Android setup & build |
+| [docs/setup/ios.md](docs/setup/ios.md) | iOS setup & build |
+| [docs/testing.md](docs/testing.md) | How to run tests |
+| [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) | Migration plan (in-repo mirror) |
+| [CHANGELOG.md](CHANGELOG.md) | Notable changes |
+
+App UI copy targets EN, NL, DE, FR (stubs OK through parity; resource packs in Phase 6).
+
+---
+
+## License / contributing
+
+Private product repo. Prefer English in repository docs; keep platform UI multilingual via shared / platform strings.
