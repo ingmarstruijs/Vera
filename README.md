@@ -37,9 +37,10 @@ MedMij / production FHIR sync is a later compliance track; the app uses a mock F
 
 ```
 Vera/
-├── shared/          # KMP: domain, SQLDelight, Koin, ViewModels, expect/actual
+├── core/            # KMP: domain, failure, i18n, navigation, design tokens
+├── shared/          # KMP: vault/shield/features, SQLDelight, Koin, ViewModels
 ├── androidApp/      # Jetpack Compose (applicationId net.moonbaseone.vera)
-├── iosApp/          # SwiftUI + Shared framework
+├── iosApp/          # SwiftUI + Shared framework (exports :core)
 ├── docs/            # English documentation
 ├── assets/fonts/    # Atkinson Hyperlegible (wire into app resources as needed)
 ├── settings.gradle.kts
@@ -48,11 +49,12 @@ Vera/
 
 | Layer | Stack |
 |-------|--------|
-| Shared logic | Kotlin Multiplatform, Koin, ViewModel / StateFlow, SQLDelight |
+| Shared logic | Kotlin Multiplatform (`:core` + `:shared`), Koin, ViewModel / StateFlow, SQLDelight |
 | Android UI | Jetpack Compose, Material 3 |
 | iOS UI | SwiftUI |
 | Crypto / keys | AES-GCM + EncryptedSharedPreferences / Keychain |
 | ML | Android ML Kit Translate + Entity Extraction; iOS NLTagger (+ Translate stub) |
+| CI | Shared/core tests, detekt, Android lint, assembleDebug (signing out of CI) |
 
 **Not in v1:** `desktopApp`, `webApp`.
 

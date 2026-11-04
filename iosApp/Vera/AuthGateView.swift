@@ -46,7 +46,8 @@ private struct NewVaultView: View {
         VStack(spacing: 24) {
             Image(systemName: "lock")
                 .font(.system(size: 64))
-                .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                .foregroundStyle(ClinicalColors.primary)
+                .accessibilityHidden(true)
             Text("Kluis aanmaken")
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
@@ -68,7 +69,7 @@ private struct NewVaultView: View {
                 .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.18, green: 0.36, blue: 0.31))
+            .tint(ClinicalColors.primary)
             .disabled(isBusy)
             .accessibilityLabel(isBusy ? "Bezig" : "Beveiligde kluis aanmaken")
         }
@@ -87,7 +88,7 @@ private struct UnlockView: View {
         VStack(spacing: 24) {
             Image(systemName: "touchid")
                 .font(.system(size: 72))
-                .foregroundStyle(Color(red: 0.18, green: 0.36, blue: 0.31).opacity(isBusy ? 0.6 : 1))
+                .foregroundStyle(ClinicalColors.primary.opacity(isBusy ? 0.6 : 1))
                 .accessibilityHidden(true)
             Text("Ontgrendel Vera")
                 .font(.title2.weight(.bold))
@@ -106,12 +107,13 @@ private struct UnlockView: View {
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(attemptsLeft <= 1 ? Color.red.opacity(0.08) : Color.orange.opacity(0.12))
+                        .fill(attemptsLeft <= 1 ? ClinicalColors.error.opacity(0.08) : ClinicalColors.amber.opacity(0.12))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(attemptsLeft <= 1 ? Color.red : Color.orange, lineWidth: 1)
+                        .stroke(attemptsLeft <= 1 ? ClinicalColors.error : ClinicalColors.amber, lineWidth: 1)
                 )
+                .accessibilityElement(children: .combine)
             }
             Button(action: onUnlock) {
                 Label(isBusy ? "Bezig…" : "Ontgrendelen", systemImage: "touchid")
@@ -119,7 +121,7 @@ private struct UnlockView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.18, green: 0.36, blue: 0.31))
+            .tint(ClinicalColors.primary)
             .disabled(isBusy || attemptsLeft <= 0)
             .accessibilityLabel(isBusy ? "Bezig" : "Ontgrendelen")
         }

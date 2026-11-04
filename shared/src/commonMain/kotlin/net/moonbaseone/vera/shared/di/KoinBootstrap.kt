@@ -9,6 +9,8 @@ import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.fhir.FhirClient
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.fhir.UnsupportedFhirClient
+import net.moonbaseone.vera.shared.navigation.AppNavigator
+import net.moonbaseone.vera.shared.navigation.DefaultAppNavigator
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
 import net.moonbaseone.vera.shared.shield.NerEngine
 import net.moonbaseone.vera.shared.shield.NoOpNerEngine
@@ -33,6 +35,7 @@ import org.koin.dsl.module
 
 /**
  * Shared Koin modules split by feature boundary (P11 incremental).
+ * Gradle `:core` holds domain / i18n / nav / tokens; feature packages stay in `:shared`.
  * Android/iOS apps override platform actuals (keys, speech, ML, biometrics).
  */
 fun sharedModules(): List<Module> = listOf(
@@ -48,8 +51,9 @@ fun coreModule(): Module = module {
     single { SharedAppInfo(appId = "net.moonbaseone.vera") }
     single { MockDataService() }
     single<FhirClient> { UnsupportedFhirClient() }
+    single { DefaultAppNavigator() }
+    single<AppNavigator> { get<DefaultAppNavigator>() }
 }
-
 fun vaultModule(): Module = module {
     single<SecureKeyStore> { InMemorySecureKeyStore() }
     single<MedicalRecordStore> { InMemoryMedicalRecordStore() }

@@ -5,27 +5,33 @@ Vera’s automated tests live in the KMP `shared` module (`shared/src/commonTest
 ## Run locally
 
 ```bash
-# Shared unit tests on the Android JVM host (same target as CI)
-./gradlew :shared:testDebugUnitTest
+# Core + shared unit tests on the Android JVM host (same target as CI)
+./gradlew :core:testDebugUnitTest :shared:testDebugUnitTest
+
+# Static analysis (KMP source sets + Android UI)
+./gradlew :core:detekt :shared:detekt :androidApp:detekt
+./gradlew :androidApp:lintDebug
 
 # Smoke: Android debug assemble
 ./gradlew :androidApp:assembleDebug
 ```
 
-CI runs both steps via [`.github/workflows/kmp-smoke.yml`](../.github/workflows/kmp-smoke.yml) on `main` and `cursor/**` branches.
+CI runs these via [`.github/workflows/kmp-smoke.yml`](../.github/workflows/kmp-smoke.yml) on `main` and `cursor/**` branches. Signing secrets are not required — see [setup/signing.md](setup/signing.md).
 
-## What is covered (shared)
+## What is covered
 
-| Area | Location (under `shared/src/commonTest`) |
-|------|------------------------------------------|
-| Domain models | `domain/` — jargon, medical record, timeline |
-| Mock FHIR | `fhir/MockDataServiceTest.kt` |
-| Identity Shield | `shield/IdentityShieldServiceTest.kt` |
-| Vault crypto | `vault/VaultCryptoTest.kt`, `LocalVaultServiceTest.kt` |
-| Translation | `translation/LocalTranslationServiceTest.kt` |
-| ViewModels | `auth/`, `blueprint/`, `decoder/`, `appointments/` |
+| Area | Location |
+|------|----------|
+| Domain / i18n / nav | `core/src/commonTest` |
+| Mock FHIR | `shared/.../fhir/MockDataServiceTest.kt` |
+| Identity Shield | `shared/.../shield/IdentityShieldServiceTest.kt` |
+| Vault crypto | `shared/.../vault/` |
+| Translation | `shared/.../translation/LocalTranslationServiceTest.kt` |
+| ViewModels | `shared/.../{auth,blueprint,decoder,appointments}/` |
+| Detekt | `config/detekt/` (+ baseline) |
+| Android a11y-minded lint | `:androidApp:lintDebug` |
 
-Platform actuals (Keystore, ML Kit, speech) need device / instrumented coverage later; CI today is shared unit tests + Android assemble.
+Platform actuals (Keystore, ML Kit, speech) need device / instrumented coverage later.
 
 ## iOS
 

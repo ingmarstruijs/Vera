@@ -176,8 +176,11 @@ class AppointmentsViewModel(
         if (existing.isBlank()) return trimmed
         if (replaceLast) {
             val lines = existing.lines().toMutableList()
-            if (lines.isNotEmpty()) lines[lines.lastIndex] = trimmed
-            else lines.add(trimmed)
+            if (lines.isNotEmpty()) {
+                lines[lines.lastIndex] = trimmed
+            } else {
+                lines.add(trimmed)
+            }
             return lines.joinToString("\n")
         }
         return "$existing\n$trimmed".trim()

@@ -32,19 +32,22 @@ struct BlueprintView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Uw Tijdlijn")
                     .font(.title2.weight(.bold))
+                    .accessibilityAddTraits(.isHeader)
                 Text("Uw diagnose afgezet tegen IKNL-richtlijnen")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(ClinicalColors.textSecondary)
                 Label("Bron: IKNL Richtlijnendatabase", systemImage: "checkmark.seal")
                     .font(.caption)
-                    .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                    .foregroundStyle(ClinicalColors.primary)
 
                 HStack(spacing: 16) {
-                    LegendDot(color: Color(red: 0.05, green: 0.28, blue: 0.63), label: "Afgerond")
-                    LegendDot(color: Color(red: 0.11, green: 0.37, blue: 0.13), label: "Huidig")
-                    LegendDot(color: Color(red: 0.88, green: 0.48, blue: 0), label: "Gepland")
+                    LegendDot(color: ClinicalColors.statusCompleted, label: "Afgerond")
+                    LegendDot(color: ClinicalColors.statusInProgress, label: "Huidig")
+                    LegendDot(color: ClinicalColors.statusScheduled, label: "Gepland")
                 }
                 .padding(.top, 4)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Legenda: Afgerond, Huidig, Gepland")
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 0) {
@@ -98,9 +101,9 @@ private struct TimelineNodeView: View {
 
     private var phaseColor: Color {
         switch event.phase {
-        case .completed: return Color(red: 0.05, green: 0.28, blue: 0.63)
-        case .current: return Color(red: 0.11, green: 0.37, blue: 0.13)
-        case .future: return Color(red: 0.88, green: 0.48, blue: 0)
+        case .completed: return ClinicalColors.statusCompleted
+        case .current: return ClinicalColors.statusInProgress
+        case .future: return ClinicalColors.statusScheduled
         }
     }
 

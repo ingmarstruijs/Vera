@@ -46,6 +46,7 @@ class BlueprintViewModel(
             _state.value = BlueprintUiState.Loading
             try {
                 val carePlan = carePlanRepository.fetchCarePlan()
+
                 @Suppress("UNCHECKED_CAST")
                 val activities = (carePlan.data["activity"] as? List<*>)
                     ?.mapNotNull { it as? Map<String, Any?> }

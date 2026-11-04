@@ -6,13 +6,16 @@ English documentation for the Kotlin Multiplatform app (Android + iOS).
 |------|-------------|
 | [setup/android.md](setup/android.md) | Android SDK, Gradle, assemble / install |
 | [setup/ios.md](setup/ios.md) | Xcode project, Shared framework link |
-| [testing.md](testing.md) | Shared unit tests and CI smoke |
+| [setup/signing.md](setup/signing.md) | Release signing (out of CI; no secrets in repo) |
+| [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
 | [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror (P0–P11 / Phase 6) |
-| [migration/module-map.md](migration/module-map.md) | Shared feature boundaries + CMP gate note |
+| [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` boundaries + CMP gate note |
+| [migration/navigation.md](migration/navigation.md) | Typed nav + Decompose/Circuit deferral |
 
 ## Modules
 
-- `shared/` — Kotlin Multiplatform business logic (domain, vault, shield, FHIR mock, ViewModels)
+- `core/` — Stable KMP types: domain, failure, i18n, navigation, design tokens
+- `shared/` — Feature KMP logic (vault, shield, FHIR mock, ViewModels); depends on `:core`
 - `androidApp/` — Jetpack Compose UI (`net.moonbaseone.vera`)
 - `iosApp/` — SwiftUI UI
 

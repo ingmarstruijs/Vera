@@ -30,11 +30,21 @@ jobs:
         with:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
 
+      - name: Core unit tests
+        run: ./gradlew :core:testDebugUnitTest --stacktrace
+
       - name: Shared unit tests
         run: ./gradlew :shared:testDebugUnitTest --stacktrace
+
+      - name: Detekt
+        run: ./gradlew :core:detekt :shared:detekt :androidApp:detekt --stacktrace
+
+      - name: Android lint (a11y-focused)
+        run: ./gradlew :androidApp:lintDebug --stacktrace
 
       - name: Assemble Android debug
         run: ./gradlew :androidApp:assembleDebug --stacktrace
 
   # iOS compile needs a macOS runner + Xcode; left as a follow-up once Shared
   # framework packaging is wired into the Xcode project (see iosApp/README.md).
+  # Play / App Store signing secrets are intentionally out of CI — see docs/setup/signing.md.

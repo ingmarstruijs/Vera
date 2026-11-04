@@ -36,6 +36,10 @@ sealed class AppDestination(val route: String) {
 /**
  * Thin navigation contract for shared coordinators.
  * Platforms supply the actual back stack / tab switcher.
+ *
+ * Prefer [DefaultAppNavigator] for shared observation. Decompose/Circuit remain
+ * optional — adopt when multi-stack / deep links outgrow this contract; do not
+ * rename [AppDestination] routes when wrapping.
  */
 interface AppNavigator {
     fun navigate(destination: AppDestination)
