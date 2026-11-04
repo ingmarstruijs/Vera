@@ -6,6 +6,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Merged
 
+- [#22](https://github.com/ingmarstruijs/Vera/pull/22) — Update README.md (2026-11-04)
 - [#18](https://github.com/ingmarstruijs/Vera/pull/18) — chore(VER-20): CI triggers, main protection docs, changelog on merge (2026-11-04)
 - [#17](https://github.com/ingmarstruijs/Vera/pull/17) — feat: richer care-plan mocks + inline decode (VER-19) (2026-11-04)
 
