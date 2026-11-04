@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* VeraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* VeraApp.swift */; };
 		A10000000000000000000002 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* RootTabView.swift */; };
+		A10000000000000000000003 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* AuthCoordinator.swift */; };
+		A10000000000000000000004 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* AuthGateView.swift */; };
+		A10000000000000000000005 /* BlueprintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* BlueprintView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +19,9 @@
 		A10000000000000000000011 /* VeraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VeraApp.swift; sourceTree = "<group>"; };
 		A10000000000000000000012 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		A10000000000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000014 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
+		A10000000000000000000015 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
+		A10000000000000000000016 /* BlueprintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +47,10 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000011 /* VeraApp.swift */,
+				A10000000000000000000014 /* AuthCoordinator.swift */,
+				A10000000000000000000015 /* AuthGateView.swift */,
 				A10000000000000000000012 /* RootTabView.swift */,
+				A10000000000000000000016 /* BlueprintView.swift */,
 				A10000000000000000000013 /* Info.plist */,
 			);
 			path = Vera;
@@ -124,7 +133,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000001 /* VeraApp.swift in Sources */,
+				A10000000000000000000003 /* AuthCoordinator.swift in Sources */,
+				A10000000000000000000004 /* AuthGateView.swift in Sources */,
 				A10000000000000000000002 /* RootTabView.swift in Sources */,
+				A10000000000000000000005 /* BlueprintView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

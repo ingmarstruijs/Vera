@@ -1,33 +1,65 @@
 import SwiftUI
 
-/// Placeholder shell: Timeline | Decoder | Appointments (no Sync).
+/// Shell: Timeline | Decoder | Appointments (no Sync) + privacy sentinel.
 struct RootTabView: View {
     var body: some View {
         TabView {
-            PlaceholderScreen(
-                title: "Timeline",
-                message: "Blueprint timeline placeholder. Feature port starts in later phases."
-            )
+            NavigationStack {
+                BlueprintView()
+                    .navigationTitle("Vera")
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            PrivacySentinelDot()
+                        }
+                    }
+            }
             .tabItem {
-                Label("Timeline", systemImage: "calendar")
+                Label("Tijdlijn", systemImage: "calendar")
             }
 
-            PlaceholderScreen(
-                title: "Decoder",
-                message: "Plain-language decoder placeholder. No jargon/ML wiring yet."
-            )
+            NavigationStack {
+                PlaceholderScreen(
+                    title: "Decoder",
+                    message: "Medische vaktaal-decoder volgt in een latere fase."
+                )
+                .navigationTitle("Vera")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        PrivacySentinelDot()
+                    }
+                }
+            }
             .tabItem {
                 Label("Decoder", systemImage: "text.magnifyingglass")
             }
 
-            PlaceholderScreen(
-                title: "Appointments",
-                message: "Appointment navigator placeholder. No sync or P2P in v1."
-            )
+            NavigationStack {
+                PlaceholderScreen(
+                    title: "Afspraken",
+                    message: "Afspraaknavigator volgt in een latere fase."
+                )
+                .navigationTitle("Vera")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        PrivacySentinelDot()
+                    }
+                }
+            }
             .tabItem {
-                Label("Appointments", systemImage: "clock")
+                Label("Afspraken", systemImage: "clock")
             }
         }
+        .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+    }
+}
+
+private struct PrivacySentinelDot: View {
+    var body: some View {
+        Circle()
+            .fill(Color(red: 0.11, green: 0.48, blue: 0.24))
+            .frame(width: 12, height: 12)
+            .accessibilityLabel("Gegevens lokaal beveiligd. Geen medische gegevens hebben uw apparaat verlaten.")
+            .frame(width: 44, height: 44)
     }
 }
 
@@ -37,10 +69,7 @@ private struct PlaceholderScreen: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Vera")
-                .font(.largeTitle.weight(.semibold))
-            Text(title)
-                .font(.title2)
+            Text(title).font(.title2.weight(.semibold))
             Text(message)
                 .font(.body)
                 .multilineTextAlignment(.center)

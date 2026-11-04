@@ -1,5 +1,7 @@
 package net.moonbaseone.vera.shared.di
 
+import net.moonbaseone.vera.shared.auth.AuthViewModel
+import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
 import net.moonbaseone.vera.shared.vault.BiometricAuthenticator
@@ -33,6 +35,8 @@ fun sharedModules(): List<Module> = listOf(
                 biometricAuthenticator = get(),
             )
         }
+        single { AuthViewModel(vault = get()) }
+        single { BlueprintViewModel(mockData = get()) }
     },
 )
 

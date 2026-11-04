@@ -33,5 +33,7 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Vera gebruikt Face ID om uw medische kluis te ontgrendelen.</string>
 </dict>
 </plist>
