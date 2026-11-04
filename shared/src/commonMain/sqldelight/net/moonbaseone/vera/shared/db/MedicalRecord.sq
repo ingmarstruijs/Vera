@@ -1,0 +1,33 @@
+CREATE TABLE MedicalRecordEntity (
+  uuid TEXT NOT NULL PRIMARY KEY,
+  encryptedPayload TEXT NOT NULL,
+  encryptedTitle TEXT NOT NULL,
+  resourceType TEXT NOT NULL,
+  dateRecorded TEXT NOT NULL,
+  iknlGuidelineRef TEXT,
+  fhirStatus TEXT,
+  tagsCsv TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX medical_record_resource_type ON MedicalRecordEntity(resourceType);
+CREATE INDEX medical_record_date ON MedicalRecordEntity(dateRecorded);
+
+upsertMedicalRecord:
+INSERT OR REPLACE INTO MedicalRecordEntity(
+  uuid, encryptedPayload, encryptedTitle, resourceType, dateRecorded,
+  iknlGuidelineRef, fhirStatus, tagsCsv
+) VALUES (
+  ?, ?, ?, ?, ?, ?, ?, ?
+);
+
+selectAllMedicalRecordsSorted:
+SELECT *
+FROM MedicalRecordEntity
+ORDER BY dateRecorded ASC;
+
+deleteMedicalRecordByUuid:
+DELETE FROM MedicalRecordEntity
+WHERE uuid = ?;
+
+clearMedicalRecords:
+DELETE FROM MedicalRecordEntity;

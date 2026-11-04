@@ -31,9 +31,11 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.sqldelight.runtime)
+            implementation(libs.uuid)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.sqldelight.sqlite.driver)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
