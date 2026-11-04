@@ -79,8 +79,12 @@ class LocalVaultService(
                 success = false,
                 failure = AuthBiometricFailure("Authenticatie geannuleerd."),
             )
+            is BiometricAuthResult.Unavailable -> VaultOpResult(
+                success = false,
+                failure = auth.failure,
+            )
             is BiometricAuthResult.Failed -> {
-                // Count failed biometric attempts toward self-destruct.
+                // Count failed biometric / wrong-credential attempts toward self-destruct.
                 val tracked = handleFailedAttempt()
                 if (tracked.failure is VaultSelfDestructFailure) {
                     tracked

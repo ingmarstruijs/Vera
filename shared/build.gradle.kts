@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.androidx.security.crypto)
             implementation(libs.androidx.biometric)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.android)
             implementation(libs.mlkit.translate)
             implementation(libs.mlkit.entity.extraction)
             implementation(libs.kotlinx.coroutines.play.services)

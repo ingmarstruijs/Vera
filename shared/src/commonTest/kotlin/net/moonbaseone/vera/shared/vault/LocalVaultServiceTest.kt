@@ -90,6 +90,35 @@ class LocalVaultServiceTest {
     }
 
     @Test
+    fun unlockWithBiometrics_deviceCredentialOnly_succeeds() = runBlocking {
+        // Models emulator with device PIN and no enrolled fingerprint.
+        val biometric = FakeBiometricAuthenticator(canAuth = true)
+        val vault = newVault(biometric = biometric)
+        vault.createVault()
+        val result = vault.unlockWithBiometrics(authenticator = biometric)
+        assertTrue(result.success)
+        assertTrue(vault.isUnlocked)
+        assertEquals(1, biometric.authenticateCalls)
+        Unit
+    }
+
+    @Test
+    fun unlockWithBiometrics_unavailableResult_doesNotCountAttempt() = runBlocking {
+        val biometric = FakeBiometricAuthenticator(
+            result = BiometricAuthResult.Unavailable(AuthBiometricFailure("geen hardware")),
+        )
+        val vault = newVault(biometric = biometric, maxAttempts = 2)
+        vault.createVault()
+        val before = vault.remainingAttempts()
+        val result = vault.unlockWithBiometrics(authenticator = biometric)
+        assertFalse(result.success)
+        assertTrue(result.failure is AuthBiometricFailure)
+        assertEquals(before, vault.remainingAttempts())
+        assertFalse(vault.isUnlocked)
+        Unit
+    }
+
+    @Test
     fun unlockWithBiometrics_failedAttempt_countsTowardSelfDestruct() = runBlocking {
         val biometric = FakeBiometricAuthenticator(
             result = BiometricAuthResult.Failed(AuthBiometricFailure("fail")),
