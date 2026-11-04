@@ -2,6 +2,8 @@ package net.moonbaseone.vera.shared.di
 
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
+import net.moonbaseone.vera.shared.vault.BiometricAuthenticator
+import net.moonbaseone.vera.shared.vault.FakeBiometricAuthenticator
 import net.moonbaseone.vera.shared.vault.InMemoryMedicalRecordStore
 import net.moonbaseone.vera.shared.vault.InMemorySecureKeyStore
 import net.moonbaseone.vera.shared.vault.LocalVaultService
@@ -14,7 +16,7 @@ import org.koin.dsl.module
 
 /**
  * Shared Koin modules.
- * Default vault uses in-memory stores; apps override with Keystore/Keychain + SQLDelight.
+ * Android/iOS apps override [SecureKeyStore] / [MedicalRecordStore] with platform actuals.
  */
 fun sharedModules(): List<Module> = listOf(
     module {
@@ -23,10 +25,12 @@ fun sharedModules(): List<Module> = listOf(
         single { IdentityShieldService() }
         single<SecureKeyStore> { InMemorySecureKeyStore() }
         single<MedicalRecordStore> { InMemoryMedicalRecordStore() }
+        single<BiometricAuthenticator> { FakeBiometricAuthenticator() }
         single {
             LocalVaultService(
                 keyStore = get(),
                 recordStore = get(),
+                biometricAuthenticator = get(),
             )
         }
     },

@@ -51,6 +51,8 @@ dependencies {
 
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.biometric)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

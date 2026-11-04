@@ -1,8 +1,8 @@
 package net.moonbaseone.vera.shared.vault
 
 /**
- * Abstraction over platform secure storage (Android Keystore / iOS Keychain).
- * P3: interface + in-memory fake for tests. Real platform actuals in P4.
+ * Abstraction over platform secure storage
+ * (Android EncryptedSharedPreferences / iOS Keychain).
  */
 interface SecureKeyStore {
     suspend fun read(key: String): String?

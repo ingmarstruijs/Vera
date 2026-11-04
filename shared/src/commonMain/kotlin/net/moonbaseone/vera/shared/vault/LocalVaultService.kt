@@ -3,6 +3,7 @@ package net.moonbaseone.vera.shared.vault
 import com.benasher44.uuid.uuid4
 import net.moonbaseone.vera.shared.AppConstants
 import net.moonbaseone.vera.shared.domain.MedicalRecord
+import net.moonbaseone.vera.shared.failure.AuthBiometricFailure
 import net.moonbaseone.vera.shared.failure.AuthMaxAttemptsFailure
 import net.moonbaseone.vera.shared.failure.Failure
 import net.moonbaseone.vera.shared.failure.VaultEncryptionFailure
@@ -25,13 +26,14 @@ data class VaultRecordsResult(
 /**
  * Zero-knowledge local vault: AES-256-GCM payloads + secure key custody.
  *
- * Biometric unlock is deferred to P4 — [unlockWithStoredKey] loads the key
- * from [SecureKeyStore] for tests / after a future biometric gate succeeds.
+ * [unlockWithBiometrics] gates key release via [BiometricAuthenticator]
+ * (Android BiometricPrompt / iOS LocalAuthentication).
  */
 @OptIn(ExperimentalEncodingApi::class)
 class LocalVaultService(
     private val keyStore: SecureKeyStore,
     private val recordStore: MedicalRecordStore,
+    private val biometricAuthenticator: BiometricAuthenticator = FakeBiometricAuthenticator(),
     private val maxFailedAttempts: Int = AppConstants.MAX_FAILED_AUTH_ATTEMPTS,
 ) {
     private var sessionKey: ByteArray? = null
@@ -49,8 +51,46 @@ class LocalVaultService(
     }
 
     /**
-     * Loads the master key from secure storage into the session.
-     * Call after biometric success (P4) or directly in tests.
+     * Biometric / device-credential unlock, then load the master key into the session.
+     * Pass a platform [BiometricAuthenticator] from the Activity / UI layer when needed.
+     */
+    suspend fun unlockWithBiometrics(
+        reason: String = "Ontgrendel Vera om je medische gegevens te openen",
+        authenticator: BiometricAuthenticator = biometricAuthenticator,
+    ): VaultOpResult {
+        val remaining = remainingAttempts()
+        if (remaining <= 0) {
+            wipeVault()
+            return VaultOpResult(success = false, failure = VaultSelfDestructFailure())
+        }
+
+        if (!authenticator.canAuthenticate()) {
+            return VaultOpResult(
+                success = false,
+                failure = AuthBiometricFailure(
+                    "Geen schermbeveiliging op dit apparaat. Stel een PIN of biometrie in via de apparaatinstellingen.",
+                ),
+            )
+        }
+
+        return when (val auth = authenticator.authenticate(reason)) {
+            BiometricAuthResult.Success -> unlockWithStoredKey()
+            BiometricAuthResult.Cancelled -> VaultOpResult(
+                success = false,
+                failure = AuthBiometricFailure("Authenticatie geannuleerd."),
+            )
+            is BiometricAuthResult.Failed -> {
+                // Count failed biometric attempts toward self-destruct.
+                val tracked = handleFailedAttempt()
+                if (tracked.failure is VaultSelfDestructFailure) tracked
+                else VaultOpResult(success = false, failure = auth.failure)
+            }
+        }
+    }
+
+    /**
+     * Loads the master key from secure storage into the session (no biometric UI).
+     * Used by tests and after a successful [unlockWithBiometrics] gate.
      */
     suspend fun unlockWithStoredKey(): VaultOpResult {
         val remaining = remainingAttempts()
