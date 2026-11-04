@@ -135,6 +135,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 - [x] Android EncryptedSharedPreferences + BiometricPrompt; iOS Keychain + LocalAuthentication (P4); iOS AES-GCM CryptoKit bridge still follow-up  
 - [x] Android + iOS: unlock → timeline shell (decoder/appointments placeholders) (P5)  
 - [x] Decoder + appointments feature port (P6); speech STT/TTS actuals on mobile; ML Kit translation still P7  
+- [x] On-device translation + NER (P7): `LocalTranslationService` + ML Kit Translate/Entity Extraction (Android); NLTagger NER + Translate stub (iOS); DecoderViewModel download/translate flow  
 
 - [x] Stack direction: Koin + StateFlow; SQLDelight stubs; IDs `net.moonbaseone.vera`  
 - [x] No desktop/web KMP modules in v1  
