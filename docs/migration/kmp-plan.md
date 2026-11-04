@@ -81,7 +81,7 @@ Vera/
 ## Acceptance (short)
 
 - [x] P0: no WebRTC/QR-share/viewer/`p2pSessionActive` on Flutter `main`  
-- [ ] Shared tests for BSN redaction, vault encrypt, FHIR mock, jargon  
+- [x] Shared tests for FHIR mock + jargon glossary (P2); BSN redaction / vault encrypt still later  
 - [ ] Android + iOS: unlock → timeline → decoder → appointments  
 - [x] Stack direction: Koin + StateFlow; SQLDelight stubs; IDs `net.moonbaseone.vera`  
 - [x] No desktop/web KMP modules in v1  
