@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Security
@@ -149,7 +148,7 @@ private fun UnlockContent(state: AuthUiState, onUnlock: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-            imageVector = Icons.Outlined.Fingerprint,
+            imageVector = Icons.Outlined.Lock,
             contentDescription = UiCopy.AUTH_BIOMETRIC_PROMPT,
             modifier = Modifier.size(96.dp),
             tint = if (state.isBusy) {
@@ -194,7 +193,7 @@ private fun UnlockContent(state: AuthUiState, onUnlock: () -> Unit) {
                 Box(modifier = Modifier.width(8.dp))
                 Text(UiCopy.AUTH_LOADING)
             } else {
-                Icon(imageVector = Icons.Outlined.Fingerprint, contentDescription = null)
+                Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
                 Box(modifier = Modifier.width(8.dp))
                 Text(UiCopy.AUTH_UNLOCK_BUTTON)
             }

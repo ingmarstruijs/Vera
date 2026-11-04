@@ -15,6 +15,7 @@ import net.moonbaseone.vera.shared.failure.AuthMaxAttemptsFailure
 import net.moonbaseone.vera.shared.failure.VaultSelfDestructFailure
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.shared.vault.LocalVaultService
+import net.moonbaseone.vera.shared.vault.VaultOpResult
 
 enum class AuthStep {
     Checking,
@@ -85,7 +86,17 @@ class AuthViewModel(
             if (current.isBusy || current.attemptsLeft <= 0) return@launch
             _state.update { it.copy(isBusy = true, errorMessage = null) }
 
-            val result = vault.unlockWithBiometrics()
+            val result = try {
+                vault.unlockWithBiometrics()
+            } catch (t: Throwable) {
+                // Platform biometric APIs must never crash the auth gate.
+                VaultOpResult(
+                    success = false,
+                    failure = AuthBiometricFailure(
+                        t.message ?: "Authenticatie kon niet worden gestart.",
+                    ),
+                )
+            }
             if (result.success) {
                 _state.update {
                     it.copy(

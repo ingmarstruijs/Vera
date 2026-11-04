@@ -66,4 +66,50 @@ class AuthViewModelTest {
         assertEquals(AuthStep.Unlock, vm.state.value.step)
         vm.dispose()
     }
+    @Test
+    fun unlock_deviceCredentialOnly_reachesUnlocked() = runBlocking {
+        // PIN/pattern present, no enrolled biometrics — authenticator still succeeds.
+        val biometric = FakeBiometricAuthenticator(canAuth = true)
+        val service = vault(biometric)
+        service.createVault()
+        val vm = AuthViewModel(service)
+        vm.start(autoUnlock = true)
+        awaitStep(vm) { it.step == AuthStep.Unlocked }
+        assertEquals(1, biometric.authenticateCalls)
+        vm.dispose()
+    }
+
+    @Test
+    fun unlock_noBiometricsOrCredential_staysOnUnlockWithoutCrash() = runBlocking {
+        val biometric = FakeBiometricAuthenticator(canAuth = false)
+        val service = vault(biometric)
+        service.createVault()
+        val beforeAttempts = service.remainingAttempts()
+        val vm = AuthViewModel(service)
+        vm.start(autoUnlock = true)
+        awaitStep(vm) { it.errorMessage != null && !it.isBusy }
+        assertEquals(AuthStep.Unlock, vm.state.value.step)
+        assertEquals(beforeAttempts, vm.state.value.attemptsLeft)
+        assertEquals(0, biometric.authenticateCalls)
+        vm.dispose()
+    }
+
+    @Test
+    fun unlock_unavailableResult_doesNotDecrementAttempts() = runBlocking {
+        val biometric = FakeBiometricAuthenticator(
+            result = BiometricAuthResult.Unavailable(
+                net.moonbaseone.vera.shared.failure.AuthBiometricFailure("geen biometrie"),
+            ),
+        )
+        val service = vault(biometric)
+        service.createVault()
+        val vm = AuthViewModel(service)
+        vm.start(autoUnlock = false)
+        awaitStep(vm) { it.step == AuthStep.Unlock }
+        vm.unlockBiometric()
+        awaitStep(vm) { it.errorMessage != null && !it.isBusy }
+        assertEquals(5, vm.state.value.attemptsLeft)
+        assertEquals(AuthStep.Unlock, vm.state.value.step)
+        vm.dispose()
+    }
 }

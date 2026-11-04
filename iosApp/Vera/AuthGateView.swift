@@ -86,14 +86,14 @@ private struct UnlockView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Image(systemName: "touchid")
+            Image(systemName: "lock.fill")
                 .font(.system(size: 72))
                 .foregroundStyle(ClinicalColors.primary.opacity(isBusy ? 0.6 : 1))
                 .accessibilityHidden(true)
             Text("Ontgrendel Vera")
                 .font(.title2.weight(.bold))
                 .accessibilityAddTraits(.isHeader)
-            Text("Gebruik uw biometrische gegevens om uw Vera kluis te openen")
+            Text("Gebruik uw PIN, patroon of biometrie om uw Vera kluis te openen")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ private struct UnlockView: View {
                 .accessibilityElement(children: .combine)
             }
             Button(action: onUnlock) {
-                Label(isBusy ? "Bezig…" : "Ontgrendelen", systemImage: "touchid")
+                Label(isBusy ? "Bezig…" : "Ontgrendelen", systemImage: "lock.fill")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }

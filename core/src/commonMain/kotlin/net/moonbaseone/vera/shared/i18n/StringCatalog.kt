@@ -30,7 +30,8 @@ object StringCatalog {
         sentinelLocalTitle = "Gegevens lokaal beveiligd",
         sentinelLocalSubtitle = "Geen medische gegevens hebben uw apparaat verlaten.",
         authTitle = "Ontgrendel Vera",
-        authBiometricPrompt = "Gebruik uw biometrische gegevens om uw Vera kluis te openen",
+        authBiometricPrompt =
+            "Gebruik uw PIN, patroon of biometrie om uw Vera kluis te openen",
         authUnlockButton = "Ontgrendelen",
         authFailedPrefix = "Verificatie mislukt. Pogingen resterend: ",
         authSelfDestructWarning =
@@ -111,7 +112,7 @@ object StringCatalog {
         sentinelLocalTitle = "Data secured locally",
         sentinelLocalSubtitle = "No medical data has left your device.",
         authTitle = "Unlock Vera",
-        authBiometricPrompt = "Use biometrics to open your Vera vault",
+        authBiometricPrompt = "Use your PIN, pattern, or biometrics to open your Vera vault",
         authUnlockButton = "Unlock",
         authFailedPrefix = "Verification failed. Attempts remaining: ",
         authSelfDestructWarning =
@@ -190,7 +191,8 @@ object StringCatalog {
         sentinelLocalTitle = "Daten lokal gesichert",
         sentinelLocalSubtitle = "Keine medizinischen Daten haben Ihr Gerät verlassen.",
         authTitle = "Vera entsperren",
-        authBiometricPrompt = "Nutzen Sie Biometrie, um Ihren Vera-Tresor zu öffnen",
+        authBiometricPrompt =
+            "Nutzen Sie PIN, Muster oder Biometrie, um Ihren Vera-Tresor zu öffnen",
         authUnlockButton = "Entsperren",
         authFailedPrefix = "Überprüfung fehlgeschlagen. Verbleibende Versuche: ",
         authSelfDestructWarning =
@@ -269,7 +271,8 @@ object StringCatalog {
         sentinelLocalTitle = "Données sécurisées localement",
         sentinelLocalSubtitle = "Aucune donnée médicale n’a quitté votre appareil.",
         authTitle = "Déverrouiller Vera",
-        authBiometricPrompt = "Utilisez la biométrie pour ouvrir votre coffre Vera",
+        authBiometricPrompt =
+            "Utilisez votre code PIN, schéma ou biométrie pour ouvrir votre coffre Vera",
         authUnlockButton = "Déverrouiller",
         authFailedPrefix = "Échec de la vérification. Tentatives restantes : ",
         authSelfDestructWarning =

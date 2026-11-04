@@ -18,10 +18,17 @@ interface BiometricAuthenticator {
 sealed class BiometricAuthResult {
     data object Success : BiometricAuthResult()
     data object Cancelled : BiometricAuthResult()
+    /** No biometric hardware/enrollment and no usable device credential. */
+    data class Unavailable(val failure: Failure) : BiometricAuthResult()
     data class Failed(val failure: Failure) : BiometricAuthResult()
 }
 
-/** Test double — always succeeds. */
+/**
+ * Test double for biometric / device-credential gates.
+ *
+ * [canAuth] = false models a device with neither biometrics nor a PIN/pattern/password.
+ * Keep [canAuth] = true with [result] = Success to model PIN-only (device-credential) unlock.
+ */
 class FakeBiometricAuthenticator(
     private val canAuth: Boolean = true,
     private val result: BiometricAuthResult = BiometricAuthResult.Success,
@@ -39,4 +46,4 @@ class FakeBiometricAuthenticator(
 
 fun biometricUnavailableFailure(
     message: String = "Geen schermbeveiliging op dit apparaat. Stel een PIN of biometrie in via de apparaatinstellingen.",
-): BiometricAuthResult = BiometricAuthResult.Failed(AuthBiometricFailure(message))
+): BiometricAuthResult = BiometricAuthResult.Unavailable(AuthBiometricFailure(message))
