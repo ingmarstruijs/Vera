@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive foreground: shield + stylized V.
+  Viewport 108×108; mark kept inside the ~66dp safe zone for 48dp readability.
+  Colors match DesignTokens (PRIMARY_GREEN field / SURFACE_LIGHT mark).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shield outline (stroke via outer − inner path) -->
+    <path
+        android:fillColor="#F3F6F5"
+        android:fillType="evenOdd"
+        android:pathData="
+            M54,22
+            C46,22 38,24 32,28
+            L32,48
+            C32,62 40,74 54,86
+            C68,74 76,62 76,48
+            L76,28
+            C70,24 62,22 54,22
+            Z
+            M54,30
+            C60,30 66,31.5 70,34.5
+            L70,48
+            C70,58 64,67.5 54,76.5
+            C44,67.5 38,58 38,48
+            L38,34.5
+            C42,31.5 48,30 54,30
+            Z" />
+
+    <!-- Stylized V nested in shield -->
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="
+            M40,36
+            L46.5,36
+            L54,58
+            L61.5,36
+            L68,36
+            L56.5,68
+            L51.5,68
+            Z" />
+</vector>

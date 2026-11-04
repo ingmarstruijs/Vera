@@ -4,6 +4,10 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Added
+
+- Vera app icon: shield + stylized V on DesignTokens sage (`#2F5D50`); master `assets/icons/vera-app-icon-1024.png`, Android adaptive `@mipmap/ic_launcher`, iOS `AppIcon` asset catalog
+
 ### Changed (P11 / Phase 6 leftover hardening)
 
 - Gradle `:core` extract (domain, failure, i18n, navigation, design tokens); `:shared` exports `:core` for iOS
