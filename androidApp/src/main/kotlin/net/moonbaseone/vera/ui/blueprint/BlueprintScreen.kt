@@ -127,6 +127,8 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
                         EventDetailPanel(
                             event = expanded,
                             jargon = viewModel.jargonMatches(expanded),
+                            expandedJargonTerm = ui.expandedJargonTerm,
+                            onToggleJargon = viewModel::toggleJargon,
                         )
                     }
                 }
@@ -248,6 +250,8 @@ private fun TimelineNode(
 private fun EventDetailPanel(
     event: TimelineEvent,
     jargon: List<net.moonbaseone.vera.shared.domain.JargonEntry>,
+    expandedJargonTerm: String?,
+    onToggleJargon: (String) -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -277,26 +281,74 @@ private fun EventDetailPanel(
             Spacer(modifier = Modifier.height(16.dp))
             Text(event.description, style = MaterialTheme.typography.bodyMedium)
 
+            event.patientInstruction?.let { instruction ->
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(UiCopy.BLUEPRINT_INSTRUCTION, style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(instruction, style = MaterialTheme.typography.bodySmall)
+            }
+
+            event.nextSteps?.let { next ->
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(UiCopy.BLUEPRINT_NEXT_STEPS, style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(next, style = MaterialTheme.typography.bodySmall)
+            }
+
             if (jargon.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 Text(UiCopy.BLUEPRINT_PLAIN_LANGUAGE, style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    UiCopy.BLUEPRINT_TAP_TERM_HINT,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                jargon.forEach { entry ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    jargon.forEach { entry ->
+                        val selected = expandedJargonTerm == entry.term
+                        FilterChip(
+                            selected = selected,
+                            onClick = { onToggleJargon(entry.term) },
+                            label = {
+                                Text(
+                                    entry.term,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            },
+                            modifier = Modifier.semantics {
+                                role = Role.Button
+                                contentDescription = entry.term
+                            },
+                        )
+                    }
+                }
+                val open = jargon.firstOrNull { it.term == expandedJargonTerm }
+                if (open != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text(entry.term, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                            Text(
+                                open.term,
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(entry.dutchExplanation, style = MaterialTheme.typography.bodySmall)
-                            if (entry.actionItem.isNotBlank()) {
+                            Text(open.dutchExplanation, style = MaterialTheme.typography.bodySmall)
+                            if (open.actionItem.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    "Actie: ${entry.actionItem}",
+                                    "${UiCopy.DECODER_ACTION_LABEL}: ${open.actionItem}",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                 )

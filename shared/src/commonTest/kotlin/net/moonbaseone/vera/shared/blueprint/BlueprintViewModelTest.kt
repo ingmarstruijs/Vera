@@ -43,4 +43,26 @@ class BlueprintViewModelTest {
         assertEquals(id, (vm.state.value as BlueprintUiState.Ready).expandedId)
         vm.dispose()
     }
+
+    @Test
+    fun load_emitsRichCarePlanFieldsAndInlineJargon() = runBlocking {
+        val vm = BlueprintViewModel(MockDataService())
+        vm.load()
+        val ready = awaitReady(vm)
+        assertTrue(ready.events.size >= 5)
+        assertTrue(ready.events.all { it.description.length > 80 })
+        assertTrue(ready.events.all { !it.patientInstruction.isNullOrBlank() })
+        assertTrue(ready.events.all { !it.nextSteps.isNullOrBlank() })
+        assertTrue(ready.events.all { it.actionItems.isNotEmpty() })
+
+        val withJargon = ready.events.count { vm.jargonMatches(it).isNotEmpty() }
+        assertTrue(withJargon >= 4, "expected most timeline items to link glossary terms")
+
+        val firstTerm = vm.jargonMatches(ready.events.first()).first().term
+        vm.toggleJargon(firstTerm)
+        assertEquals(firstTerm, (vm.state.value as BlueprintUiState.Ready).expandedJargonTerm)
+        vm.toggleJargon(firstTerm)
+        assertEquals(null, (vm.state.value as BlueprintUiState.Ready).expandedJargonTerm)
+        vm.dispose()
+    }
 }

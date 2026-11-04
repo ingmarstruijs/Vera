@@ -11,6 +11,8 @@ data class JargonEntry(
     val category: String = "",
     val fhirCode: String? = null,
     val iknlRef: String? = null,
+    /** Alternate surface forms used by [GlossaryLinker] (e.g. "SLNB", "LVEF"). */
+    val aliases: List<String> = emptyList(),
 )
 
 /** Built-in Dutch oncology glossary seeded from IKNL/NKI terminology. */
@@ -25,6 +27,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         category = "biomarker",
         fhirCode = "LOINC:18474-7",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("HER2", "Herceptin", "trastuzumab"),
     ),
     JargonEntry(
         term = "ER-negatief",
@@ -35,6 +38,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Bevestig met uw arts dat hormonale behandeling niet geïndiceerd is voor uw tumor.",
         category = "biomarker",
         fhirCode = "LOINC:85319-2",
+        aliases = listOf("ER-negatief", "oestrogeenreceptor"),
     ),
     JargonEntry(
         term = "Ki-67",
@@ -45,6 +49,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem = "Vraag wat uw Ki-67-percentage betekent voor uw behandelkeuze.",
         category = "pathologie",
         fhirCode = "LOINC:85326-7",
+        aliases = listOf("Ki67", "proliferatieindex"),
     ),
     JargonEntry(
         term = "Invasief ductaal carcinoom",
@@ -55,6 +60,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag naar de exacte grootte (T-stadium) en of de randen (marges) vrij zijn na operatie.",
         category = "diagnose",
         fhirCode = "SNOMED:783541009",
+        aliases = listOf("ductaal carcinoom", "IDC"),
     ),
     JargonEntry(
         term = "Stadium IIA",
@@ -66,6 +72,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
                 "behandelcyclus is.",
         category = "stadiëring",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("cT2N0M0", "stadium IIA", "Stadium IIA"),
     ),
     JargonEntry(
         term = "Schildwachtklierprocedure (SLNB)",
@@ -77,6 +84,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag of uw schildwachtklier vrij was (pN0 SN) en wat dit betekent voor uw prognose.",
         category = "procedure",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("SLNB", "schildwachtklierprocedure", "schildwachtklier"),
     ),
     JargonEntry(
         term = "Borstsparende chirurgie (BCS)",
@@ -87,6 +95,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Bespreek of u in aanmerking komt voor BCS, anders voor een borstamputatie (mastectomie).",
         category = "procedure",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("BCS", "borstsparende chirurgie", "lumpectomie"),
     ),
     JargonEntry(
         term = "Hypofractionering",
@@ -97,6 +106,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag hoeveel bestralingsafspraken u totaal heeft en welke bijwerkingen verwacht worden.",
         category = "radiotherapie",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("hypofractionering", "FAST-Forward"),
     ),
     JargonEntry(
         term = "LVEF (linker ventrikel ejectiefractie)",
@@ -108,6 +118,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Zorg dat u uw echocardiografie-afspraken bijhoudt tijdens trastuzumab-behandeling.",
         category = "cardiologie",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("LVEF", "ejectiefractie", "echocardiografie"),
     ),
     JargonEntry(
         term = "pCR (pathologisch complete respons)",
@@ -119,5 +130,6 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag uw arts wat pCR voor ú betekent en of het behandelplan hierdoor verandert.",
         category = "respons",
         iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        aliases = listOf("pCR", "pathologisch complete respons", "complete respons"),
     ),
 )

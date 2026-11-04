@@ -7,6 +7,8 @@ struct TimelineEventModel: Identifiable, Equatable {
     let dateIso: String
     let phase: Phase
     let fhirStatus: String?
+    let patientInstruction: String?
+    let nextSteps: String?
     let actionItems: [String]
     let jargon: [JargonMatch]
 
@@ -26,11 +28,12 @@ struct JargonMatch: Identifiable, Equatable {
 struct BlueprintView: View {
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
+    @State private var expandedJargonTerm: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Uw Tijdlijn")
+                Text("Uw zorgplan")
                     .font(.title2.weight(.bold))
                     .accessibilityAddTraits(.isHeader)
                 Text("Uw diagnose afgezet tegen IKNL-richtlijnen")
@@ -57,6 +60,7 @@ struct BlueprintView: View {
                                 expanded: expandedId == event.id
                             ) {
                                 expandedId = expandedId == event.id ? nil : event.id
+                                expandedJargonTerm = nil
                             }
                             if index < events.count - 1 {
                                 Rectangle()
@@ -69,7 +73,13 @@ struct BlueprintView: View {
                 }
 
                 if let expanded = events.first(where: { $0.id == expandedId }) {
-                    EventDetailCard(event: expanded)
+                    EventDetailCard(
+                        event: expanded,
+                        expandedJargonTerm: expandedJargonTerm,
+                        onToggleJargon: { term in
+                            expandedJargonTerm = expandedJargonTerm == term ? nil : term
+                        }
+                    )
                 }
             }
             .padding(20)
@@ -148,6 +158,8 @@ private struct TimelineNodeView: View {
 
 private struct EventDetailCard: View {
     let event: TimelineEventModel
+    let expandedJargonTerm: String?
+    let onToggleJargon: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -170,14 +182,49 @@ private struct EventDetailCard: View {
             Divider()
             Text(event.description).font(.body)
 
+            if let instruction = event.patientInstruction, !instruction.isEmpty {
+                Text("Wat u moet weten").font(.subheadline.weight(.semibold))
+                Text(instruction).font(.caption)
+            }
+
+            if let next = event.nextSteps, !next.isEmpty {
+                Text("Volgende stap").font(.subheadline.weight(.semibold))
+                Text(next).font(.caption)
+            }
+
             if !event.jargon.isEmpty {
                 Text("Begrijpelijke uitleg").font(.subheadline.weight(.semibold))
-                ForEach(event.jargon) { match in
+                Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(event.jargon) { match in
+                            let selected = expandedJargonTerm == match.term
+                            Button {
+                                onToggleJargon(match.term)
+                            } label: {
+                                Text(match.term)
+                                    .font(.caption.weight(.semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(selected ? ClinicalColors.primary : Color(.secondarySystemBackground))
+                                    )
+                                    .foregroundStyle(selected ? Color.white : Color.primary)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(match.term)
+                        }
+                    }
+                }
+                if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(match.term).font(.subheadline.weight(.bold))
-                        Text(match.explanation).font(.caption)
-                        if !match.actionItem.isEmpty {
-                            Text("Actie: \(match.actionItem)")
+                        Text(open.term).font(.subheadline.weight(.bold))
+                        Text(open.explanation).font(.caption)
+                        if !open.actionItem.isEmpty {
+                            Text("Actie: \(open.actionItem)")
                                 .font(.caption)
                                 .italic()
                         }
@@ -218,58 +265,156 @@ enum BlueprintMockData {
         TimelineEventModel(
             id: "1",
             title: "Neoadjuvante chemotherapie (TCHP schema)",
-            description: "IKNL: Neoadjuvante HER2-gerichte therapie aanbevolen bij cT2 HER2-positieve tumoren.",
+            description:
+                "Zes cycli TCHP (taxaan + carboplatine + trastuzumab + pertuzumab) als " +
+                "neoadjuvante HER2-gerichte therapie bij cT2N0M0 Stadium IIA. Pathologie " +
+                "toonde pCR in de axilla. IKNL beveelt neoadjuvante HER2-blokkade aan bij " +
+                "HER2-positief invasief ductaal carcinoom ≥cT2.",
             dateIso: "2024-12-20",
             phase: .completed,
             fhirStatus: "completed",
-            actionItems: [],
+            patientInstruction:
+                "Noteer koorts >38,5°C of kortademigheid tijdens trastuzumab in het bijwerkingendagboek.",
+            nextSteps: "Door naar borstsparende chirurgie (BCS) met schildwachtklierprocedure (SLNB).",
+            actionItems: [
+                "Bewaar het TCHP-infuusschema en de bijsluiter trastuzumab.",
+                "Vraag wat pCR in de axilla betekent voor uw prognose.",
+            ],
             jargon: [
                 JargonMatch(
                     term: "HER2-positief",
-                    explanation: "Uw tumor maakt veel HER2-eiwit aan. Dit eiwit stimuleert de celgroei.",
-                    actionItem: "Vraag uw oncoloog of trastuzumab onderdeel is van uw behandelplan."
+                    explanation:
+                        "Uw tumor maakt veel HER2-eiwit aan. Dit eiwit stimuleert de celgroei. " +
+                        "\"Positief\" betekent dat de tumor gevoelig is voor HER2-remmers zoals trastuzumab.",
+                    actionItem: "Vraag uw oncoloog of trastuzumab (Herceptin) onderdeel is van uw behandelplan."
+                ),
+                JargonMatch(
+                    term: "Stadium IIA",
+                    explanation:
+                        "Stadium IIA (cT2N0M0) betekent: tumor tussen 2 en 5 cm, " +
+                        "geen bewijs van uitzaaiing naar lymfeklieren of andere organen.",
+                    actionItem: "Vraag hoe het stadium uw behandelopties beïnvloedt."
+                ),
+                JargonMatch(
+                    term: "pCR (pathologisch complete respons)",
+                    explanation:
+                        "Geen levende tumorcellen meer in het verwijderde weefsel na neoadjuvante therapie.",
+                    actionItem: "Vraag wat pCR voor ú betekent."
                 ),
             ]
         ),
         TimelineEventModel(
             id: "2",
             title: "Borstsparende chirurgie + schildwachtklierprocedure",
-            description: "Operatie afgerond met vrije resectiemarges.",
+            description:
+                "Borstsparende chirurgie (BCS / lumpectomie) met schildwachtklierprocedure (SLNB). " +
+                "Resectiemarges R0; schildwachtklier pN0 SN. Operatie bevestigt Stadium IIA zonder " +
+                "lymfekliermetastasen.",
             dateIso: "2025-01-14",
             phase: .completed,
             fhirStatus: "completed",
-            actionItems: [],
-            jargon: []
+            patientInstruction:
+                "Wond droog houden; meld roodheid, zwelling of koorts. Geen zwaar tillen met de linkerarm.",
+            nextSteps: "Start adjuvante radiotherapie (hypofractionering) en hervat trastuzumab + pertuzumab.",
+            actionItems: [
+                "Vraag of de snijvlakken ruim genoeg vrij waren.",
+                "Bespreek wanneer u mag starten met schouderoefeningen.",
+            ],
+            jargon: [
+                JargonMatch(
+                    term: "Borstsparende chirurgie (BCS)",
+                    explanation:
+                        "Operatie waarbij alleen de tumor en een randje gezond weefsel worden verwijderd, " +
+                        "gevolgd door bestraling van de resterende borst.",
+                    actionItem: "Bespreek of BCS of mastectomie voor u geldt."
+                ),
+                JargonMatch(
+                    term: "Schildwachtklierprocedure (SLNB)",
+                    explanation:
+                        "Eerste lymfeklier waarop de tumor uitstroomt wordt verwijderd en onderzocht.",
+                    actionItem: "Vraag of uw schildwachtklier vrij was (pN0 SN)."
+                ),
+            ]
         ),
         TimelineEventModel(
             id: "3",
             title: "Adjuvante radiotherapie",
-            description: "IKNL §6.3: Hypofractionering (40 Gy / 15 fracties) na BCS.",
+            description:
+                "Adjuvante radiotherapie na BCS volgens hypofractionering / FAST-Forward: " +
+                "40 Gy in 15 fracties. IKNL §6.3: hypofractionering is standaard na " +
+                "borstsparende chirurgie bij Stadium IIA.",
             dateIso: "2025-03-01",
             phase: .current,
             fhirStatus: "in-progress",
+            patientInstruction:
+                "Alleen goedgekeurde crème; vermijd zonlicht. Noteer huidreacties dagelijks.",
+            nextSteps: "Nacontrole na laatste fractie; verder met trastuzumab en LVEF-controles.",
             actionItems: ["Noteer huidreacties in uw bijwerkingendagboek."],
-            jargon: []
+            jargon: [
+                JargonMatch(
+                    term: "Hypofractionering",
+                    explanation:
+                        "Bestralingsschema met minder maar iets hogere doses per sessie " +
+                        "(bijv. 40 Gy in 15 fracties).",
+                    actionItem: "Vraag hoeveel fracties u nog heeft."
+                ),
+            ]
         ),
         TimelineEventModel(
             id: "4",
             title: "Adjuvant trastuzumab + pertuzumab (1 jaar)",
-            description: "IKNL: 18 cycli trastuzumab + pertuzumab. LVEF-monitoring q3m.",
+            description:
+                "Achttien cycli trastuzumab (Herceptin) + pertuzumab als adjuvante HER2-blokkade. " +
+                "Cardiotoxiciteitsbewaking via echocardiografie: LVEF elke drie maanden.",
             dateIso: "2025-01-20",
             phase: .current,
             fhirStatus: "in-progress",
-            actionItems: ["Plan echocardiografie elke 3 maanden."],
-            jargon: []
+            patientInstruction:
+                "Meld kortademigheid of enkeloedeem meteen. Neem echo-uitslagen mee naar elk consult.",
+            nextSteps: "Volgende LVEF-meting plannen; bij stabiele LVEF schema voortzetten.",
+            actionItems: [
+                "Plan echocardiografie elke 3 maanden tijdens trastuzumab.",
+                "Vraag wat uw laatste LVEF-waarde was.",
+            ],
+            jargon: [
+                JargonMatch(
+                    term: "HER2-positief",
+                    explanation:
+                        "Tumor gevoelig voor HER2-remmers zoals trastuzumab (Herceptin).",
+                    actionItem: "Vraag of trastuzumab onderdeel blijft van uw plan."
+                ),
+                JargonMatch(
+                    term: "LVEF (linker ventrikel ejectiefractie)",
+                    explanation:
+                        "Meet hoe goed uw hart bloed rondpompt; trastuzumab kan dit beïnvloeden.",
+                    actionItem: "Houd echocardiografie-afspraken bij."
+                ),
+            ]
         ),
         TimelineEventModel(
             id: "5",
             title: "Jaarlijkse mammografie controle-plan",
-            description: "IKNL: Jaarlijkse mammografie gedurende 5 jaar na behandeling.",
+            description:
+                "Nacontroleschema: jaarlijkse mammografie gedurende vijf jaar. " +
+                "Zolang trastuzumab loopt blijft echocardiografie voor LVEF onderdeel van follow-up. " +
+                "IKNL survivorship-zorg na Stadium IIA.",
             dateIso: "2026-06-01",
             phase: .future,
             fhirStatus: "scheduled",
-            actionItems: [],
-            jargon: []
+            patientInstruction:
+                "Zet mammografie in uw agenda; meld nieuwe knobbels zonder te wachten op jaarcontrole.",
+            nextSteps: "Eerste surveillance-mammografie plannen na afronding van HER2-therapie.",
+            actionItems: [
+                "Vraag wie uw vaste aanspreekpunt is in de nacontrole.",
+                "Noteer de datum van de eerste controle-mammografie.",
+            ],
+            jargon: [
+                JargonMatch(
+                    term: "LVEF (linker ventrikel ejectiefractie)",
+                    explanation: "Hartpompfunctie die tijdens trastuzumab wordt gevolgd.",
+                    actionItem: "Vraag wanneer LVEF-controles stoppen na de kuur."
+                ),
+            ]
         ),
     ]
 }
