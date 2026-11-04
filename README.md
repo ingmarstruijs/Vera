@@ -1,5 +1,8 @@
 # Vera
 
+> **WIP — Kotlin Multiplatform migration in progress.**  
+> New work targets Gradle modules `shared/` (Kotlin Multiplatform logic), `androidApp/` (Jetpack Compose), and `iosApp/` (SwiftUI). The Flutter tree remains as **legacy** until cutover (P10). See [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) and [docs/README.md](docs/README.md).
+
 **Your personal oncology compass.** Clear, private, trusted medical guidance at your fingertips.
 
 ### **The Vera Manifesto**
