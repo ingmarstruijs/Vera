@@ -3,8 +3,8 @@ name: Changelog on merge
 # Prepends a Keep-a-Changelog-style bullet under ## Unreleased → ### Merged
 # when a PR lands on main. Skips titles containing [skip changelog].
 #
-# Needs permission to push to main. After branch protection is enabled, allow
-# github-actions[bot] to bypass the required-PR rule (see docs/contributing.md).
+# Opens a follow-up PR instead of pushing to main (no Ruleset bypass needed
+# for github-actions[bot]). See docs/contributing.md.
 
 on:
   pull_request:
@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   prepend:
@@ -29,6 +30,7 @@ jobs:
           fetch-depth: 0
 
       - name: Prepend merge entry
+        id: prepare
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -40,6 +42,7 @@ jobs:
 
           if grep -qF "[#${PR_NUMBER}](" CHANGELOG.md; then
             echo "CHANGELOG already mentions #${PR_NUMBER}; skipping."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -84,15 +87,45 @@ jobs:
           print(f"Prepended: {entry.strip()}")
           PY
 
-      - name: Commit and push
+          if git diff --quiet CHANGELOG.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open changelog PR
+        if: steps.prepare.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          if git diff --quiet CHANGELOG.md; then
-            echo "No CHANGELOG diff; done."
-            exit 0
-          fi
+          BRANCH="chore/changelog-record-${PR_NUMBER}"
+          TITLE="chore(changelog): record #${PR_NUMBER} [skip changelog]"
+
+          # Idempotent: reuse branch if a previous run left one
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
           git add CHANGELOG.md
-          git commit -m "chore(changelog): record #${{ github.event.pull_request.number }} [skip changelog]"
-          git push origin HEAD:main
+          git commit -m "$TITLE" || {
+            echo "Nothing to commit."
+            exit 0
+          }
+          git push -u origin "HEAD:refs/heads/${BRANCH}" --force
+
+          EXISTING="$(gh pr list --head "$BRANCH" --base main --state open --json number -q '.[0].number // empty')"
+          if [[ -n "$EXISTING" ]]; then
+            echo "Changelog PR already open: #${EXISTING}"
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$TITLE" \
+            --body "Automated CHANGELOG update for #${PR_NUMBER}.
+
+          Title includes \`[skip changelog]\` so this merge does not recurse.
+
+          Please merge when CI is green (or enable auto-merge)."
