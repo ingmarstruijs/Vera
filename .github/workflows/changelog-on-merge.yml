@@ -1,0 +1,98 @@
+name: Changelog on merge
+
+# Prepends a Keep-a-Changelog-style bullet under ## Unreleased → ### Merged
+# when a PR lands on main. Skips titles containing [skip changelog].
+#
+# Needs permission to push to main. After branch protection is enabled, allow
+# github-actions[bot] to bypass the required-PR rule (see docs/contributing.md).
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  prepend:
+    name: Prepend CHANGELOG entry
+    if: >
+      github.event.pull_request.merged == true &&
+      !contains(github.event.pull_request.title, '[skip changelog]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Prepend merge entry
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+          export DATE
+          DATE="$(date -u +%Y-%m-%d)"
+
+          if grep -qF "[#${PR_NUMBER}](" CHANGELOG.md; then
+            echo "CHANGELOG already mentions #${PR_NUMBER}; skipping."
+            exit 0
+          fi
+
+          python3 <<'PY'
+          from pathlib import Path
+          import os
+
+          path = Path("CHANGELOG.md")
+          text = path.read_text(encoding="utf-8")
+          date = os.environ["DATE"]
+          number = os.environ["PR_NUMBER"]
+          title = os.environ["PR_TITLE"]
+          url = os.environ["PR_URL"]
+          entry = f"- [#{number}]({url}) — {title} ({date})\n"
+
+          marker_unreleased = "## Unreleased"
+          marker_merged = "### Merged"
+          if marker_unreleased not in text:
+              raise SystemExit("CHANGELOG.md missing ## Unreleased heading")
+
+          before, after = text.split(marker_unreleased, 1)
+          unreleased_body, *rest_sections = after.split("\n## ", 1)
+          tail = ("\n## " + rest_sections[0]) if rest_sections else ""
+
+          if marker_merged in unreleased_body:
+              head, rest = unreleased_body.split(marker_merged, 1)
+              lines = rest.splitlines(keepends=True)
+              i = 0
+              while i < len(lines) and lines[i].strip() == "":
+                  i += 1
+              unreleased_body = (
+                  head + marker_merged + "".join(lines[:i]) + entry + "".join(lines[i:])
+              )
+          else:
+              trimmed = unreleased_body.lstrip("\n")
+              unreleased_body = f"\n\n{marker_merged}\n\n{entry}\n{trimmed}"
+
+          path.write_text(
+              before + marker_unreleased + unreleased_body + tail,
+              encoding="utf-8",
+          )
+          print(f"Prepended: {entry.strip()}")
+          PY
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          if git diff --quiet CHANGELOG.md; then
+            echo "No CHANGELOG diff; done."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore(changelog): record #${{ github.event.pull_request.number }} [skip changelog]"
+          git push origin HEAD:main

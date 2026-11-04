@@ -8,6 +8,7 @@ English documentation for the Kotlin Multiplatform app (Android + iOS).
 | [setup/ios.md](setup/ios.md) | Xcode project, Shared framework link |
 | [setup/signing.md](setup/signing.md) | Release signing (out of CI; no secrets in repo) |
 | [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
+| [contributing.md](contributing.md) | Branching, CI triggers, changelog bot, protect `main` |
 | [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror (P0–P11 / Phase 6) |
 | [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` boundaries + CMP gate note |
 | [migration/navigation.md](migration/navigation.md) | Typed nav + Decompose/Circuit deferral |
