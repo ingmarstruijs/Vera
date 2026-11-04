@@ -42,6 +42,9 @@ kotlin {
             implementation(libs.androidx.security.crypto)
             implementation(libs.androidx.biometric)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.mlkit.translate)
+            implementation(libs.mlkit.entity.extraction)
+            implementation(libs.kotlinx.coroutines.play.services)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)

@@ -3,14 +3,19 @@ package net.moonbaseone.vera.shared.shield
 import net.moonbaseone.vera.shared.AppConstants
 
 /**
- * On-device PII redaction before vault storage / guideline lookups.
+ * On-device PII redaction before vault storage / guideline lookups / translation.
  *
- * P3: deterministic regex rules (BSN elfproef, postcode, email, phone).
- * ML Kit NER actuals land in a later phase; regex-only matches Flutter web fallback.
+ * Deterministic regex rules always run. Optional [ner] (ML Kit / NLTagger)
+ * redacts personal names after regex when [shieldWithNer] is used.
  */
-class IdentityShieldService {
+class IdentityShieldService(
+    private val ner: NerEngine = NoOpNerEngine(),
+) {
+    private var nerReady = false
+
     /**
-     * Strips detected PII from [input]. Empty/blank input is returned unchanged.
+     * Strips detected PII from [input] via regex only (sync).
+     * Empty/blank input is returned unchanged.
      */
     fun shield(input: String): String {
         if (input.trim().isEmpty()) return input
@@ -22,7 +27,21 @@ class IdentityShieldService {
         return result
     }
 
-    /** Recursively shields string values in nested maps/lists. */
+    /**
+     * Regex redaction + optional NER. Safe when [ner] is [NoOpNerEngine].
+     */
+    suspend fun shieldWithNer(input: String): String {
+        var result = shield(input)
+        if (result.isBlank()) return result
+        if (!nerReady) {
+            ner.initialise()
+            nerReady = true
+        }
+        val ranges = ner.findRedactionRanges(result)
+        return applyRedactionRanges(result, ranges)
+    }
+
+    /** Recursively shields string values in nested maps/lists (regex only). */
     fun shieldMap(map: Map<String, Any?>): Map<String, Any?> {
         val result = LinkedHashMap<String, Any?>()
         for ((key, value) in map) {

@@ -45,8 +45,9 @@ struct DecoderView: View {
 
                 if selectedLanguage != "nl" {
                     Text(
-                        "On-device vertaling naar andere talen volgt in P7 (ML Kit). " +
-                        "De Nederlandse uitleg blijft beschikbaar."
+                        "Op-apparaat vertaling (ML Kit) is op iOS nog niet gekoppeld. " +
+                        "De Nederlandse uitleg blijft beschikbaar; Android ondersteunt " +
+                        "download + lokale vertaling."
                     )
                     .font(.caption)
                     .padding(12)
