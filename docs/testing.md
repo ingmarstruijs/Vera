@@ -16,7 +16,7 @@ Vera’s automated tests live in the KMP `shared` module (`shared/src/commonTest
 ./gradlew :androidApp:assembleDebug
 ```
 
-CI runs these via [`.github/workflows/kmp-smoke.yml`](../.github/workflows/kmp-smoke.yml) on `main` and `cursor/**` branches. Signing secrets are not required — see [setup/signing.md](setup/signing.md).
+CI runs these via [`.github/workflows/kmp-smoke.yml`](../.github/workflows/kmp-smoke.yml) on `pull_request` and `push` to `main` only (not on `cursor/**` pushes). Signing secrets are not required — see [setup/signing.md](setup/signing.md). Branching and changelog automation: [contributing.md](contributing.md).
 
 ## What is covered
 
