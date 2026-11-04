@@ -38,8 +38,11 @@ class AndroidBiometricAuthenticator(
                         errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
                         errorCode == BiometricPrompt.ERROR_CANCELED
                     cont.resume(
-                        if (cancelled) BiometricAuthResult.Cancelled
-                        else BiometricAuthResult.Failed(AuthBiometricFailure(errString.toString())),
+                        if (cancelled) {
+                            BiometricAuthResult.Cancelled
+                        } else {
+                            BiometricAuthResult.Failed(AuthBiometricFailure(errString.toString()))
+                        },
                     )
                 }
 

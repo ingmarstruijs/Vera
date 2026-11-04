@@ -16,5 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Vera"
 
+include(":core")
 include(":shared")
 include(":androidApp")

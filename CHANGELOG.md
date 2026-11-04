@@ -4,6 +4,13 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Changed (P11 / Phase 6 leftover hardening)
+
+- Gradle `:core` extract (domain, failure, i18n, navigation, design tokens); `:shared` exports `:core` for iOS
+- `DefaultAppNavigator` (StateFlow); Decompose/Circuit deferred — [docs/migration/navigation.md](docs/migration/navigation.md)
+- CI: detekt + `:androidApp:lintDebug` (a11y-minded); signing kept out of CI — [docs/setup/signing.md](docs/setup/signing.md)
+- Dual-UI polish: Android legend/headings use DesignTokens; iOS `ClinicalColors` parity
+
 ### Changed (P11 / Phase 6 first slice)
 
 - Documented **CMP vs dual-native product gate** (stay dual-native until explicit decision)

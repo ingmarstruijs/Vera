@@ -104,6 +104,7 @@ class IdentityShieldServiceTest {
             ),
         )
         val result = shield.shieldMap(bundle)
+
         @Suppress("UNCHECKED_CAST")
         val entry = (result["entry"] as List<*>)[0] as Map<*, *>
         val resource = entry["resource"] as Map<*, *>

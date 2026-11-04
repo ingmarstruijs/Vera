@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -107,6 +108,7 @@ private fun NewVaultContent(isBusy: Boolean, onCreate: () -> Unit) {
             text = UiCopy.AUTH_CREATE_TITLE,
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Box(modifier = Modifier.height(16.dp))
         Text(
@@ -161,6 +163,7 @@ private fun UnlockContent(state: AuthUiState, onUnlock: () -> Unit) {
             text = UiCopy.AUTH_TITLE,
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Box(modifier = Modifier.height(12.dp))
         Text(

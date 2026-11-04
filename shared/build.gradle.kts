@@ -23,11 +23,14 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            // Single umbrella framework for Xcode: export :core types into Shared.
+            export(project(":core"))
         }
     }
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":core"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.sqldelight.runtime)

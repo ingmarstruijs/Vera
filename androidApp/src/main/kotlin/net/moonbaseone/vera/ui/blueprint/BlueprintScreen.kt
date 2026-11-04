@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,7 @@ import net.moonbaseone.vera.shared.blueprint.BlueprintUiState
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.domain.TimelineEvent
 import net.moonbaseone.vera.shared.domain.TimelinePhase
+import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.ui.theme.statusColor
 
@@ -64,12 +66,16 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
             .padding(bottom = 24.dp),
     ) {
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
-            Text(UiCopy.BLUEPRINT_TITLE, style = MaterialTheme.typography.headlineMedium)
+            Text(
+                UiCopy.BLUEPRINT_TITLE,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() },
+            )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 UiCopy.BLUEPRINT_SUBTITLE,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(8.dp))
             FilterChip(
@@ -131,10 +137,16 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
 
 @Composable
 private fun LegendRow(modifier: Modifier = Modifier) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        LegendItem(Color(0xFF0D47A1), UiCopy.BLUEPRINT_PHASE_COMPLETED)
-        LegendItem(Color(0xFF1B5E20), UiCopy.BLUEPRINT_PHASE_CURRENT)
-        LegendItem(Color(0xFFE07B00), UiCopy.BLUEPRINT_PHASE_FUTURE)
+    Row(
+        modifier = modifier.semantics {
+            contentDescription =
+                "${UiCopy.BLUEPRINT_PHASE_COMPLETED}, ${UiCopy.BLUEPRINT_PHASE_CURRENT}, ${UiCopy.BLUEPRINT_PHASE_FUTURE}"
+        },
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        LegendItem(Color(DesignTokens.STATUS_COMPLETED), UiCopy.BLUEPRINT_PHASE_COMPLETED)
+        LegendItem(Color(DesignTokens.STATUS_IN_PROGRESS), UiCopy.BLUEPRINT_PHASE_CURRENT)
+        LegendItem(Color(DesignTokens.STATUS_SCHEDULED), UiCopy.BLUEPRINT_PHASE_FUTURE)
     }
 }
 

@@ -34,6 +34,21 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    lint {
+        // Practical a11y-focused checks; warnings do not fail the build forever.
+        abortOnError = true
+        warningsAsErrors = false
+        checkReleaseBuilds = false
+        disable += setOf("GradleDependency", "AndroidGradlePluginVersion")
+        enable += setOf(
+            "ContentDescription",
+            "LabelFor",
+            "ClickableViewAccessibility",
+        )
+        // No Play signing secrets in CI — lint unsigned debug only.
+        checkDependencies = false
+    }
 }
 
 dependencies {

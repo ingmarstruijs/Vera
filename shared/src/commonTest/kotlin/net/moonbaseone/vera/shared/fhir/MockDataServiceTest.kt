@@ -47,6 +47,7 @@ class MockDataServiceTest {
     @Test
     fun condition_hasIcd10C504AndStaging() {
         val condition = bundle().resources.first { it.resourceType == "Condition" }
+
         @Suppress("UNCHECKED_CAST")
         val coding = ((condition.data["code"] as Map<*, *>)["coding"] as List<*>)[0] as Map<*, *>
         assertEquals("C50.4", coding["code"])
@@ -64,16 +65,19 @@ class MockDataServiceTest {
     fun observations_haveLoincAndKi67Value() {
         val obs = bundle().resources.filter { it.resourceType == "Observation" }
         assertTrue(obs.isNotEmpty())
+
         @Suppress("UNCHECKED_CAST")
         val firstCoding =
             ((obs.first().data["code"] as Map<*, *>)["coding"] as List<*>)[0] as Map<*, *>
         assertTrue(firstCoding["system"].toString().contains("loinc"))
 
         val ki67 = obs.first { r ->
+
             @Suppress("UNCHECKED_CAST")
             val coding = ((r.data["code"] as Map<*, *>)["coding"] as List<*>).first() as Map<*, *>
             coding["display"].toString().contains("Ki-67")
         }
+
         @Suppress("UNCHECKED_CAST")
         val value = ki67.data["valueQuantity"] as Map<*, *>
         assertEquals(38, value["value"])

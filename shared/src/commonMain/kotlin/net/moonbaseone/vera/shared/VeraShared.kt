@@ -4,8 +4,9 @@ import net.moonbaseone.vera.shared.navigation.AppDestination
 
 /**
  * Entry point for shared KMP business logic.
- * Feature packages live under vault / shield / decoder / appointments / careplan
- * (Gradle module extract remains a later P11 slice — see docs/migration/module-map.md).
+ * Stable types (domain, failure, i18n, navigation, tokens) live in Gradle `:core`.
+ * Feature packages (vault / shield / decoder / appointments / careplan) remain in `:shared`
+ * until further Gradle extracts — see docs/migration/module-map.md.
  */
 object VeraShared {
     const val APP_NAME: String = "Vera"

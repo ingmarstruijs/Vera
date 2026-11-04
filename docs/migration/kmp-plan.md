@@ -27,23 +27,22 @@ Vera/
 ├── settings.gradle.kts
 ├── build.gradle.kts
 ├── gradle/libs.versions.toml
-├── shared/          # KMP: domain, SQLDelight, Koin, ViewModels, expect/actual
+├── core/            # KMP: domain, failure, i18n, navigation, design tokens
+├── shared/          # KMP: vault/shield/features, SQLDelight, Koin, ViewModels, expect/actual
 ├── androidApp/      # Jetpack Compose (net.moonbaseone.vera)
-├── iosApp/          # SwiftUI + Shared framework
+├── iosApp/          # SwiftUI + Shared framework (exports :core)
 └── docs/
 ```
 
 **Not in v1:** `desktopApp`, `webApp`, Compose Multiplatform shared UI, `desktopMain`, `wasmJsMain`.
 
 **Navigation:** unlock → **care plan** → decoder → appointments (| Settings later). **No** Share/Sync.  
-**Phase 6 IA:** thinner shell landed in P11 first slice (`AppDestination`); no legacy placeholder tabs.
+**Phase 6 IA:** thinner shell (`AppDestination` + `DefaultAppNavigator`); Decompose/Circuit deferred — [navigation.md](navigation.md).
 
-### Shared (`commonMain`)
+### Shared layers (`commonMain`)
 
-- Domain models, Identity Shield (regex + ML actuals later), AES-GCM vault API  
-- SQLDelight schema/queries, Mock FHIR, sealed `Failure`  
-- i18n EN/NL/DE/FR, design tokens (not widgets)  
-- Koin modules + shared ViewModels (`StateFlow`)
+- **`:core`:** domain models, sealed `Failure`, i18n EN/NL/DE/FR, design tokens, typed nav  
+- **`:shared`:** Identity Shield, AES-GCM vault API, SQLDelight, Mock FHIR, Koin, ViewModels (`StateFlow`)  
 
 ### Native UI
 
@@ -85,25 +84,25 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 **Architecture**
 
 - [x] **Product decision gate documented (P11 slice):** CMP shared UI **vs** dual Compose + SwiftUI remains an **open product decision**. Until decided explicitly, **stay dual-native** — do not force CMP. Gate recorded in README + this plan + [module-map.md](module-map.md).
-- [~] Split fat `shared` into feature modules — **partial:** Koin feature modules + package map ([module-map.md](module-map.md)); Gradle extract (`:vault` / `:shield` / …) still follow-up
-- [~] Typed/shared navigation — **partial:** `AppDestination` + `AppNavigator` scaffold; Decompose/Circuit not adopted yet
+- [~] Split fat `shared` into feature modules — **partial:** `:core` Gradle extract + Koin feature modules ([module-map.md](module-map.md)); `:vault` / `:shield` / … still follow-up
+- [~] Typed/shared navigation — **partial:** `AppDestination` + `DefaultAppNavigator` (`StateFlow`); Decompose/Circuit **deferred** with next step in [navigation.md](navigation.md)
 - [x] Stricter repository boundaries: `CarePlanRepository` (local) vs `FhirClient` stub (future MedMij) — **no** MedMij production
 - [x] Scrub Flutter leftovers (removed unused `PlaceholderScreen`; no debug auth-skip / Isar comments in Kotlin)
 
 **UI / product**
 
 - [x] Thinner IA: unlock → care plan → decoder/appointments (route `careplan`; no placeholder tabs)
-- [~] Calmer clinical visual language — **partial:** DesignTokens + Android theme refreshed (muted sage); deeper dual-UI polish follow-up
-- [~] Accessibility as default — **partial:** content descriptions, Dynamic Type caps on iOS auth/shell, contrast-minded tokens; a11y baseline CI still open
+- [~] Calmer clinical visual language — **partial:** DesignTokens + Android theme + iOS `ClinicalColors` parity; further polish optional
+- [~] Accessibility as default — **partial:** headings/content descriptions, Dynamic Type, lint a11y enables in CI; deeper audits optional
 - [x] Proper i18n resource packs EN/NL/DE/FR (`StringCatalog`) — `UiCopy` is a thin facade
 
 **Release hardening (may ship first within P11)**
 
-- [ ] detekt / ktlint, signing, a11y baseline checks
+- [x] detekt + Android lint (a11y-minded) in CI; signing documented out-of-CI ([setup/signing.md](../setup/signing.md)) — ktlint optional later
 
 **MedMij/FHIR:** later compliance track. Phase 6 may only prep repository boundaries.
 
-**P11 progress:** first slice landed (this checklist). Remaining: Gradle feature-module extract, Decompose/Circuit, detekt/signing/a11y CI, fuller clinical UI polish on both platforms, explicit CMP product decision.
+**P11 progress:** first slice + leftover hardening (`:core`, detekt/lint CI, nav deferral, dual-UI token polish). Still open: further Gradle feature extracts, Decompose/Circuit adoption when needed, explicit CMP product decision, optional ktlint.
 
 ## PR / workstream order
 
@@ -132,7 +131,8 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 | Apple Team / Play signing | Open |
 | Reopen desktop/web? | Open; out of v1 |
 | **CMP vs dual-native (Phase 6 gate)** | **Open** — dual-native continues; CMP not forced without explicit decision |
-| Feature-module Gradle extract + Decompose/Circuit | Follow-up within P11 (Koin/package + `AppDestination` landed) |
+| Further feature-module Gradle extract (`:vault`/…) | Follow-up (`:core` landed) |
+| Decompose/Circuit | Deferred — concrete next step in [navigation.md](navigation.md) |
 | MedMij/FHIR production | Later compliance track (boundary prep landed in P11) |
 
 ## Acceptance (short)
@@ -151,7 +151,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 - [x] No desktop/web KMP modules in v1  
 - [x] App i18n EN/NL/DE/FR resource packs (`StringCatalog`) — P11 first slice  
 - [x] CI green: shared tests + Android build (+ iOS when runner available)
-- [~] **P11 / Phase 6 (optional, after P10):** first slice landed (gate documented dual-native; Koin feature modules; `AppDestination`; repo boundaries; thinner IA; i18n packs; Flutter leftover scrub; clinical tokens + a11y basics). Still open: CMP decision, Gradle module extract, Decompose/Circuit, detekt/signing/a11y CI
+- [~] **P11 / Phase 6 (optional, after P10):** first + leftover slices landed (`:core` extract; detekt + lint CI; signing docs; `DefaultAppNavigator`; dual-UI token/a11y polish; Decompose deferred). Still open: CMP decision, further feature Gradle modules, Decompose/Circuit when product needs it
 
 ## How to run
 
