@@ -26,3 +26,11 @@ Then add the generated framework under `shared/build/bin/iosSimulatorArm64/debug
 ## Tabs (v1)
 
 Timeline · Decoder · Appointments — no Sync/Webviewer tab.
+
+## P5 shell / auth / blueprint
+
+- `AuthGateView` + `AuthCoordinator` — biometric unlock gate (LocalAuthentication; mirrors shared `AuthViewModel`).
+- `RootTabView` — shell with privacy sentinel + three tabs.
+- `BlueprintView` — horizontal CarePlan timeline (mock aligned with shared `MockDataService`).
+
+When `Shared.framework` is linked, replace `AuthCoordinator` with the Kotlin `AuthViewModel` StateFlow bridge.
