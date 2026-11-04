@@ -4,9 +4,6 @@
 
 Vera is a **Kotlin Multiplatform** app: shared Kotlin logic with **native UI** (Android Jetpack Compose, iOS SwiftUI). Product IDs use `net.moonbaseone.vera` (`vera.moonbase-one.net`).
 
-> **v1 platforms:** Android + iOS only. Web and desktop are deferred.  
-> **Not shipped:** Webviewer / P2P sharing (removed); signalling host `signal.vera-app.nl` is decommissioned outside this repo.
-
 ---
 
 ## Product
