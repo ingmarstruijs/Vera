@@ -1,6 +1,6 @@
 # Vera iOS app (SwiftUI)
 
-Empty SwiftUI shell for the Kotlin Multiplatform migration (P1).
+SwiftUI host for the Kotlin Multiplatform app (Android counterpart: `androidApp/`).
 
 ## Open in Xcode
 
@@ -25,7 +25,7 @@ Then add the generated framework under `shared/build/bin/iosSimulatorArm64/debug
 
 ## Tabs (v1)
 
-Timeline · Decoder · Appointments — no Sync/Webviewer tab.
+Timeline · Decoder · Appointments — no sync / share tab (P2P / Webviewer permanently out of scope).
 
 ## P5 shell / auth / blueprint
 

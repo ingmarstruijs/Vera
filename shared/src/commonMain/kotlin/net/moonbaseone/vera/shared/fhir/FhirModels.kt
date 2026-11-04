@@ -4,7 +4,7 @@ import net.moonbaseone.vera.shared.failure.Failure
 
 /**
  * Thin FHIR R4 resource wrapper — deliberately lightweight (no full FHIR SDK).
- * [data] mirrors the Flutter Map JSON shape.
+ * [data] holds nested JSON-like maps/lists for mock FHIR resources.
  */
 data class FhirResource(
     val resourceType: String,

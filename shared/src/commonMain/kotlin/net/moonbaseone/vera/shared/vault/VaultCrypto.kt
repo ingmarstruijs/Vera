@@ -6,7 +6,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
- * AES-256-GCM helpers matching Flutter [LocalVaultService] wire format:
+ * AES-256-GCM helpers matching the vault wire format (nonce ‖ ciphertext ‖ tag):
  * `base64( nonce[12] || ciphertext || tag[16] )`.
  */
 @OptIn(ExperimentalEncodingApi::class)

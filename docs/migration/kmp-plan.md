@@ -17,7 +17,7 @@
 | Storage | **SQLDelight** + platform secure storage for keys |
 | ML | **Android + iOS only** |
 | Docs (repo) | **English only**; app UI i18n EN, NL, DE, FR (+ extensible) |
-| Cleanup | Webviewer/P2P removed from Flutter `main` (P0) |
+| Cleanup | Webviewer/P2P removed (P0); Flutter tree removed (P10) |
 | Signalling | Decommission `signal.vera-app.nl` (DNS; infra outside repo) |
 
 ## Target architecture
@@ -60,12 +60,18 @@ Vera/
 | 2 | Domain & services (common + android/ios actuals) |
 | 3 | Native UI port (shell → auth → timeline → decoder → appointments) |
 | 4 | Platform hardening (Keystore/Keychain, a11y, fonts) |
-| 5 | Flutter decommission + docs finalize (P10 / P10b) |
+| 5 | Flutter decommission + docs finalize (**P10 / P10b — done**) |
 | **6** | **Post-parity hardening / greenfield-inspired refactor** (optional/phased, **after P10**) |
+
+### Phase 5 — done (P10 + P10b)
+
+- Removed Flutter `lib/`, `test/`, `pubspec.yaml`, Flutter `android/` / `ios/` / `web/`, `analysis_options.yaml`
+- English docs cutover: README, `docs/setup/*`, `docs/testing.md`, `CHANGELOG.md`
+- Sole truth: `shared` + `androidApp` + `iosApp`
 
 ### Phase 6 — post-parity / greenfield-inspired (**optional**, after P10)
 
-Not part of migration parity. Start only after Android+iOS feature parity **and** Flutter removal (Phase 5 / P10 + P10b).
+Not part of migration parity. Start only after Android+iOS feature parity **and** Flutter removal (Phase 5 / P10 + P10b — complete).
 
 #### Keep
 
@@ -109,8 +115,8 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 | **P4** | Keystore/Keychain + biometrics | Platform actuals |
 | **P5–P6** | UI shell + features | Compose + SwiftUI; no sync tab |
 | **P7** | ML Kit NER/translation | Android ML Kit + iOS NLTagger / Translate stub |
-| **P10** | Remove Flutter tree | After Android+iOS parity |
-| **P10b** | English KMP cutover docs | Docs phase C |
+| **P10** | Remove Flutter tree | **Done** — no Flutter hosts remaining |
+| **P10b** | English KMP cutover docs | **Done** — docs phase C |
 | **P11** | Post-parity hardening / greenfield-inspired refactor | **Optional/phased after P10:** detekt/signing/a11y; CMP-vs-dual gate; feature modules; typed nav; thinner IA; clinical UI; i18n packs; repo boundaries (Phase 6) |
 
 **Dropped vs earlier drafts:** desktop (P8), web (P9) KMP targets.
@@ -129,24 +135,28 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 
 ## Acceptance (short)
 
-- [x] P0: no WebRTC/QR-share/viewer/`p2pSessionActive` on Flutter `main`  
+- [x] P0: no WebRTC/QR-share/viewer/`p2pSessionActive`  
 - [x] Shared tests for FHIR mock + jargon glossary (P2)
 - [x] Shared tests for BSN redaction + vault AES-GCM round-trip (P3)
 - [x] Android EncryptedSharedPreferences + BiometricPrompt; iOS Keychain + LocalAuthentication (P4); iOS AES-GCM CryptoKit bridge still follow-up  
 - [x] Android + iOS: unlock → timeline shell (decoder/appointments placeholders) (P5)  
-- [x] Decoder + appointments feature port (P6); speech STT/TTS actuals on mobile; ML Kit translation still P7  
+- [x] Decoder + appointments feature port (P6); speech STT/TTS actuals on mobile  
 - [x] On-device translation + NER (P7): `LocalTranslationService` + ML Kit Translate/Entity Extraction (Android); NLTagger NER + Translate stub (iOS); DecoderViewModel download/translate flow  
+- [x] **P10:** Flutter tree removed (`lib/`, Flutter hosts, `pubspec`, web/)  
+- [x] **P10b:** English README + `docs/setup/*` + `docs/testing.md` + CHANGELOG; this plan current  
 
-- [x] Stack direction: Koin + StateFlow; SQLDelight stubs; IDs `net.moonbaseone.vera`  
+- [x] Stack direction: Koin + StateFlow; SQLDelight; IDs `net.moonbaseone.vera`  
 - [x] No desktop/web KMP modules in v1  
 - [ ] App i18n EN/NL/DE/FR (stubs OK through parity; real resource packs in **P11 / Phase 6**)  
-- [ ] CI green: shared tests + Android build (+ iOS when runner available)
-- [ ] **P11 / Phase 6 (optional, after P10):** CMP-vs-dual product gate taken; feature-module split and/or typed nav where chosen; thinner IA + a11y-default; no Flutter leftovers in KMP tree
+- [x] CI green: shared tests + Android build (+ iOS when runner available)
+- [ ] **P11 / Phase 6 (optional, after P10):** CMP-vs-dual product gate taken; feature-module split and/or typed nav where chosen; thinner IA + a11y-default; scrub remaining Flutter mental-model comments in Kotlin if any
 
-## How to run (skeleton)
+## How to run
 
 ```bash
 ./gradlew :shared:testDebugUnitTest
 ./gradlew :androidApp:assembleDebug
 open iosApp/Vera.xcodeproj   # macOS + Xcode
 ```
+
+See also [docs/setup/android.md](../setup/android.md), [docs/setup/ios.md](../setup/ios.md), [docs/testing.md](../testing.md).
