@@ -30,6 +30,18 @@ Automation: [`.github/workflows/changelog-on-merge.yml`](../.github/workflows/ch
 - Prefer editing `### Added` / `### Changed` / etc. in the feature PR when you want richer categorization; the bot only appends the merge bullet and skips if `#N` is already mentioned.
 - Merge the bot’s changelog PR when its CI is green (or enable auto-merge).
 
+### Actions permission (required once)
+
+GitHub blocks `gh pr create` from workflows until this is on:
+
+1. **Settings → Actions → General → Workflow permissions**
+2. Enable **Allow GitHub Actions to create and approve pull requests**
+3. Save
+
+Without that, the changelog job can push `chore/changelog-record-N` but fails with:  
+`GitHub Actions is not permitted to create or approve pull requests`.  
+Fix: toggle the setting above, then **Re-run** the failed *Changelog on merge* workflow, or open a PR from the already-pushed branch manually.
+
 ## Protect `main` (GitHub Settings)
 
 The repo token used by agents cannot write branch protection (HTTP 403). A repo admin should configure a **Ruleset** (or classic branch rule):
