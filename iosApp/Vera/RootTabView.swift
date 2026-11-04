@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shell: Timeline | Decoder | Appointments (no Sync) + privacy sentinel.
+/// Shell IA: Care plan → Decoder → Appointments (unlock happens before this view).
 struct RootTabView: View {
     var body: some View {
         TabView {
@@ -14,8 +14,9 @@ struct RootTabView: View {
                     }
             }
             .tabItem {
-                Label("Tijdlijn", systemImage: "calendar")
+                Label("Zorgplan", systemImage: "list.clipboard")
             }
+            .accessibilityLabel("Zorgplan")
 
             NavigationStack {
                 DecoderView()
@@ -43,17 +44,22 @@ struct RootTabView: View {
                 Label("Afspraken", systemImage: "clock")
             }
         }
-        .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+        // Dynamic Type: rely on semantic fonts; keep tint calm clinical sage.
+        .tint(Color(red: 0.18, green: 0.36, blue: 0.31))
+        .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 }
 
 private struct PrivacySentinelDot: View {
     var body: some View {
         Circle()
-            .fill(Color(red: 0.11, green: 0.48, blue: 0.24))
+            .fill(Color(red: 0.16, green: 0.42, blue: 0.31))
             .frame(width: 12, height: 12)
-            .accessibilityLabel("Gegevens lokaal beveiligd. Geen medische gegevens hebben uw apparaat verlaten.")
-            .frame(width: 44, height: 44)
+            .accessibilityLabel(
+                "Gegevens lokaal beveiligd. Geen medische gegevens hebben uw apparaat verlaten."
+            )
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
     }
 }
 

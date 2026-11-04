@@ -1,101 +1,84 @@
 package net.moonbaseone.vera.shared.ui
 
+import net.moonbaseone.vera.shared.i18n.StringCatalog
+
 /**
- * Dutch-primary UI copy for shell / auth / blueprint / decoder / appointments.
- * Full i18n (EN/NL/DE/FR) lands in a later phase.
+ * Compatibility facade over [StringCatalog] (EN/NL/DE/FR packs).
+ * Prefer [StringCatalog.current] for new call sites.
  */
 object UiCopy {
-    const val APP_NAME = "Vera"
-    const val APP_TAGLINE = "Jouw persoonlijke oncologie kompas"
+    private val s get() = StringCatalog.current
 
-    const val SENTINEL_LOCAL_TITLE = "Gegevens lokaal beveiligd"
-    const val SENTINEL_LOCAL_SUBTITLE = "Geen medische gegevens hebben uw apparaat verlaten."
+    val APP_NAME get() = s.appName
+    val APP_TAGLINE get() = s.appTagline
 
-    const val AUTH_TITLE = "Ontgrendel Vera"
-    const val AUTH_BIOMETRIC_PROMPT =
-        "Gebruik uw biometrische gegevens om uw Vera kluis te openen"
-    const val AUTH_UNLOCK_BUTTON = "Ontgrendelen"
-    const val AUTH_FAILED_PREFIX = "Verificatie mislukt. Pogingen resterend: "
-    const val AUTH_SELF_DESTRUCT_WARNING =
-        "WAARSCHUWING: Na nog één mislukte poging wordt de kluis gewist."
-    const val AUTH_SELF_DESTRUCT_DONE =
-        "Kluis definitief gewist ter bescherming van uw privacy."
-    const val AUTH_SELF_DESTRUCT_TITLE = "Kluis gewist"
-    const val AUTH_CREATE_TITLE = "Kluis aanmaken"
-    const val AUTH_CREATE_BODY =
-        "Uw medische gegevens worden versleuteld opgeslagen met AES-256. " +
-            "Stel een PIN of biometrie in als extra beveiligingslaag."
-    const val AUTH_CREATE_BUTTON = "Beveiligde kluis aanmaken"
-    const val AUTH_LOADING = "Bezig…"
-    const val OK = "OK"
+    val SENTINEL_LOCAL_TITLE get() = s.sentinelLocalTitle
+    val SENTINEL_LOCAL_SUBTITLE get() = s.sentinelLocalSubtitle
 
-    const val NAV_BLUEPRINT = "Tijdlijn"
-    const val NAV_DECODER = "Decoder"
-    const val NAV_APPOINTMENTS = "Afspraken"
+    val AUTH_TITLE get() = s.authTitle
+    val AUTH_BIOMETRIC_PROMPT get() = s.authBiometricPrompt
+    val AUTH_UNLOCK_BUTTON get() = s.authUnlockButton
+    val AUTH_FAILED_PREFIX get() = s.authFailedPrefix
+    val AUTH_SELF_DESTRUCT_WARNING get() = s.authSelfDestructWarning
+    val AUTH_SELF_DESTRUCT_DONE get() = s.authSelfDestructDone
+    val AUTH_SELF_DESTRUCT_TITLE get() = s.authSelfDestructTitle
+    val AUTH_CREATE_TITLE get() = s.authCreateTitle
+    val AUTH_CREATE_BODY get() = s.authCreateBody
+    val AUTH_CREATE_BUTTON get() = s.authCreateButton
+    val AUTH_LOADING get() = s.authLoading
+    val OK get() = s.ok
 
-    const val BLUEPRINT_TITLE = "Uw Tijdlijn"
-    const val BLUEPRINT_SUBTITLE = "Uw diagnose afgezet tegen IKNL-richtlijnen"
-    const val BLUEPRINT_PHASE_COMPLETED = "Afgerond"
-    const val BLUEPRINT_PHASE_CURRENT = "Huidig"
-    const val BLUEPRINT_PHASE_FUTURE = "Gepland"
-    const val BLUEPRINT_IKNL_SOURCE = "Bron: IKNL Richtlijnendatabase"
-    const val BLUEPRINT_NO_DATA =
-        "Geen tijdlijngegevens beschikbaar. Importeer een FHIR-rapport."
-    const val BLUEPRINT_PLAIN_LANGUAGE = "Begrijpelijke uitleg"
-    const val BLUEPRINT_ACTION_POINTS = "Actiepunten:"
-    const val BLUEPRINT_IKNL_LINK = "IKNL Richtlijn raadplegen"
-    const val BLUEPRINT_SCHEDULED_PREFIX = "Gepland: "
+    /** @deprecated Use [NAV_CARE_PLAN]; kept for older call sites. */
+    val NAV_BLUEPRINT get() = s.navCarePlan
+    val NAV_CARE_PLAN get() = s.navCarePlan
+    val NAV_DECODER get() = s.navDecoder
+    val NAV_APPOINTMENTS get() = s.navAppointments
 
-    const val DECODER_TITLE = "Slim Systeem Decoder"
-    const val DECODER_SUBTITLE =
-        "Medische vaktaal vertaald naar begrijpelijk Nederlands"
-    const val DECODER_SEARCH_HINT = "Zoek medische term…"
-    const val DECODER_LANGUAGE_LABEL = "Doeltaal"
-    const val DECODER_PRIVACY_NOTE =
-        "Vertaling vindt volledig op uw apparaat plaats. " +
-            "Geen tekst wordt naar externe servers verstuurd."
-    const val DECODER_ACTION_LABEL = "Actiepunt"
-    const val DECODER_IKNL_BUTTON = "IKNL Richtlijn"
-    const val DECODER_TRANSLATION_PENDING =
-        "On-device vertaling naar andere talen volgt in P7 (ML Kit). " +
-            "De Nederlandse uitleg blijft beschikbaar."
-    const val DECODER_TRANSLATION_UNAVAILABLE =
-        "Op-apparaat vertaling is op dit platform nog niet beschikbaar. " +
-            "De Nederlandse uitleg blijft zichtbaar."
-    const val DECODER_DOWNLOADING_MODEL = "Taalmodel downloaden…"
-    const val DECODER_DOWNLOAD_FAILED = "Download van het taalmodel is mislukt."
-    const val DECODER_TRANSLATING = "Lokaal vertalen…"
-    const val DECODER_NO_RESULTS = "Geen termen gevonden voor deze zoekopdracht."
+    val BLUEPRINT_TITLE get() = s.blueprintTitle
+    val BLUEPRINT_SUBTITLE get() = s.blueprintSubtitle
+    val BLUEPRINT_PHASE_COMPLETED get() = s.blueprintPhaseCompleted
+    val BLUEPRINT_PHASE_CURRENT get() = s.blueprintPhaseCurrent
+    val BLUEPRINT_PHASE_FUTURE get() = s.blueprintPhaseFuture
+    val BLUEPRINT_IKNL_SOURCE get() = s.blueprintIknlSource
+    val BLUEPRINT_NO_DATA get() = s.blueprintNoData
+    val BLUEPRINT_PLAIN_LANGUAGE get() = s.blueprintPlainLanguage
+    val BLUEPRINT_ACTION_POINTS get() = s.blueprintActionPoints
+    val BLUEPRINT_IKNL_LINK get() = s.blueprintIknlLink
+    val BLUEPRINT_SCHEDULED_PREFIX get() = s.blueprintScheduledPrefix
 
-    const val APPOINTMENTS_TITLE = "Afspraak Navigator"
-    const val APPOINTMENTS_SUBTITLE = "Uw gepersonaliseerde afsprakengids"
-    const val APPOINTMENTS_POCKET_GUIDE = "Genereer Pocket Gids"
-    const val APPOINTMENTS_POCKET_TITLE = "# Pocket Gids voor uw afspraak"
-    const val APPOINTMENTS_POCKET_PANEL = "Uw Pocket Gids"
-    const val APPOINTMENTS_POCKET_FOOTER =
-        "Gegenereerd door Vera – IKNL Richtlijn Borstkanker 2023"
-    const val APPOINTMENTS_REASON = "Reden van bezoek"
-    const val APPOINTMENTS_SYMPTOMS_HEADER = "Uw ingesproken symptomen"
-    const val APPOINTMENTS_SYMPTOMS_EMPTY =
-        "(geen symptomen geregistreerd – gebruik de spraakfunctie)"
-    const val APPOINTMENTS_SYMPTOMS_SECTION = "Symptomen registreren"
-    const val APPOINTMENTS_VOICE_LOG = "Symptomen inspreken"
-    const val APPOINTMENTS_VOICE_LISTENING = "Luistert…"
-    const val APPOINTMENTS_VOICE_STOP = "Stop opname"
-    const val APPOINTMENTS_SUGGESTED_QUESTIONS =
-        "Aanbevolen vragen voor uw arts"
-    const val APPOINTMENTS_NO_DATA = "Geen aankomende afspraken gevonden."
-    const val APPOINTMENTS_SPEECH_UNAVAILABLE =
-        "Spraakregistratie is niet beschikbaar op dit apparaat."
-    const val APPOINTMENTS_CLEAR = "Wissen"
-    const val APPOINTMENTS_READ_ALOUD = "Voorlezen"
-    const val APPOINTMENTS_NOTES_LABEL = "Geregistreerde symptomen:"
+    val DECODER_TITLE get() = s.decoderTitle
+    val DECODER_SUBTITLE get() = s.decoderSubtitle
+    val DECODER_SEARCH_HINT get() = s.decoderSearchHint
+    val DECODER_LANGUAGE_LABEL get() = s.decoderLanguageLabel
+    val DECODER_PRIVACY_NOTE get() = s.decoderPrivacyNote
+    val DECODER_ACTION_LABEL get() = s.decoderActionLabel
+    val DECODER_IKNL_BUTTON get() = s.decoderIknlButton
+    val DECODER_TRANSLATION_UNAVAILABLE get() = s.decoderTranslationUnavailable
+    val DECODER_DOWNLOADING_MODEL get() = s.decoderDownloadingModel
+    val DECODER_DOWNLOAD_FAILED get() = s.decoderDownloadFailed
+    val DECODER_TRANSLATING get() = s.decoderTranslating
+    val DECODER_NO_RESULTS get() = s.decoderNoResults
 
-    val APPOINTMENTS_DEFAULT_QUESTIONS: List<String> = listOf(
-        "Wat zijn de resultaten van mijn laatste LVEF-meting?",
-        "Zijn er bijwerkingen die ik moet melden?",
-        "Wanneer verwacht u de volgende behandelstap?",
-        "Wat kan ik zelf doen om mijn herstel te bevorderen?",
-        "Zijn er richtlijnwijzigingen die invloed hebben op mijn zorgplan?",
-    )
+    val APPOINTMENTS_TITLE get() = s.appointmentsTitle
+    val APPOINTMENTS_SUBTITLE get() = s.appointmentsSubtitle
+    val APPOINTMENTS_POCKET_GUIDE get() = s.appointmentsPocketGuide
+    val APPOINTMENTS_POCKET_TITLE get() = s.appointmentsPocketTitle
+    val APPOINTMENTS_POCKET_PANEL get() = s.appointmentsPocketPanel
+    val APPOINTMENTS_POCKET_FOOTER get() = s.appointmentsPocketFooter
+    val APPOINTMENTS_REASON get() = s.appointmentsReason
+    val APPOINTMENTS_SYMPTOMS_HEADER get() = s.appointmentsSymptomsHeader
+    val APPOINTMENTS_SYMPTOMS_EMPTY get() = s.appointmentsSymptomsEmpty
+    val APPOINTMENTS_SYMPTOMS_SECTION get() = s.appointmentsSymptomsSection
+    val APPOINTMENTS_VOICE_LOG get() = s.appointmentsVoiceLog
+    val APPOINTMENTS_VOICE_LISTENING get() = s.appointmentsVoiceListening
+    val APPOINTMENTS_VOICE_STOP get() = s.appointmentsVoiceStop
+    val APPOINTMENTS_SUGGESTED_QUESTIONS get() = s.appointmentsSuggestedQuestions
+    val APPOINTMENTS_NO_DATA get() = s.appointmentsNoData
+    val APPOINTMENTS_SPEECH_UNAVAILABLE get() = s.appointmentsSpeechUnavailable
+    val APPOINTMENTS_CLEAR get() = s.appointmentsClear
+    val APPOINTMENTS_READ_ALOUD get() = s.appointmentsReadAloud
+    val APPOINTMENTS_NOTES_LABEL get() = s.appointmentsNotesLabel
+
+    val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
+        get() = s.appointmentsDefaultQuestions
 }

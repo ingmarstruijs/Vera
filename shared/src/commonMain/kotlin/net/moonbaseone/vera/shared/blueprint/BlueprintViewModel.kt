@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import net.moonbaseone.vera.shared.careplan.CarePlanRepository
+import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.domain.BuiltInGlossary
 import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.domain.TimelineEvent
@@ -24,12 +26,18 @@ sealed class BlueprintUiState {
 }
 
 /**
- * Loads the IKNL-aligned CarePlan mock into timeline events for the Blueprint UI.
+ * Loads the IKNL-aligned CarePlan into timeline events for the Blueprint UI.
+ * Reads via [CarePlanRepository] so FHIR/MedMij transport can swap later.
  */
 class BlueprintViewModel(
-    private val mockData: MockDataService,
+    private val carePlanRepository: CarePlanRepository,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
+    constructor(
+        mockData: MockDataService,
+        scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    ) : this(LocalCarePlanRepository(mockData), scope)
+
     private val _state = MutableStateFlow<BlueprintUiState>(BlueprintUiState.Loading)
     val state: StateFlow<BlueprintUiState> = _state.asStateFlow()
 
@@ -37,7 +45,7 @@ class BlueprintViewModel(
         scope.launch {
             _state.value = BlueprintUiState.Loading
             try {
-                val carePlan = mockData.fetchCarePlan()
+                val carePlan = carePlanRepository.fetchCarePlan()
                 @Suppress("UNCHECKED_CAST")
                 val activities = (carePlan.data["activity"] as? List<*>)
                     ?.mapNotNull { it as? Map<String, Any?> }

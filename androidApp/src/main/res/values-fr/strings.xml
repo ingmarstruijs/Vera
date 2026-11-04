@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vera</string>
+    <string name="tab_care_plan">Plan de soins</string>
+    <string name="tab_decoder">Décodeur</string>
+    <string name="tab_appointments">Rendez-vous</string>
+    <string name="cd_privacy_sentinel">Données sécurisées localement. Aucune donnée médicale n’a quitté votre appareil.</string>
+    <string name="cd_unlock">Déverrouiller</string>
+</resources>

@@ -50,6 +50,7 @@ private struct NewVaultView: View {
             Text("Kluis aanmaken")
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             Text(
                 "Uw medische gegevens worden versleuteld opgeslagen met AES-256. " +
                 "Stel een PIN of biometrie in als extra beveiligingslaag."
@@ -57,6 +58,7 @@ private struct NewVaultView: View {
             .font(.body)
             .multilineTextAlignment(.center)
             .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
             Button(action: onCreate) {
                 Label(
                     isBusy ? "Bezig…" : "Beveiligde kluis aanmaken",
@@ -66,10 +68,12 @@ private struct NewVaultView: View {
                 .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+            .tint(Color(red: 0.18, green: 0.36, blue: 0.31))
             .disabled(isBusy)
+            .accessibilityLabel(isBusy ? "Bezig" : "Beveiligde kluis aanmaken")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 }
 
@@ -83,13 +87,16 @@ private struct UnlockView: View {
         VStack(spacing: 24) {
             Image(systemName: "touchid")
                 .font(.system(size: 72))
-                .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13).opacity(isBusy ? 0.6 : 1))
+                .foregroundStyle(Color(red: 0.18, green: 0.36, blue: 0.31).opacity(isBusy ? 0.6 : 1))
+                .accessibilityHidden(true)
             Text("Ontgrendel Vera")
                 .font(.title2.weight(.bold))
+                .accessibilityAddTraits(.isHeader)
             Text("Gebruik uw biometrische gegevens om uw Vera kluis te openen")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             if let errorMessage {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: attemptsLeft <= 1 ? "exclamationmark.triangle" : "info.circle")
@@ -112,10 +119,11 @@ private struct UnlockView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+            .tint(Color(red: 0.18, green: 0.36, blue: 0.31))
             .disabled(isBusy || attemptsLeft <= 0)
-            .accessibilityLabel("Ontgrendelen")
+            .accessibilityLabel(isBusy ? "Bezig" : "Ontgrendelen")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 }

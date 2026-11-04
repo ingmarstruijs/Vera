@@ -1,0 +1,344 @@
+package net.moonbaseone.vera.shared.i18n
+
+/**
+ * Locale-aware UI strings (EN / NL / DE / FR).
+ * Default active locale is Dutch to match prior [net.moonbaseone.vera.shared.ui.UiCopy] behaviour.
+ */
+object StringCatalog {
+    @Volatile
+    var activeLocale: AppLocale = AppLocale.NL
+        private set
+
+    fun setLocale(locale: AppLocale) {
+        activeLocale = locale
+    }
+
+    val current: StringPack
+        get() = pack(activeLocale)
+
+    fun pack(locale: AppLocale): StringPack = when (locale) {
+        AppLocale.NL -> Nl
+        AppLocale.EN -> En
+        AppLocale.DE -> De
+        AppLocale.FR -> Fr
+    }
+
+    private val Nl = StringPack(
+        locale = AppLocale.NL,
+        appName = "Vera",
+        appTagline = "Jouw persoonlijke oncologie kompas",
+        sentinelLocalTitle = "Gegevens lokaal beveiligd",
+        sentinelLocalSubtitle = "Geen medische gegevens hebben uw apparaat verlaten.",
+        authTitle = "Ontgrendel Vera",
+        authBiometricPrompt = "Gebruik uw biometrische gegevens om uw Vera kluis te openen",
+        authUnlockButton = "Ontgrendelen",
+        authFailedPrefix = "Verificatie mislukt. Pogingen resterend: ",
+        authSelfDestructWarning =
+            "WAARSCHUWING: Na nog één mislukte poging wordt de kluis gewist.",
+        authSelfDestructDone = "Kluis definitief gewist ter bescherming van uw privacy.",
+        authSelfDestructTitle = "Kluis gewist",
+        authCreateTitle = "Kluis aanmaken",
+        authCreateBody =
+            "Uw medische gegevens worden versleuteld opgeslagen met AES-256. " +
+                "Stel een PIN of biometrie in als extra beveiligingslaag.",
+        authCreateButton = "Beveiligde kluis aanmaken",
+        authLoading = "Bezig…",
+        ok = "OK",
+        navCarePlan = "Zorgplan",
+        navDecoder = "Decoder",
+        navAppointments = "Afspraken",
+        blueprintTitle = "Uw zorgplan",
+        blueprintSubtitle = "Uw diagnose afgezet tegen IKNL-richtlijnen",
+        blueprintPhaseCompleted = "Afgerond",
+        blueprintPhaseCurrent = "Huidig",
+        blueprintPhaseFuture = "Gepland",
+        blueprintIknlSource = "Bron: IKNL Richtlijnendatabase",
+        blueprintNoData = "Geen zorgplangegevens beschikbaar. Importeer een FHIR-rapport.",
+        blueprintPlainLanguage = "Begrijpelijke uitleg",
+        blueprintActionPoints = "Actiepunten:",
+        blueprintIknlLink = "IKNL Richtlijn raadplegen",
+        blueprintScheduledPrefix = "Gepland: ",
+        decoderTitle = "Slim Systeem Decoder",
+        decoderSubtitle = "Medische vaktaal vertaald naar begrijpelijk Nederlands",
+        decoderSearchHint = "Zoek medische term…",
+        decoderLanguageLabel = "Doeltaal",
+        decoderPrivacyNote =
+            "Vertaling vindt volledig op uw apparaat plaats. " +
+                "Geen tekst wordt naar externe servers verstuurd.",
+        decoderActionLabel = "Actiepunt",
+        decoderIknlButton = "IKNL Richtlijn",
+        decoderTranslationUnavailable =
+            "Op-apparaat vertaling is op dit platform nog niet beschikbaar. " +
+                "De Nederlandse uitleg blijft zichtbaar.",
+        decoderDownloadingModel = "Taalmodel downloaden…",
+        decoderDownloadFailed = "Download van het taalmodel is mislukt.",
+        decoderTranslating = "Lokaal vertalen…",
+        decoderNoResults = "Geen termen gevonden voor deze zoekopdracht.",
+        appointmentsTitle = "Afspraak Navigator",
+        appointmentsSubtitle = "Uw gepersonaliseerde afsprakengids",
+        appointmentsPocketGuide = "Genereer Pocket Gids",
+        appointmentsPocketTitle = "# Pocket Gids voor uw afspraak",
+        appointmentsPocketPanel = "Uw Pocket Gids",
+        appointmentsPocketFooter = "Gegenereerd door Vera – IKNL Richtlijn Borstkanker 2023",
+        appointmentsReason = "Reden van bezoek",
+        appointmentsSymptomsHeader = "Uw ingesproken symptomen",
+        appointmentsSymptomsEmpty =
+            "(geen symptomen geregistreerd – gebruik de spraakfunctie)",
+        appointmentsSymptomsSection = "Symptomen registreren",
+        appointmentsVoiceLog = "Symptomen inspreken",
+        appointmentsVoiceListening = "Luistert…",
+        appointmentsVoiceStop = "Stop opname",
+        appointmentsSuggestedQuestions = "Aanbevolen vragen voor uw arts",
+        appointmentsNoData = "Geen aankomende afspraken gevonden.",
+        appointmentsSpeechUnavailable =
+            "Spraakregistratie is niet beschikbaar op dit apparaat.",
+        appointmentsClear = "Wissen",
+        appointmentsReadAloud = "Voorlezen",
+        appointmentsNotesLabel = "Geregistreerde symptomen:",
+        appointmentsDefaultQuestions = listOf(
+            "Wat zijn de resultaten van mijn laatste LVEF-meting?",
+            "Zijn er bijwerkingen die ik moet melden?",
+            "Wanneer verwacht u de volgende behandelstap?",
+            "Wat kan ik zelf doen om mijn herstel te bevorderen?",
+            "Zijn er richtlijnwijzigingen die invloed hebben op mijn zorgplan?",
+        ),
+    )
+
+    private val En = StringPack(
+        locale = AppLocale.EN,
+        appName = "Vera",
+        appTagline = "Your personal oncology compass",
+        sentinelLocalTitle = "Data secured locally",
+        sentinelLocalSubtitle = "No medical data has left your device.",
+        authTitle = "Unlock Vera",
+        authBiometricPrompt = "Use biometrics to open your Vera vault",
+        authUnlockButton = "Unlock",
+        authFailedPrefix = "Verification failed. Attempts remaining: ",
+        authSelfDestructWarning =
+            "WARNING: One more failed attempt will wipe the vault.",
+        authSelfDestructDone = "Vault wiped permanently to protect your privacy.",
+        authSelfDestructTitle = "Vault wiped",
+        authCreateTitle = "Create vault",
+        authCreateBody =
+            "Your medical data is stored encrypted with AES-256. " +
+                "Set a PIN or biometrics as an extra layer.",
+        authCreateButton = "Create secure vault",
+        authLoading = "Working…",
+        ok = "OK",
+        navCarePlan = "Care plan",
+        navDecoder = "Decoder",
+        navAppointments = "Appointments",
+        blueprintTitle = "Your care plan",
+        blueprintSubtitle = "Your diagnosis mapped to IKNL guidelines",
+        blueprintPhaseCompleted = "Completed",
+        blueprintPhaseCurrent = "Current",
+        blueprintPhaseFuture = "Planned",
+        blueprintIknlSource = "Source: IKNL Guideline Database",
+        blueprintNoData = "No care-plan data available. Import a FHIR report.",
+        blueprintPlainLanguage = "Plain-language explanation",
+        blueprintActionPoints = "Action points:",
+        blueprintIknlLink = "Open IKNL guideline",
+        blueprintScheduledPrefix = "Scheduled: ",
+        decoderTitle = "Plain-language decoder",
+        decoderSubtitle = "Medical jargon translated into clear language",
+        decoderSearchHint = "Search medical term…",
+        decoderLanguageLabel = "Target language",
+        decoderPrivacyNote =
+            "Translation stays fully on your device. " +
+                "No text is sent to external servers.",
+        decoderActionLabel = "Action point",
+        decoderIknlButton = "IKNL guideline",
+        decoderTranslationUnavailable =
+            "On-device translation is not yet available on this platform. " +
+                "The Dutch explanation remains visible.",
+        decoderDownloadingModel = "Downloading language model…",
+        decoderDownloadFailed = "Language model download failed.",
+        decoderTranslating = "Translating on device…",
+        decoderNoResults = "No terms found for this search.",
+        appointmentsTitle = "Appointment navigator",
+        appointmentsSubtitle = "Your personalised appointment guide",
+        appointmentsPocketGuide = "Generate pocket guide",
+        appointmentsPocketTitle = "# Pocket guide for your appointment",
+        appointmentsPocketPanel = "Your pocket guide",
+        appointmentsPocketFooter = "Generated by Vera – IKNL Breast Cancer Guideline 2023",
+        appointmentsReason = "Reason for visit",
+        appointmentsSymptomsHeader = "Symptoms you logged",
+        appointmentsSymptomsEmpty = "(no symptoms logged – use voice capture)",
+        appointmentsSymptomsSection = "Log symptoms",
+        appointmentsVoiceLog = "Dictate symptoms",
+        appointmentsVoiceListening = "Listening…",
+        appointmentsVoiceStop = "Stop recording",
+        appointmentsSuggestedQuestions = "Suggested questions for your clinician",
+        appointmentsNoData = "No upcoming appointments found.",
+        appointmentsSpeechUnavailable = "Speech capture is unavailable on this device.",
+        appointmentsClear = "Clear",
+        appointmentsReadAloud = "Read aloud",
+        appointmentsNotesLabel = "Logged symptoms:",
+        appointmentsDefaultQuestions = listOf(
+            "What are the results of my latest LVEF measurement?",
+            "Are there side effects I should report?",
+            "When do you expect the next treatment step?",
+            "What can I do myself to support recovery?",
+            "Have guideline changes affected my care plan?",
+        ),
+    )
+
+    private val De = StringPack(
+        locale = AppLocale.DE,
+        appName = "Vera",
+        appTagline = "Ihr persönlicher Onkologie-Kompass",
+        sentinelLocalTitle = "Daten lokal gesichert",
+        sentinelLocalSubtitle = "Keine medizinischen Daten haben Ihr Gerät verlassen.",
+        authTitle = "Vera entsperren",
+        authBiometricPrompt = "Nutzen Sie Biometrie, um Ihren Vera-Tresor zu öffnen",
+        authUnlockButton = "Entsperren",
+        authFailedPrefix = "Überprüfung fehlgeschlagen. Verbleibende Versuche: ",
+        authSelfDestructWarning =
+            "WARNUNG: Ein weiterer Fehlversuch löscht den Tresor.",
+        authSelfDestructDone = "Tresor dauerhaft gelöscht zum Schutz Ihrer Privatsphäre.",
+        authSelfDestructTitle = "Tresor gelöscht",
+        authCreateTitle = "Tresor erstellen",
+        authCreateBody =
+            "Ihre medizinischen Daten werden mit AES-256 verschlüsselt gespeichert. " +
+                "Richten Sie PIN oder Biometrie als zusätzliche Schicht ein.",
+        authCreateButton = "Sicheren Tresor erstellen",
+        authLoading = "Bitte warten…",
+        ok = "OK",
+        navCarePlan = "Versorgungsplan",
+        navDecoder = "Decoder",
+        navAppointments = "Termine",
+        blueprintTitle = "Ihr Versorgungsplan",
+        blueprintSubtitle = "Ihre Diagnose im Abgleich mit IKNL-Leitlinien",
+        blueprintPhaseCompleted = "Abgeschlossen",
+        blueprintPhaseCurrent = "Aktuell",
+        blueprintPhaseFuture = "Geplant",
+        blueprintIknlSource = "Quelle: IKNL Leitliniendatenbank",
+        blueprintNoData = "Keine Versorgungsplandaten verfügbar. FHIR-Bericht importieren.",
+        blueprintPlainLanguage = "Verständliche Erklärung",
+        blueprintActionPoints = "Handlungspunkte:",
+        blueprintIknlLink = "IKNL-Leitlinie öffnen",
+        blueprintScheduledPrefix = "Geplant: ",
+        decoderTitle = "Klartext-Decoder",
+        decoderSubtitle = "Medizinische Fachsprache in klare Sprache übersetzt",
+        decoderSearchHint = "Medizinischen Begriff suchen…",
+        decoderLanguageLabel = "Zielsprache",
+        decoderPrivacyNote =
+            "Übersetzung bleibt vollständig auf Ihrem Gerät. " +
+                "Kein Text wird an externe Server gesendet.",
+        decoderActionLabel = "Handlungspunkt",
+        decoderIknlButton = "IKNL-Leitlinie",
+        decoderTranslationUnavailable =
+            "Geräteinterne Übersetzung ist auf dieser Plattform noch nicht verfügbar. " +
+                "Die niederländische Erklärung bleibt sichtbar.",
+        decoderDownloadingModel = "Sprachmodell wird heruntergeladen…",
+        decoderDownloadFailed = "Download des Sprachmodells fehlgeschlagen.",
+        decoderTranslating = "Lokal übersetzen…",
+        decoderNoResults = "Keine Begriffe für diese Suche gefunden.",
+        appointmentsTitle = "Termin-Navigator",
+        appointmentsSubtitle = "Ihr personalisierter Terminleitfaden",
+        appointmentsPocketGuide = "Pocket-Guide erstellen",
+        appointmentsPocketTitle = "# Pocket-Guide für Ihren Termin",
+        appointmentsPocketPanel = "Ihr Pocket-Guide",
+        appointmentsPocketFooter = "Erstellt von Vera – IKNL Leitlinie Brustkrebs 2023",
+        appointmentsReason = "Besuchsgrund",
+        appointmentsSymptomsHeader = "Ihre gesprochenen Symptome",
+        appointmentsSymptomsEmpty = "(keine Symptome erfasst – Sprachfunktion nutzen)",
+        appointmentsSymptomsSection = "Symptome erfassen",
+        appointmentsVoiceLog = "Symptome diktieren",
+        appointmentsVoiceListening = "Hört zu…",
+        appointmentsVoiceStop = "Aufnahme stoppen",
+        appointmentsSuggestedQuestions = "Empfohlene Fragen an Ihre Ärztin / Ihren Arzt",
+        appointmentsNoData = "Keine bevorstehenden Termine gefunden.",
+        appointmentsSpeechUnavailable = "Spracherfassung ist auf diesem Gerät nicht verfügbar.",
+        appointmentsClear = "Löschen",
+        appointmentsReadAloud = "Vorlesen",
+        appointmentsNotesLabel = "Erfasste Symptome:",
+        appointmentsDefaultQuestions = listOf(
+            "Was sind die Ergebnisse meiner letzten LVEF-Messung?",
+            "Gibt es Nebenwirkungen, die ich melden sollte?",
+            "Wann erwarten Sie den nächsten Behandlungsschritt?",
+            "Was kann ich selbst für meine Erholung tun?",
+            "Haben Leitlinienänderungen meinen Versorgungsplan beeinflusst?",
+        ),
+    )
+
+    private val Fr = StringPack(
+        locale = AppLocale.FR,
+        appName = "Vera",
+        appTagline = "Votre boussole oncologique personnelle",
+        sentinelLocalTitle = "Données sécurisées localement",
+        sentinelLocalSubtitle = "Aucune donnée médicale n’a quitté votre appareil.",
+        authTitle = "Déverrouiller Vera",
+        authBiometricPrompt = "Utilisez la biométrie pour ouvrir votre coffre Vera",
+        authUnlockButton = "Déverrouiller",
+        authFailedPrefix = "Échec de la vérification. Tentatives restantes : ",
+        authSelfDestructWarning =
+            "AVERTISSEMENT : une nouvelle tentative échouée effacera le coffre.",
+        authSelfDestructDone = "Coffre définitivement effacé pour protéger votre vie privée.",
+        authSelfDestructTitle = "Coffre effacé",
+        authCreateTitle = "Créer un coffre",
+        authCreateBody =
+            "Vos données médicales sont stockées chiffrées avec AES-256. " +
+                "Définissez un code PIN ou la biométrie comme couche supplémentaire.",
+        authCreateButton = "Créer un coffre sécurisé",
+        authLoading = "En cours…",
+        ok = "OK",
+        navCarePlan = "Plan de soins",
+        navDecoder = "Décodeur",
+        navAppointments = "Rendez-vous",
+        blueprintTitle = "Votre plan de soins",
+        blueprintSubtitle = "Votre diagnostic confronté aux recommandations IKNL",
+        blueprintPhaseCompleted = "Terminé",
+        blueprintPhaseCurrent = "En cours",
+        blueprintPhaseFuture = "Planifié",
+        blueprintIknlSource = "Source : base de recommandations IKNL",
+        blueprintNoData = "Aucune donnée de plan de soins. Importez un rapport FHIR.",
+        blueprintPlainLanguage = "Explication en langage clair",
+        blueprintActionPoints = "Points d’action :",
+        blueprintIknlLink = "Consulter la recommandation IKNL",
+        blueprintScheduledPrefix = "Prévu : ",
+        decoderTitle = "Décodeur en langage clair",
+        decoderSubtitle = "Jargon médical traduit en langage accessible",
+        decoderSearchHint = "Rechercher un terme médical…",
+        decoderLanguageLabel = "Langue cible",
+        decoderPrivacyNote =
+            "La traduction reste entièrement sur votre appareil. " +
+                "Aucun texte n’est envoyé à des serveurs externes.",
+        decoderActionLabel = "Point d’action",
+        decoderIknlButton = "Recommandation IKNL",
+        decoderTranslationUnavailable =
+            "La traduction sur appareil n’est pas encore disponible sur cette plateforme. " +
+                "L’explication néerlandaise reste visible.",
+        decoderDownloadingModel = "Téléchargement du modèle linguistique…",
+        decoderDownloadFailed = "Échec du téléchargement du modèle linguistique.",
+        decoderTranslating = "Traduction locale…",
+        decoderNoResults = "Aucun terme trouvé pour cette recherche.",
+        appointmentsTitle = "Navigateur de rendez-vous",
+        appointmentsSubtitle = "Votre guide de rendez-vous personnalisé",
+        appointmentsPocketGuide = "Générer le guide de poche",
+        appointmentsPocketTitle = "# Guide de poche pour votre rendez-vous",
+        appointmentsPocketPanel = "Votre guide de poche",
+        appointmentsPocketFooter = "Généré par Vera – recommandation IKNL cancer du sein 2023",
+        appointmentsReason = "Motif de la visite",
+        appointmentsSymptomsHeader = "Symptômes enregistrés",
+        appointmentsSymptomsEmpty = "(aucun symptôme enregistré – utilisez la voix)",
+        appointmentsSymptomsSection = "Enregistrer les symptômes",
+        appointmentsVoiceLog = "Dicter les symptômes",
+        appointmentsVoiceListening = "Écoute…",
+        appointmentsVoiceStop = "Arrêter l’enregistrement",
+        appointmentsSuggestedQuestions = "Questions suggérées pour votre clinicien",
+        appointmentsNoData = "Aucun rendez-vous à venir.",
+        appointmentsSpeechUnavailable =
+            "La saisie vocale n’est pas disponible sur cet appareil.",
+        appointmentsClear = "Effacer",
+        appointmentsReadAloud = "Lire à voix haute",
+        appointmentsNotesLabel = "Symptômes enregistrés :",
+        appointmentsDefaultQuestions = listOf(
+            "Quels sont les résultats de ma dernière mesure de FEVG ?",
+            "Y a-t-il des effets secondaires à signaler ?",
+            "Quand prévoyez-vous la prochaine étape de traitement ?",
+            "Que puis-je faire moi-même pour favoriser mon rétablissement ?",
+            "Des changements de recommandations ont-ils affecté mon plan de soins ?",
+        ),
+    )
+}
