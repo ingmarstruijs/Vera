@@ -31,19 +31,6 @@ class AppConstants {
   /// Isar database name (no extension).
   static const String isarDbName = 'vera_vault';
 
-  // ── WebRTC Sync ────────────────────────────────────────────────────────────
-
-  /// Default STUN server (no medical data passes through STUN).
-  static const String stunServer = 'stun:stun.l.google.com:19302';
-
-  /// Signalling WebSocket endpoint.
-  /// In production this is a self-hosted, TLS-terminated relay that only
-  /// forwards JSON SDP/ICE messages – never medical payload.
-  static const String signalingWsUrl = 'wss://signal.vera-app.nl/v1/session';
-
-  /// QR code version / TTL (seconds). Session expires after this period.
-  static const int qrSessionTtlSeconds = 300;
-
   // ── ML Kit ────────────────────────────────────────────────────────────────
 
   /// BCP-47 default source language for translation.

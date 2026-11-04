@@ -13,9 +13,6 @@ class StringsNl {
   static const String sentinelLocalTitle = 'Gegevens lokaal beveiligd';
   static const String sentinelLocalSubtitle =
       'Geen medische gegevens hebben uw apparaat verlaten.';
-  static const String sentinelWarningTitle = 'Let op: Gegevensstroom actief';
-  static const String sentinelWarningSubtitle =
-      'Versleutelde P2P-sessie actief. Geen gegevens via server.';
   static const String sentinelErrorTitle = 'Privacy-status onbekend';
   static const String sentinelErrorSubtitle =
       'Controleer eventuele netwerkverbindingen.';
@@ -42,7 +39,6 @@ class StringsNl {
   static const String navBlueprint = 'Tijdlijn';
   static const String navDecoder = 'Decoder';
   static const String navAppointments = 'Afspraken';
-  static const String navSync = 'Delen';
   static const String navSettings = 'Instellingen';
 
   // ── Blueprint (De Tijdlijn) ────────────────────────────────────────────────
@@ -84,26 +80,6 @@ class StringsNl {
       'Aanbevolen vragen voor uw arts';
   static const String appointmentsNoAppointments =
       'Geen aankomende afspraken gevonden.';
-
-  // ── Sync (WebRTC viewer) ──────────────────────────────────────────────────
-  static const String syncTitle = 'Veilig Delen';
-  static const String syncSubtitle =
-      'Deel uw tijdlijn via een beveiligde P2P-verbinding';
-  static const String syncQrInstruction =
-      'Scan deze QR-code met de Vera Web-viewer op een ander scherm.';
-  static const String syncSessionActive = 'Sessie actief';
-  static const String syncSessionExpired = 'Sessie verlopen';
-  static const String syncWebViewerTitle = 'Vera – Web Viewer';
-  static const String syncWebViewerBody =
-      'U bekijkt live-gegevens via een versleutelde P2P-verbinding. '
-      'Alle gegevens bestaan uitsluitend in het RAM-geheugen van dit tabblad '
-      'en worden onmiddellijk gewist bij sluiten.';
-  static const String syncScanQr = 'Scan QR-code';
-  static const String syncConnecting = 'Verbinding maken…';
-  static const String syncConnected = 'Verbonden';
-  static const String syncDisconnected = 'Verbinding verbroken';
-  static const String syncEphemeralWarning =
-      'WAARSCHUWING: Sluit dit tabblad om alle gegevens te wissen.';
 
   // ── Settings ──────────────────────────────────────────────────────────────
   static const String settingsTitle = 'Instellingen';

@@ -79,7 +79,7 @@ flutter build appbundle --release
 3. Set minimum deployment target:
    - Select **Runner** target
    - General → Minimum Deployments
-   - iOS 11.0 (required for flutter_webrtc)
+   - iOS 11.0+
 
 **Build Instructions:**
 
@@ -112,14 +112,14 @@ flutter build ios --release
 - `web/manifest.json` — PWA manifest
 
 **Platform Limitations:**
-⚠️ **No Biometric Support** — Web uses RAM-only ephemeral data storage instead  
-⚠️ **No Local Encryption** — Private data not persisted (security design choice for web viewers)  
-✅ **P2P WebRTC** — Full mobile-to-web sync support via QR code connection
+⚠️ **No Biometric Support** — Web does not support biometric vault unlock  
+⚠️ **No Local Encrypted Vault** — Isar + secure storage are mobile-only; web is not a supported product target for vault features  
+⚠️ **Legacy target** — Flutter web remains in-repo during KMP migration but is deferred for v1 (no Webviewer / P2P share)
 
-**Browser Requirements:**
+**Browser Requirements (debug only):**
 - Chrome/Chromium 60+
 - Firefox 55+
-- Safari 11+ (WebRTC support)
+- Safari 11+
 - Edge 79+
 
 **Build Instructions:**
@@ -137,10 +137,6 @@ flutter run -d chrome --release
 # Deploy to hosting (output in build/web/)
 # Upload build/web/* to your hosting provider
 ```
-
-**WebRTC Note:**
-- No TURN server required for local network sync
-- For internet-remote sync, configure TURN server in production
 
 ---
 
@@ -190,9 +186,8 @@ flutter run --list-emulators
 - All encryption performed locally; no CloudKit sync
 
 ### Web (No Local Encryption)
-- Data lives only in browser RAM
-- Cleared on tab/browser close (intentional design for privacy)
-- P2P sync via DTLS (WebRTC data-channel)
+- Encrypted vault and biometrics are mobile-only
+- Flutter web is a legacy debug surface during KMP migration, not a product share path
 
 ---
 
@@ -204,8 +199,7 @@ Key security-critical dependencies:
 |---------|---------|---------|
 | `local_auth` | ^2.x | Biometric authentication |
 | `flutter_secure_storage` | ^9.x | Secure key storage |
-| `encrypt` | ^6.x | AES-256-GCM encryption |
-| `flutter_webrtc` | ^0.x | P2P WebRTC sync |
+| `encrypt` | ^5.x | AES-256-GCM encryption |
 | `isar` | ^3.x | Local encrypted database (mobile) |
 
 All dependencies auto-handled by `flutter pub get`.
@@ -250,11 +244,10 @@ flutter run -d chrome
 ### iOS
 - **Biometric always fails**: Check `NSFaceIDUsageDescription` + `NSBiometryUsageDescription` in Info.plist ✓
 - **Keychain errors**: Verify Team ID in Xcode project settings
-- **WebRTC incompatible**: Update Podfile deployment target to iOS 11.0+
+- **Deployment target**: Ensure Podfile / Xcode minimum is iOS 11.0+
 
 ### Web
-- **QR scanner not working**: Ensure HTTPS (localhost:8080 OK for dev)
-- **WebRTC connection fails**: Check browser console for STUN/signalling errors
+- **Vault / biometric APIs unavailable**: Expected — use Android or iOS for encrypted vault features
 
 ---
 
@@ -284,9 +277,9 @@ flutter build web --release
 
 - [x] Android: Biometric permission in `AndroidManifest.xml`
 - [x] iOS: Face ID + Touch ID descriptions in `Info.plist`
-- [x] iOS: Deployment target ≥ 11.0 for WebRTC
+- [x] iOS: Deployment target ≥ 11.0
 - [x] iOS: Keychain sharing capability in Xcode
-- [x] Web: PWA manifest configured
+- [x] Web: PWA manifest configured (legacy debug surface)
 - [x] All platforms: `flutter pub get` completed
 - [x] All platforms: `build_runner` schema generated
 
@@ -299,7 +292,6 @@ flutter build web --release
 - [Flutter Web Documentation](https://flutter.dev/docs/get-started/web)
 - [local_auth Package](https://pub.dev/packages/local_auth)
 - [flutter_secure_storage Package](https://pub.dev/packages/flutter_secure_storage)
-- [flutter_webrtc Package](https://pub.dev/packages/flutter_webrtc)
 
 ---
 

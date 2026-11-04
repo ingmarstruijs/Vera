@@ -48,25 +48,27 @@ Vera is a living system that stays in sync with your actual care via standardize
 
 - **Timeline Blueprint** — Visual roadmap of diagnosis & treatment aligned with national IKNL guidelines
 - **Plain-Language Decoder** — Medical jargon translated into actionable next steps  
-- **Privacy Sentinel** — Real-time confirmation: data stays on your device (local/P2P only)
+- **Privacy Sentinel** — Real-time confirmation that data stays on your device (local-only)
 - **Local AI Shield** — NER-based PII redaction before any analysis
-- **FHIR Integration** — MedMij-compatible HL7 FHIR R4 sync from hospital EPDs
-- **Webviewer** — WhatsApp Web-style sharing: mobile → web viewer (no central server)
+- **Appointment Navigator** — Contextual pocket guide and voice symptom logging
+- **FHIR Integration** — MedMij-compatible HL7 FHIR R4 sync from hospital EPDs (roadmap; mock data in app today)
 
 ## Privacy Architecture
 
 ✅ **Zero-Knowledge Design**
-- Device-local processing (ML Kit, TensorFlow.js)
-- AES-256-GCM encrypted vault + biometric gate  
-- No personal data via signaling; application-layer encryption on P2P
-- Deterministic PII redaction (BSNs, postcodes, emails) before leaving device
+- Device-local processing (ML Kit on mobile)
+- AES-256-GCM encrypted vault + biometric gate
+- Deterministic PII redaction (BSNs, postcodes, emails) on device
+- Local-only Privacy Sentinel (no P2P / remote share path)
 
 ## Tech Stack
 
 ```
 Dart 3.3+ / Flutter ≥3.19.0 | Riverpod 2.5.1 | Material 3 (WCAG AA)
-WebRTC sync | Google ML Kit | AES-256-GCM | Isar 3.1.0+1 | GoRouter
+Google ML Kit | AES-256-GCM | Isar 3.1.0+1 | GoRouter
 ```
+
+> Flutter stack is legacy during migration to Kotlin Multiplatform (Android + iOS). See migration plan.
 
 ## Key Services
 
@@ -76,7 +78,6 @@ WebRTC sync | Google ML Kit | AES-256-GCM | Isar 3.1.0+1 | GoRouter
 | `IdentityShieldService` | NER-based PII redaction |
 | `LocalTranslationService` | On-device ML translation (11 langs) |
 | `MockDataService` | FHIR R4 oncology bundle (testing) |
-| `WebRtcSyncService` | P2P sync (mobile ↔ web, end-to-end encrypted) |
 
 ### Database (Isar)
 
@@ -96,19 +97,18 @@ lib/
 │   ├── router/                   # GoRouter navigation configuration
 │   └── platform/                 # Platform detection utilities
 │
-├── services/                     # Domain services (crypto, translation, sync)
+├── services/                     # Domain services (crypto, translation, vault)
 │   ├── local_vault_service.dart  # AES-256-GCM encryption + biometric auth
 │   ├── identity_shield_service.dart  # NER-based PII redaction
 │   ├── local_translation_service.dart # On-device ML translation
-│   ├── mock_data_service.dart    # FHIR R4 mock bundle
-│   └── webrtc_sync_service.dart  # P2P WebRTC sync
+│   └── mock_data_service.dart    # FHIR R4 mock bundle
 │
 ├── features/                     # Feature modules (Clean Architecture)
 │   ├── auth/                     # Authentication (biometric, PIN, self-destruct)
 │   ├── blueprint/                # Timeline UI (De Tijdlijn)
 │   ├── decoder/                  # Jargon translator (Smart System Decoder)
 │   ├── appointments/             # Appointment navigator + voice logging
-│   └── sync/                     # Mobile/web P2P sync (QR share, viewer)
+│   └── vault/                    # MedicalRecord entity + Isar models
 │
 ├── shared/                       # Shared UI components & theme
 │   ├── widgets/                  # PrivacySentinel, AppShell, etc.

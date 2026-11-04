@@ -261,10 +261,10 @@ When adding new features:
 - **MockDataService:** Fully testable (no external dependencies)
 
 ### Integration Tests
-These tests are unit-level. For full integration (Isar persistence, WebRTC sync):
+These tests are unit-level. For full integration (Isar persistence):
 ```bash
 flutter test --enable-integration-tests
-# See integration_test/ directory
+# See integration_test/ directory when present
 ```
 
 ---
