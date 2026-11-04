@@ -6,11 +6,8 @@ import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/blueprint/presentation/pages/blueprint_page.dart';
 import '../../features/decoder/presentation/pages/decoder_page.dart';
 import '../../features/appointments/presentation/pages/appointment_navigator_page.dart';
-import '../../features/sync/presentation/mobile/qr_share_page.dart';
-import '../../features/sync/presentation/web/viewer_page.dart';
 import '../../services/debug_logger.dart';
 import '../../shared/widgets/app_shell.dart';
-import '../../core/platform/platform_detector.dart';
 
 // ── Route names ──────────────────────────────────────────────────────────────
 
@@ -20,8 +17,6 @@ abstract final class AppRoute {
   static const String blueprint = '/blueprint';
   static const String decoder = '/decoder';
   static const String appointments = '/appointments';
-  static const String sync = '/sync';
-  static const String webViewer = '/viewer';
 }
 
 // ── Provider ─────────────────────────────────────────────────────────────────
@@ -30,8 +25,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   DebugLogger().log('🔄 Initializing GoRouter');
 
   try {
-    final initialLocation =
-        PlatformDetector.isWeb ? AppRoute.webViewer : AppRoute.auth;
+    const initialLocation = AppRoute.auth;
     DebugLogger().log('✓ Initial location: $initialLocation');
 
     return GoRouter(
@@ -76,25 +70,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 return const AppointmentNavigatorPage();
               },
             ),
-            GoRoute(
-              path: AppRoute.sync,
-              builder: (context, state) {
-                DebugLogger().log('→ Navigating to: ${AppRoute.sync}');
-                return const QrSharePage();
-              },
-            ),
           ],
-        ),
-
-        // ── Web Viewer (P2P passive viewer – no shell) ───────────────────────
-        GoRoute(
-          path: AppRoute.webViewer,
-          builder: (context, state) {
-            DebugLogger().log('→ Navigating to: ${AppRoute.webViewer}');
-            // Extract session token from QR deep-link query param
-            final token = state.uri.queryParameters['token'];
-            return ViewerPage(sessionToken: token);
-          },
         ),
       ],
 

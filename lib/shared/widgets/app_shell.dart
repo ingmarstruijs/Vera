@@ -73,12 +73,6 @@ class AppShell extends ConsumerWidget {
             label: StringsNl.navAppointments,
             tooltip: 'Afspraken en pocket-gids',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.qr_code_outlined),
-            selectedIcon: Icon(Icons.qr_code),
-            label: StringsNl.navSync,
-            tooltip: 'Veilig delen via P2P',
-          ),
         ],
       ),
     );
@@ -88,7 +82,6 @@ class AppShell extends ConsumerWidget {
     if (path.startsWith(AppRoute.blueprint)) return 0;
     if (path.startsWith(AppRoute.decoder)) return 1;
     if (path.startsWith(AppRoute.appointments)) return 2;
-    if (path.startsWith(AppRoute.sync)) return 3;
     return 0;
   }
 
@@ -100,8 +93,6 @@ class AppShell extends ConsumerWidget {
         context.go(AppRoute.decoder);
       case 2:
         context.go(AppRoute.appointments);
-      case 3:
-        context.go(AppRoute.sync);
     }
   }
 }

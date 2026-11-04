@@ -50,8 +50,7 @@ final localVaultServiceProvider = Provider<LocalVaultService>((ref) {
 /// * **Self-destruct**: after [AppConstants.maxFailedAuthAttempts] consecutive
 ///   failures the master key AND all Isar records are permanently deleted.
 /// * **Platform guard**: all operations return [VaultNotSupportedFailure]
-///   on web; the web platform uses only the ephemeral RAM store exposed by
-///   the WebRTC P2P viewer.
+///   on web; encrypted vault persistence is mobile-only.
 class LocalVaultService {
   LocalVaultService({required Isar? isar}) : _isar = isar;
 

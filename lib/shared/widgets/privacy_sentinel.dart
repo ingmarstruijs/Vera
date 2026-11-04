@@ -7,22 +7,18 @@ import '../../core/constants/strings_nl.dart';
 
 // ── Privacy state ──────────────────────────────────────────────────────────────
 
-/// Represents the three possible data-safety states Vera can be in.
+/// Represents the data-safety states Vera can be in.
 enum PrivacyStatus {
   /// All data is stored locally; no external connections active.
   local,
 
-  /// An ephemeral P2P WebRTC session is active (data stays off-server but
-  /// travels encrypted to a second screen).
-  p2pSessionActive,
-
-  /// Status cannot be determined (e.g., during WebRTC setup).
+  /// Status cannot be determined.
   unknown,
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
-/// Global provider – can be overridden to reflect WebRTC session state.
+/// Global provider for the current privacy / data-locality status.
 final privacyStatusProvider = StateProvider<PrivacyStatus>(
   (_) => PrivacyStatus.local,
 );
@@ -36,8 +32,6 @@ final privacyStatusProvider = StateProvider<PrivacyStatus>(
 ///
 /// ## Behaviour
 /// * **Groen (lokaal)**: data bevindt zich uitsluitend op dit apparaat.
-/// * **Oranje (P2P actief)**: een versleutelde P2P-sessie is actief;
-///   gegevens verlaten het apparaat versleuteld maar geen centrale server.
 /// * **Rood (onbekend)**: status niet bepaalbaar; gebruiker wordt gevraagd
 ///   actie te ondernemen.
 ///
@@ -80,17 +74,6 @@ class PrivacySentinel extends ConsumerWidget {
           semanticLabel: 'Privacy Sentinel: ${StringsNl.sentinelLocalTitle}. '
               '${StringsNl.sentinelLocalSubtitle}',
           shouldPulse: false,
-        ),
-      PrivacyStatus.p2pSessionActive => _SentinelConfig(
-          dotColor: const Color(0xFFE07B00), // amber – 4.6:1 on white
-          backgroundColor: const Color(0xFFFFF3E0),
-          borderColor: const Color(0xFFE07B00),
-          icon: Icons.sensors,
-          title: StringsNl.sentinelWarningTitle,
-          subtitle: StringsNl.sentinelWarningSubtitle,
-          semanticLabel: 'Privacy Sentinel: ${StringsNl.sentinelWarningTitle}. '
-              '${StringsNl.sentinelWarningSubtitle}',
-          shouldPulse: true,
         ),
       PrivacyStatus.unknown => _SentinelConfig(
           dotColor: const Color(0xFFC62828), // red – 5.8:1 on white

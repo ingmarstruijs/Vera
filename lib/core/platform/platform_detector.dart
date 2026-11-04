@@ -29,9 +29,6 @@ class PlatformDetector {
   /// True when on-device ML Kit is available (Android / iOS only).
   static bool get isMlKitSupported => isMobile;
 
-  /// True when QR scanning is available (camera required).
-  static bool get isQrScanSupported => isMobile;
-
   /// True when speech-to-text is supported on this platform.
   static bool get isSpeechSupported => isMobile;
 }

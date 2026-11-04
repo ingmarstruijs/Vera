@@ -42,16 +42,6 @@ dependencies:
   google_mlkit_entity_extraction: ^0.15.3   # Named-Entity Recognition
   google_mlkit_translation: ^0.13.1          # On-device language translation
 
-  # ── WebRTC P2P Sync (Mobile → Web Viewer) ────────────────────────────────────
-  # Only WebRTC session metadata (SDP/ICE) passes through the relay.
-  # All medical payload is encrypted inside the P2P data-channel.
-  flutter_webrtc: ^1.4.1
-  web_socket_channel: ^3.0.3    # lightweight signalling channel
-
-  # ── QR Code ──────────────────────────────────────────────────────────────────
-  qr_flutter: ^4.1.0
-  mobile_scanner: ^7.2.0
-
   # ── Voice & Accessibility ────────────────────────────────────────────────────
   speech_to_text: ^7.3.0        # Symptom voice logging
   flutter_tts: ^4.2.5           # Screen-reader / read-aloud support
