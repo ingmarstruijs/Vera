@@ -193,10 +193,10 @@ class LocalVaultService(
         sessionKey = Base64.decode(encoded)
     }
 
-    private suspend fun remainingAttempts(): Int {
+    suspend fun remainingAttempts(): Int {
         val raw = keyStore.read(AppConstants.FAILED_ATTEMPTS_KEY) ?: "0"
         val failed = raw.toIntOrNull() ?: 0
-        return maxFailedAttempts - failed
+        return (maxFailedAttempts - failed).coerceAtLeast(0)
     }
 
     private suspend fun handleFailedAttempt(): VaultOpResult {
