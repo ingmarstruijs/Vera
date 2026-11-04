@@ -1,5 +1,6 @@
 package net.moonbaseone.vera.ui.decoder
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.TaskAlt
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -27,6 +29,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -48,6 +51,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.decoder.SupportedDecoderLanguages
+import net.moonbaseone.vera.shared.decoder.TranslatedGlossaryFields
 import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
@@ -113,19 +117,41 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
             PrivacyNote()
             Spacer(modifier = Modifier.height(12.dp))
 
-            state.translationNotice?.let { notice ->
-                Surface(
-                    color = Color(0xFFFFF3E0),
-                    shape = RoundedCornerShape(10.dp),
+            state.downloadProgress?.let { progress ->
+                Text(
+                    UiCopy.DECODER_DOWNLOADING_MODEL,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                LinearProgressIndicator(
+                    progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                ) {
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (state.isTranslating) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        notice,
-                        modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(DesignTokens.AMBER),
+                        state.translationNotice ?: UiCopy.DECODER_TRANSLATING,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                state.translationNotice?.let { notice ->
+                    StatusBanner(notice, Color(0xFFFFF3E0), Color(DesignTokens.AMBER))
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+
+            state.translationError?.let { error ->
+                StatusBanner(error, Color(0xFFFFEBEE), MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -157,6 +183,7 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
             items(state.entries, key = { it.term }) { entry ->
                 JargonCard(
                     entry = entry,
+                    translated = state.translatedEntries[entry.term],
                     expanded = state.expandedTerm == entry.term,
                     onToggle = { viewModel.toggleExpanded(entry.term) },
                 )
@@ -168,11 +195,27 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
 }
 
 @Composable
+private fun StatusBanner(message: String, background: Color, foreground: Color) {
+    Surface(
+        color = background,
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            message,
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = foreground,
+        )
+    }
+}
+
+@Composable
 private fun PrivacyNote() {
     Surface(
         color = Color(DesignTokens.SENTINEL_BG),
         shape = RoundedCornerShape(10.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(DesignTokens.SENTINEL_GREEN)),
+        border = BorderStroke(1.dp, Color(DesignTokens.SENTINEL_GREEN)),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -198,13 +241,17 @@ private fun PrivacyNote() {
 @Composable
 private fun JargonCard(
     entry: JargonEntry,
+    translated: TranslatedGlossaryFields?,
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
+    val explanation = translated?.explanation ?: entry.dutchExplanation
+    val actionItem = translated?.actionItem ?: entry.actionItem
+
     Surface(
         shape = RoundedCornerShape(16.dp),
         tonalElevation = 0.dp,
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant,
         ),
@@ -237,7 +284,7 @@ private fun JargonCard(
             }
             if (expanded) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(entry.dutchExplanation, style = MaterialTheme.typography.bodyMedium)
+                Text(explanation, style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(12.dp))
                 Surface(
                     color = MaterialTheme.colorScheme.primaryContainer,
@@ -261,7 +308,7 @@ private fun JargonCard(
                                 color = MaterialTheme.colorScheme.primary,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(entry.actionItem, style = MaterialTheme.typography.bodySmall)
+                            Text(actionItem, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }

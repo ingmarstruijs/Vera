@@ -59,6 +59,12 @@ object UiCopy {
     const val DECODER_TRANSLATION_PENDING =
         "On-device vertaling naar andere talen volgt in P7 (ML Kit). " +
             "De Nederlandse uitleg blijft beschikbaar."
+    const val DECODER_TRANSLATION_UNAVAILABLE =
+        "Op-apparaat vertaling is op dit platform nog niet beschikbaar. " +
+            "De Nederlandse uitleg blijft zichtbaar."
+    const val DECODER_DOWNLOADING_MODEL = "Taalmodel downloaden…"
+    const val DECODER_DOWNLOAD_FAILED = "Download van het taalmodel is mislukt."
+    const val DECODER_TRANSLATING = "Lokaal vertalen…"
     const val DECODER_NO_RESULTS = "Geen termen gevonden voor deze zoekopdracht."
 
     const val APPOINTMENTS_TITLE = "Afspraak Navigator"

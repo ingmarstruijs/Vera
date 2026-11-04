@@ -13,6 +13,8 @@ uuid = "0.8.4"
 securityCrypto = "1.1.0-alpha06"
 biometric = "1.1.0"
 fragment = "1.8.6"
+mlkitTranslate = "17.0.3"
+mlkitEntityExtraction = "16.0.0-beta6"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -36,12 +38,15 @@ sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", versi
 sqldelight-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
+mlkit-translate = { module = "com.google.mlkit:translate", version.ref = "mlkitTranslate" }
+mlkit-entity-extraction = { module = "com.google.mlkit:entity-extraction", version.ref = "mlkitEntityExtraction" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -108,7 +108,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 | **P3** | SQLDelight + vault crypto | Secure-storage interfaces |
 | **P4** | Keystore/Keychain + biometrics | Platform actuals |
 | **P5–P6** | UI shell + features | Compose + SwiftUI; no sync tab |
-| **P7** | ML Kit NER/translation | Android + iOS only |
+| **P7** | ML Kit NER/translation | Android ML Kit + iOS NLTagger / Translate stub |
 | **P10** | Remove Flutter tree | After Android+iOS parity |
 | **P10b** | English KMP cutover docs | Docs phase C |
 | **P11** | Post-parity hardening / greenfield-inspired refactor | **Optional/phased after P10:** detekt/signing/a11y; CMP-vs-dual gate; feature modules; typed nav; thinner IA; clinical UI; i18n packs; repo boundaries (Phase 6) |

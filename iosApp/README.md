@@ -37,5 +37,5 @@ When `Shared.framework` is linked, replace `AuthCoordinator` with the Kotlin `Au
 
 ## P6 decoder / appointments
 
-- `DecoderView` — glossary search + expand (NL; other languages stub until P7 ML Kit).
+- `DecoderView` — glossary search + expand (NL; non-NL notice until CocoaPods ML Kit Translate is linked).
 - `AppointmentsView` + `SpeechCoordinator` — CarePlan appointments, pocket guide, SFSpeech / AVSpeech.
