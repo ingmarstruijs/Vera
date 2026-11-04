@@ -82,7 +82,8 @@ Vera/
 
 - [x] P0: no WebRTC/QR-share/viewer/`p2pSessionActive` on Flutter `main`  
 - [x] Shared tests for FHIR mock + jargon glossary (P2)
-- [x] Shared tests for BSN redaction + vault AES-GCM round-trip (P3); Keystore/Keychain actuals still P4  
+- [x] Shared tests for BSN redaction + vault AES-GCM round-trip (P3)
+- [x] Android EncryptedSharedPreferences + BiometricPrompt; iOS Keychain + LocalAuthentication (P4); iOS AES-GCM CryptoKit bridge still follow-up  
 - [ ] Android + iOS: unlock → timeline → decoder → appointments  
 - [x] Stack direction: Koin + StateFlow; SQLDelight stubs; IDs `net.moonbaseone.vera`  
 - [x] No desktop/web KMP modules in v1  

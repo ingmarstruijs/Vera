@@ -3,6 +3,7 @@ package net.moonbaseone.vera.shared.vault
 import kotlinx.coroutines.runBlocking
 import net.moonbaseone.vera.shared.AppConstants
 import net.moonbaseone.vera.shared.domain.MedicalRecord
+import net.moonbaseone.vera.shared.failure.AuthBiometricFailure
 import net.moonbaseone.vera.shared.failure.AuthMaxAttemptsFailure
 import net.moonbaseone.vera.shared.failure.VaultLockedFailure
 import net.moonbaseone.vera.shared.failure.VaultSelfDestructFailure
@@ -16,8 +17,14 @@ class LocalVaultServiceTest {
     private fun newVault(
         keyStore: SecureKeyStore = InMemorySecureKeyStore(),
         recordStore: MedicalRecordStore = InMemoryMedicalRecordStore(),
+        biometric: BiometricAuthenticator = FakeBiometricAuthenticator(),
         maxAttempts: Int = AppConstants.MAX_FAILED_AUTH_ATTEMPTS,
-    ) = LocalVaultService(keyStore, recordStore, maxAttempts)
+    ) = LocalVaultService(
+        keyStore = keyStore,
+        recordStore = recordStore,
+        biometricAuthenticator = biometric,
+        maxFailedAttempts = maxAttempts,
+    )
 
     private fun sampleRecord(id: String = "uuid-001") = MedicalRecord(
         id = id,
@@ -55,6 +62,48 @@ class LocalVaultServiceTest {
         assertEquals("""{"code":"C50.4"}""", loaded.records[0].anonymisedPayloadJson)
         assertEquals("Invasief ductaal carcinoom", loaded.records[0].title)
         assertEquals(listOf("oncology"), loaded.records[0].tags)
+        Unit
+    }
+
+    @Test
+    fun unlockWithBiometrics_success_loadsSession() = runBlocking {
+        val biometric = FakeBiometricAuthenticator()
+        val vault = newVault(biometric = biometric)
+        vault.createVault()
+        val result = vault.unlockWithBiometrics(authenticator = biometric)
+        assertTrue(result.success)
+        assertTrue(vault.isUnlocked)
+        assertEquals(1, biometric.authenticateCalls)
+        Unit
+    }
+
+    @Test
+    fun unlockWithBiometrics_unavailable_returnsAuthFailure() = runBlocking {
+        val biometric = FakeBiometricAuthenticator(canAuth = false)
+        val vault = newVault(biometric = biometric)
+        vault.createVault()
+        val result = vault.unlockWithBiometrics(authenticator = biometric)
+        assertFalse(result.success)
+        assertTrue(result.failure is AuthBiometricFailure)
+        assertFalse(vault.isUnlocked)
+        Unit
+    }
+
+    @Test
+    fun unlockWithBiometrics_failedAttempt_countsTowardSelfDestruct() = runBlocking {
+        val biometric = FakeBiometricAuthenticator(
+            result = BiometricAuthResult.Failed(AuthBiometricFailure("fail")),
+        )
+        val keyStore = InMemorySecureKeyStore()
+        val vault = newVault(keyStore = keyStore, biometric = biometric, maxAttempts = 2)
+        vault.createVault()
+
+        val first = vault.unlockWithBiometrics(authenticator = biometric)
+        assertTrue(first.failure is AuthBiometricFailure)
+
+        val second = vault.unlockWithBiometrics(authenticator = biometric)
+        assertTrue(second.failure is VaultSelfDestructFailure)
+        assertFalse(vault.isVaultInitialised())
         Unit
     }
 
