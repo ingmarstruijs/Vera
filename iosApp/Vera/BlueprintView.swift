@@ -29,47 +29,68 @@ struct BlueprintView: View {
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
     @State private var expandedJargonTerm: String?
+    @State private var didCenterOnLaunch = false
+
+    private var focusId: String? {
+        expandedId ?? events.first(where: { $0.phase == .current })?.id
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Uw zorgplan")
                     .font(.title2.weight(.bold))
                     .accessibilityAddTraits(.isHeader)
                 Text("Uw diagnose afgezet tegen IKNL-richtlijnen")
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(ClinicalColors.textSecondary)
                 Label("Bron: IKNL Richtlijnendatabase", systemImage: "checkmark.seal")
                     .font(.caption)
                     .foregroundStyle(ClinicalColors.primary)
 
-                HStack(spacing: 16) {
+                HStack(spacing: 14) {
                     LegendDot(color: ClinicalColors.statusCompleted, label: "Afgerond")
                     LegendDot(color: ClinicalColors.statusInProgress, label: "Huidig")
                     LegendDot(color: ClinicalColors.statusScheduled, label: "Gepland")
                 }
-                .padding(.top, 4)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Legenda: Afgerond, Huidig, Gepland")
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 0) {
-                        ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
-                            TimelineNodeView(
-                                event: event,
-                                expanded: expandedId == event.id
-                            ) {
-                                expandedId = expandedId == event.id ? nil : event.id
-                                expandedJargonTerm = nil
-                            }
-                            if index < events.count - 1 {
-                                Rectangle()
-                                    .fill(Color.secondary.opacity(0.3))
-                                    .frame(width: 24, height: 2)
+                ScrollViewReader { proxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 0) {
+                            ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
+                                TimelineNodeView(
+                                    event: event,
+                                    expanded: expandedId == event.id
+                                ) {
+                                    expandedId = expandedId == event.id ? nil : event.id
+                                    expandedJargonTerm = nil
+                                    if let id = expandedId {
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            proxy.scrollTo(id, anchor: .center)
+                                        }
+                                    }
+                                }
+                                .id(event.id)
+                                if index < events.count - 1 {
+                                    Rectangle()
+                                        .fill(Color.secondary.opacity(0.3))
+                                        .frame(width: 24, height: 2)
+                                }
                             }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 8)
+                    .onAppear {
+                        centerCurrentItem(proxy: proxy)
+                    }
+                    .onChange(of: expandedId) { _, newValue in
+                        guard let id = newValue else { return }
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            proxy.scrollTo(id, anchor: .center)
+                        }
+                    }
                 }
 
                 if let expanded = events.first(where: { $0.id == expandedId }) {
@@ -82,11 +103,24 @@ struct BlueprintView: View {
                     )
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
         }
         .onAppear {
             if expandedId == nil {
                 expandedId = events.first(where: { $0.phase == .current })?.id
+            }
+        }
+    }
+
+    private func centerCurrentItem(proxy: ScrollViewProxy) {
+        guard !didCenterOnLaunch, let id = focusId else { return }
+        didCenterOnLaunch = true
+        // Defer one run-loop so layout has measured carousel widths.
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(id, anchor: .center)
             }
         }
     }
@@ -127,7 +161,7 @@ private struct TimelineNodeView: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Circle().fill(phaseColor).frame(width: 10, height: 10)
                     Text(phaseLabel)
@@ -140,14 +174,15 @@ private struct TimelineNodeView: View {
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
             }
-            .padding(10)
-            .frame(width: 140, height: 100, alignment: .topLeading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(width: 140, height: 92, alignment: .topLeading)
             .background(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(expanded ? phaseColor : phaseColor.opacity(0.12))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(phaseColor, lineWidth: expanded ? 2 : 1.5)
             )
         }
@@ -162,7 +197,7 @@ private struct EventDetailCard: View {
     let onToggleJargon: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(event.title).font(.headline)
                 Spacer()
@@ -170,7 +205,7 @@ private struct EventDetailCard: View {
                     Text(statusLabel(status))
                         .font(.caption.weight(.bold))
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 3)
                         .background(Capsule().stroke(Color.secondary))
                 }
             }
@@ -179,7 +214,7 @@ private struct EventDetailCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Divider()
+            Divider().padding(.vertical, 2)
             Text(event.description).font(.body)
 
             if let instruction = event.patientInstruction, !instruction.isEmpty {
@@ -220,7 +255,7 @@ private struct EventDetailCard: View {
                     }
                 }
                 if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(open.term).font(.subheadline.weight(.bold))
                         Text(open.explanation).font(.caption)
                         if !open.actionItem.isEmpty {
@@ -229,7 +264,7 @@ private struct EventDetailCard: View {
                                 .italic()
                         }
                     }
-                    .padding(12)
+                    .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
                 }
@@ -243,9 +278,9 @@ private struct EventDetailCard: View {
                 }
             }
         }
-        .padding(16)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
         )
     }
