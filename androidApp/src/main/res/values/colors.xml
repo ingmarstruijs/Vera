@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches DesignTokens.PRIMARY_GREEN (#2F5D50) -->
+    <color name="ic_launcher_background">#2F5D50</color>
+    <!-- Matches DesignTokens.SURFACE_LIGHT (#F3F6F5) -->
+    <color name="ic_launcher_foreground_tint">#F3F6F5</color>
+</resources>
