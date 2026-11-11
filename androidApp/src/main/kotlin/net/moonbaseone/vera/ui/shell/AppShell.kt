@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -94,6 +95,8 @@ fun AppShell(
                             headerTitle,
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.semantics { heading() },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                         if (headerSubtitle != null) {
                             Text(
@@ -101,6 +104,7 @@ fun AppShell(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }

@@ -69,10 +69,15 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 8.dp),
+            .padding(bottom = 24.dp),
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp))
+        LegendRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+        )
 
         when (val ui = state) {
             BlueprintUiState.Loading -> {
@@ -270,13 +275,23 @@ private fun EventDetailPanel(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(
                     event.title,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                Spacer(modifier = Modifier.width(8.dp))
                 event.fhirStatus?.let { StatusBadge(it) }
             }
             if (event.dateIso.isNotBlank()) {
@@ -285,6 +300,8 @@ private fun EventDetailPanel(
                     "${UiCopy.BLUEPRINT_SCHEDULED_PREFIX}${DateDisplay.formatIso(event.dateIso)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -295,12 +312,26 @@ private fun EventDetailPanel(
                 FilterChip(
                     selected = !showClinicalText,
                     onClick = { onShowClinicalText(false) },
-                    label = { Text(UiCopy.BLUEPRINT_MODE_PLAIN) },
+                    label = {
+                        Text(
+                            UiCopy.BLUEPRINT_MODE_PLAIN,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    modifier = Modifier.weight(1f),
                 )
                 FilterChip(
                     selected = showClinicalText,
                     onClick = { onShowClinicalText(true) },
-                    label = { Text(UiCopy.BLUEPRINT_MODE_CLINICAL) },
+                    label = {
+                        Text(
+                            UiCopy.BLUEPRINT_MODE_CLINICAL,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    modifier = Modifier.weight(1f),
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -312,28 +343,44 @@ private fun EventDetailPanel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(event.description, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    event.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 event.iknlGuidelineRef?.let { url ->
                     Spacer(modifier = Modifier.height(4.dp))
                     TextButton(
                         onClick = { uriHandler.openUri(url) },
-                        modifier = Modifier.padding(0.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(UiCopy.BLUEPRINT_IKNL_LINK)
+                        Text(
+                            UiCopy.BLUEPRINT_IKNL_LINK,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
             } else {
                 event.patientInstruction?.let { instruction ->
                     Text(UiCopy.BLUEPRINT_INSTRUCTION, style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(instruction, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        instruction,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 event.nextSteps?.let { next ->
                     Text(UiCopy.BLUEPRINT_NEXT_STEPS, style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(next, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        next,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
@@ -342,7 +389,9 @@ private fun EventDetailPanel(
                     Spacer(modifier = Modifier.height(4.dp))
                     event.actionItems.forEach { item ->
                         Row(
-                            modifier = Modifier.padding(bottom = 3.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 3.dp),
                             verticalAlignment = Alignment.Top,
                         ) {
                             Icon(
@@ -352,7 +401,11 @@ private fun EventDetailPanel(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(item, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                item,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f),
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -59,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -277,14 +279,17 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .navigationBarsPadding(),
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surface,
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Outlined.MenuBook,
@@ -296,6 +301,8 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                                 UiCopy.APPOINTMENTS_POCKET_PANEL,
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.weight(1f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             IconButton(onClick = viewModel::readAloudPocketGuide) {
                                 Icon(
@@ -311,6 +318,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
+                                .fillMaxWidth()
                                 .verticalScroll(rememberScrollState())
                                 .padding(20.dp),
                         ) {
@@ -322,7 +330,9 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                         HorizontalDivider()
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
                         ) {
                             if (state.guideJustSaved || guide.isSaved) {
                                 Text(
@@ -330,11 +340,16 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.weight(1f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             } else {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
-                            Button(onClick = viewModel::savePocketGuide) {
+                            Button(
+                                onClick = viewModel::savePocketGuide,
+                                modifier = Modifier.heightIn(min = 48.dp),
+                            ) {
                                 Text(UiCopy.APPOINTMENTS_SAVE_GUIDE)
                             }
                         }
@@ -355,21 +370,37 @@ private fun SavedGuideRow(guide: PocketGuide, onOpen: () -> Unit) {
             .padding(bottom = 10.dp)
             .clickable(onClick = onOpen),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(14.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
         ) {
-            Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(guide.serviceType, style = MaterialTheme.typography.titleSmall)
-                Text(
-                    guide.date,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        guide.serviceType,
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        guide.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            TextButton(onClick = onOpen) {
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = onOpen,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+            ) {
                 Text(UiCopy.APPOINTMENTS_OPEN_SAVED)
             }
         }
@@ -398,6 +429,8 @@ private fun SymptomNoteRow(
                 note.text,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.weight(1f).padding(start = 4.dp),
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
             )
             IconButton(onClick = onReadAloud) {
                 Icon(
@@ -528,12 +561,20 @@ private fun PocketGuideContent(
 @Composable
 private fun MetaRow(label: String, value: String) {
     if (value.isBlank()) return
-    Row(modifier = Modifier.padding(bottom = 4.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp),
+    ) {
         Text(
             "$label: ",
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
         )
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
@@ -576,7 +617,13 @@ private fun AppointmentCard(
                     modifier = Modifier.size(20.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(appointment.serviceType, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    appointment.serviceType,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             val whenLabel = appointment.startDisplay.ifBlank { appointment.startIso }
             if (whenLabel.isNotBlank()) {
@@ -585,6 +632,8 @@ private fun AppointmentCard(
                     whenLabel,
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             if (appointment.location.isNotBlank()) {
@@ -593,6 +642,8 @@ private fun AppointmentCard(
                     appointment.location,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             if (appointment.practitioner.isNotBlank()) {
@@ -601,6 +652,8 @@ private fun AppointmentCard(
                     appointment.practitioner,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             if (selected) {
