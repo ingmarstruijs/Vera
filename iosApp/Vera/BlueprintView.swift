@@ -29,6 +29,7 @@ struct BlueprintView: View {
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
     @State private var expandedJargonTerm: String?
+    @State private var showClinicalText = false
     @State private var didCenterOnLaunch = false
 
     private var focusId: String? {
@@ -87,8 +88,13 @@ struct BlueprintView: View {
                     EventDetailCard(
                         event: expanded,
                         expandedJargonTerm: expandedJargonTerm,
+                        showClinicalText: showClinicalText,
                         onToggleJargon: { term in
                             expandedJargonTerm = expandedJargonTerm == term ? nil : term
+                        },
+                        onShowClinicalText: { clinical in
+                            showClinicalText = clinical
+                            if clinical { expandedJargonTerm = nil }
                         }
                     )
                 }
@@ -184,7 +190,9 @@ private struct TimelineNodeView: View {
 private struct EventDetailCard: View {
     let event: TimelineEventModel
     let expandedJargonTerm: String?
+    let showClinicalText: Bool
     let onToggleJargon: (String) -> Void
+    let onShowClinicalText: (Bool) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -204,67 +212,81 @@ private struct EventDetailCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Divider().padding(.vertical, 2)
-            Text(event.description).font(.body)
 
-            if let instruction = event.patientInstruction, !instruction.isEmpty {
-                Text("Wat u moet weten").font(.subheadline.weight(.semibold))
-                Text(instruction).font(.caption)
+            Picker("Tekstmodus", selection: Binding(
+                get: { showClinicalText },
+                set: { onShowClinicalText($0) }
+            )) {
+                Text("Begrijpelijk").tag(false)
+                Text("Dokterstekst").tag(true)
             }
+            .pickerStyle(.segmented)
 
-            if let next = event.nextSteps, !next.isEmpty {
-                Text("Volgende stap").font(.subheadline.weight(.semibold))
-                Text(next).font(.caption)
-            }
-
-            if !event.jargon.isEmpty {
-                Text("Begrijpelijke uitleg").font(.subheadline.weight(.semibold))
-                Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
+            if showClinicalText {
+                Text("Originele tekst uit uw zorgplan")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(event.jargon) { match in
-                            let selected = expandedJargonTerm == match.term
-                            Button {
-                                onToggleJargon(match.term)
-                            } label: {
-                                Text(match.term)
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        Capsule()
-                                            .fill(selected ? ClinicalColors.primary : Color(.secondarySystemBackground))
-                                    )
-                                    .foregroundStyle(selected ? Color.white : Color.primary)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(match.term)
-                        }
-                    }
+                Text(event.description).font(.body)
+            } else {
+                if let instruction = event.patientInstruction, !instruction.isEmpty {
+                    Text("Wat u moet weten").font(.subheadline.weight(.semibold))
+                    Text(instruction).font(.body)
                 }
-                if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(open.term).font(.subheadline.weight(.bold))
-                        Text(open.explanation).font(.caption)
-                        if !open.actionItem.isEmpty {
-                            Text("Actie: \(open.actionItem)")
-                                .font(.caption)
-                                .italic()
-                        }
-                    }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-                }
-            }
 
-            if !event.actionItems.isEmpty {
-                Text("Actiepunten:").font(.subheadline.weight(.semibold))
-                ForEach(event.actionItems, id: \.self) { item in
-                    Label(item, systemImage: "checkmark.circle")
-                        .font(.caption)
+                if let next = event.nextSteps, !next.isEmpty {
+                    Text("Volgende stap").font(.subheadline.weight(.semibold))
+                    Text(next).font(.body)
+                }
+
+                if !event.actionItems.isEmpty {
+                    Text("Actiepunten:").font(.subheadline.weight(.semibold))
+                    ForEach(event.actionItems, id: \.self) { item in
+                        Label(item, systemImage: "checkmark.circle")
+                            .font(.caption)
+                    }
+                }
+
+                if !event.jargon.isEmpty {
+                    Text("Begrijpelijke uitleg").font(.subheadline.weight(.semibold))
+                    Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(event.jargon) { match in
+                                let selected = expandedJargonTerm == match.term
+                                Button {
+                                    onToggleJargon(match.term)
+                                } label: {
+                                    Text(match.term)
+                                        .font(.caption.weight(.semibold))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(selected ? ClinicalColors.primary : Color(.secondarySystemBackground))
+                                        )
+                                        .foregroundStyle(selected ? Color.white : Color.primary)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(match.term)
+                            }
+                        }
+                    }
+                    if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(open.term).font(.subheadline.weight(.bold))
+                            Text(open.explanation).font(.caption)
+                            if !open.actionItem.isEmpty {
+                                Text("Actie: \(open.actionItem)")
+                                    .font(.caption)
+                                    .italic()
+                            }
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                    }
                 }
             }
         }
