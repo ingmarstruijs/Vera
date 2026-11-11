@@ -29,6 +29,50 @@ data class AppointmentSummary(
     val comment: String,
 )
 
+/**
+ * Structured pocket guide shown as readable sections (no markdown syntax in UI).
+ * [plainText] is used for TTS / share-style export.
+ */
+data class PocketGuide(
+    val appointmentId: String,
+    val title: String,
+    val date: String,
+    val serviceType: String,
+    val location: String,
+    val reason: String,
+    val symptoms: String,
+    val questions: List<String>,
+    val memo: String,
+    val footer: String,
+    val extraNotes: String = "",
+) {
+    fun plainText(): String = buildString {
+        appendLine(title)
+        appendLine("${UiCopy.APPOINTMENTS_META_DATE}: $date")
+        appendLine("${UiCopy.APPOINTMENTS_META_TYPE}: $serviceType")
+        appendLine("${UiCopy.APPOINTMENTS_META_LOCATION}: $location")
+        appendLine()
+        appendLine(UiCopy.APPOINTMENTS_REASON)
+        appendLine(reason)
+        appendLine()
+        appendLine(UiCopy.APPOINTMENTS_SYMPTOMS_HEADER)
+        appendLine(symptoms)
+        appendLine()
+        appendLine(UiCopy.APPOINTMENTS_SUGGESTED_QUESTIONS)
+        questions.forEach { appendLine("• $it") }
+        appendLine()
+        appendLine(UiCopy.APPOINTMENTS_MEMO)
+        appendLine(memo)
+        if (extraNotes.isNotBlank()) {
+            appendLine()
+            appendLine(UiCopy.APPOINTMENTS_EXTRA_NOTES)
+            appendLine(extraNotes)
+        }
+        appendLine()
+        appendLine(footer)
+    }.trim()
+}
+
 data class AppointmentsUiState(
     val isLoading: Boolean = true,
     val appointments: List<AppointmentSummary> = emptyList(),
@@ -36,7 +80,7 @@ data class AppointmentsUiState(
     val symptomNotes: String = "",
     val isListening: Boolean = false,
     val speechAvailable: Boolean = false,
-    val pocketGuide: String? = null,
+    val pocketGuide: PocketGuide? = null,
     val errorMessage: String? = null,
 )
 
@@ -88,30 +132,29 @@ class AppointmentsViewModel(
         val targetId = id ?: return
         val appt = _state.value.appointments.firstOrNull { it.id == targetId } ?: return
         val notes = _state.value.symptomNotes
-        val guide = buildString {
-            appendLine(UiCopy.APPOINTMENTS_POCKET_TITLE)
-            appendLine("**Datum:** ${appt.startIso}")
-            appendLine("**Type:** ${appt.serviceType}")
-            appendLine("**Locatie:** ${appt.location}")
-            appendLine()
-            appendLine("## ${UiCopy.APPOINTMENTS_REASON}")
-            appendLine(appt.reason.ifBlank { "—" })
-            appendLine()
-            appendLine("## ${UiCopy.APPOINTMENTS_SYMPTOMS_HEADER}")
-            appendLine(
-                if (notes.isBlank()) UiCopy.APPOINTMENTS_SYMPTOMS_EMPTY else notes,
-            )
-            appendLine()
-            appendLine("## ${UiCopy.APPOINTMENTS_SUGGESTED_QUESTIONS}")
-            UiCopy.APPOINTMENTS_DEFAULT_QUESTIONS.forEach { appendLine("* $it") }
-            appendLine()
-            appendLine("## Memo")
-            appendLine(appt.comment.ifBlank { "—" })
-            appendLine()
-            appendLine("---")
-            appendLine("*${UiCopy.APPOINTMENTS_POCKET_FOOTER}*")
-        }
-        _state.update { it.copy(pocketGuide = guide.trim()) }
+        val previousNotes = _state.value.pocketGuide
+            ?.takeIf { it.appointmentId == targetId }
+            ?.extraNotes
+            .orEmpty()
+        val guide = PocketGuide(
+            appointmentId = appt.id,
+            title = UiCopy.APPOINTMENTS_POCKET_TITLE,
+            date = appt.startIso,
+            serviceType = appt.serviceType,
+            location = appt.location,
+            reason = appt.reason.ifBlank { "—" },
+            symptoms = if (notes.isBlank()) UiCopy.APPOINTMENTS_SYMPTOMS_EMPTY else notes,
+            questions = UiCopy.APPOINTMENTS_DEFAULT_QUESTIONS,
+            memo = appt.comment.ifBlank { "—" },
+            footer = UiCopy.APPOINTMENTS_POCKET_FOOTER,
+            extraNotes = previousNotes,
+        )
+        _state.update { it.copy(selectedId = targetId, pocketGuide = guide) }
+    }
+
+    fun updateExtraNotes(text: String) {
+        val guide = _state.value.pocketGuide ?: return
+        _state.update { it.copy(pocketGuide = guide.copy(extraNotes = text)) }
     }
 
     fun toggleVoiceLogging() {
@@ -160,7 +203,7 @@ class AppointmentsViewModel(
     fun readAloudPocketGuide() {
         val guide = _state.value.pocketGuide ?: return
         scope.launch {
-            textToSpeech.speak(guide, localeTag = "nl-NL")
+            textToSpeech.speak(guide.plainText(), localeTag = "nl-NL")
         }
     }
 
