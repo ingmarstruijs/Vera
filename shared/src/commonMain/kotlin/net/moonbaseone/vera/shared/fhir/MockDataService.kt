@@ -700,7 +700,8 @@ class MockDataService(
                 "was beperkt. IKNL beveelt neoadjuvante HER2-blokkade aan bij " +
                 "HER2-positief invasief ductaal carcinoom ≥cT2.",
         patientInstruction =
-            "Noteer koorts >38,5°C, aanhoudende misselijkheid of " +
+            "Voor de operatie kreeg u chemotherapie (TCHP) om de tumor te verkleinen. " +
+                "Noteer koorts >38,5°C, aanhoudende misselijkheid of " +
                 "neurologische tintelingen in het bijwerkingendagboek. " +
                 "Neem contact op bij kortademigheid tijdens trastuzumab.",
         nextStep =
@@ -725,9 +726,10 @@ class MockDataService(
                 "okselkliertoilet nodig. Operatie bevestigt Stadium IIA-beeld " +
                 "zonder lymfekliermetastasen.",
         patientInstruction =
-            "Wondzorg: droog houden tot hechtingen zijn verwijderd. " +
-                "Meld roodheid, zwelling of koorts. Vermijd zwaar tillen " +
-                "met de linkerarm de eerste twee weken.",
+            "U bent geopereerd: de tumor is uit de borst gehaald en de " +
+                "schildwachtklier is onderzocht. Wondzorg: droog houden tot " +
+                "hechtingen zijn verwijderd. Meld roodheid, zwelling of koorts. " +
+                "Vermijd zwaar tillen met de linkerarm de eerste twee weken.",
         nextStep =
             "Start adjuvante radiotherapie (hypofractionering) en hervat " +
                 "trastuzumab + pertuzumab volgens schema.",
@@ -750,14 +752,15 @@ class MockDataService(
                 "na borstsparende chirurgie bij Stadium IIA zonder " +
                 "lymfeklieruitzaaiing.",
         patientInstruction =
-            "Smeer alleen de door de radiotherapeut goedgekeurde crème. " +
-                "Vermijd zonlicht en strakke BH’s op de bestraalde huid. " +
-                "Noteer huidreacties (roodheid, jeuk, schilfering) dagelijks.",
+            "U krijgt bestraling van de linkerborst in kortere sessies " +
+                "(ongeveer 15 keer over drie weken). Dit is standaard na een " +
+                "borstsparende operatie. Smeer alleen de door de radiotherapeut " +
+                "goedgekeurde crème. Vermijd zonlicht en strakke BH’s op de " +
+                "bestraalde huid. Noteer huidreacties (roodheid, jeuk, schilfering) dagelijks.",
         nextStep =
             "Nacontrole radiotherapie na de laatste fractie; daarna " +
                 "verder met trastuzumab + pertuzumab en LVEF-controles.",
         actionItems = listOf(
-            "Noteer huidreacties in uw bijwerkingendagboek.",
             "Vraag hoeveel fracties u nog heeft en wanneer vermoeidheid piekt.",
         ),
     )
@@ -775,8 +778,10 @@ class MockDataService(
                 "drie maanden. Bij daling van de ejectiefractie kan de kuur " +
                 "tijdelijk worden onderbroken.",
         patientInstruction =
-            "Meld kortademigheid, enkeloedeem of snelle hartslag meteen. " +
-                "Neem echocardiografie-uitslagen mee naar elk oncologieconsult. " +
+            "U krijgt nog ongeveer een jaar trastuzumab en pertuzumab " +
+                "(HER2-medicatie) via het infuus. Meld kortademigheid, " +
+                "enkeloedeem of snelle hartslag meteen. Neem " +
+                "echocardiografie-uitslagen mee naar elk oncologieconsult. " +
                 "Vaccinaties en tandheelkunde: stem af met de oncoloog.",
         nextStep =
             "Volgende LVEF-meting plannen; bij stabiele LVEF schema " +
@@ -800,7 +805,8 @@ class MockDataService(
                 "voor LVEF onderdeel van de follow-up; daarna op indicatie. " +
                 "IKNL: survivorship-zorg na Stadium IIA borstkanker.",
         patientInstruction =
-            "Zet mammografie en huisartscontroles in uw agenda. " +
+            "Na de behandeling volgt vijf jaar controle met jaarlijkse " +
+                "mammografie. Zet mammografie en huisartscontroles in uw agenda. " +
                 "Blijf borstzelfonderzoek doen en meld nieuwe knobbels of " +
                 "huidveranderingen zonder te wachten op de jaarcontrole.",
         nextStep =
