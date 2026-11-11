@@ -13,17 +13,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.Button
@@ -32,6 +36,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +44,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,9 +55,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import net.moonbaseone.vera.shared.appointments.AppointmentSummary
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
+import net.moonbaseone.vera.shared.appointments.PocketGuide
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 
@@ -57,6 +68,7 @@ import net.moonbaseone.vera.shared.ui.UiCopy
 fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var fullScreenGuide by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -208,6 +220,14 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(
+                        onClick = { fullScreenGuide = true },
+                        modifier = Modifier.semantics {
+                            contentDescription = UiCopy.APPOINTMENTS_OPEN_FULL
+                        },
+                    ) {
+                        Icon(Icons.Outlined.Fullscreen, contentDescription = UiCopy.APPOINTMENTS_OPEN_FULL)
+                    }
+                    IconButton(
                         onClick = viewModel::readAloudPocketGuide,
                         modifier = Modifier.semantics {
                             contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD
@@ -222,10 +242,10 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(
-                        guide,
+                    PocketGuideContent(
+                        guide = guide,
+                        onExtraNotesChange = viewModel::updateExtraNotes,
                         modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -233,6 +253,134 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
 
         item { Spacer(modifier = Modifier.height(40.dp)) }
     }
+
+    if (fullScreenGuide) {
+        state.pocketGuide?.let { guide ->
+            Dialog(
+                onDismissRequest = { fullScreenGuide = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false),
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        ) {
+                            Text(
+                                UiCopy.APPOINTMENTS_POCKET_PANEL,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                            )
+                            IconButton(onClick = viewModel::readAloudPocketGuide) {
+                                Icon(
+                                    Icons.AutoMirrored.Outlined.VolumeUp,
+                                    contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD,
+                                )
+                            }
+                            TextButton(onClick = { fullScreenGuide = false }) {
+                                Text(UiCopy.APPOINTMENTS_CLOSE_FULL)
+                            }
+                        }
+                        HorizontalDivider()
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                                .padding(20.dp),
+                        ) {
+                            PocketGuideContent(
+                                guide = guide,
+                                onExtraNotesChange = viewModel::updateExtraNotes,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PocketGuideContent(
+    guide: PocketGuide,
+    onExtraNotesChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(guide.title, style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(12.dp))
+        MetaRow(UiCopy.APPOINTMENTS_META_DATE, guide.date)
+        MetaRow(UiCopy.APPOINTMENTS_META_TYPE, guide.serviceType)
+        MetaRow(UiCopy.APPOINTMENTS_META_LOCATION, guide.location)
+        Spacer(modifier = Modifier.height(16.dp))
+        GuideSection(UiCopy.APPOINTMENTS_REASON, guide.reason)
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideSection(UiCopy.APPOINTMENTS_SYMPTOMS_HEADER, guide.symptoms)
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            UiCopy.APPOINTMENTS_SUGGESTED_QUESTIONS,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        guide.questions.forEach { question ->
+            Text(
+                "• $question",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideSection(UiCopy.APPOINTMENTS_MEMO, guide.memo)
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            UiCopy.APPOINTMENTS_EXTRA_NOTES,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = guide.extraNotes,
+            onValueChange = onExtraNotesChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 96.dp),
+            placeholder = { Text(UiCopy.APPOINTMENTS_EXTRA_NOTES_HINT) },
+            minLines = 3,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            guide.footer,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+        )
+    }
+}
+
+@Composable
+private fun MetaRow(label: String, value: String) {
+    if (value.isBlank()) return
+    Row(modifier = Modifier.padding(bottom = 4.dp)) {
+        Text(
+            "$label: ",
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+        )
+        Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun GuideSection(title: String, body: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(body, style = MaterialTheme.typography.bodyMedium)
 }
 
 @Composable

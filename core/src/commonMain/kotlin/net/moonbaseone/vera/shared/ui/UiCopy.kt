@@ -81,6 +81,14 @@ object UiCopy {
     val APPOINTMENTS_CLEAR get() = s.appointmentsClear
     val APPOINTMENTS_READ_ALOUD get() = s.appointmentsReadAloud
     val APPOINTMENTS_NOTES_LABEL get() = s.appointmentsNotesLabel
+    val APPOINTMENTS_META_DATE get() = s.appointmentsMetaDate
+    val APPOINTMENTS_META_TYPE get() = s.appointmentsMetaType
+    val APPOINTMENTS_META_LOCATION get() = s.appointmentsMetaLocation
+    val APPOINTMENTS_MEMO get() = s.appointmentsMemo
+    val APPOINTMENTS_EXTRA_NOTES get() = s.appointmentsExtraNotes
+    val APPOINTMENTS_EXTRA_NOTES_HINT get() = s.appointmentsExtraNotesHint
+    val APPOINTMENTS_OPEN_FULL get() = s.appointmentsOpenFull
+    val APPOINTMENTS_CLOSE_FULL get() = s.appointmentsCloseFull
 
     val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
         get() = s.appointmentsDefaultQuestions

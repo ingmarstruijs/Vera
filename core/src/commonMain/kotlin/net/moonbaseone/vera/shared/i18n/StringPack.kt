@@ -70,5 +70,13 @@ data class StringPack(
     val appointmentsClear: String,
     val appointmentsReadAloud: String,
     val appointmentsNotesLabel: String,
+    val appointmentsMetaDate: String,
+    val appointmentsMetaType: String,
+    val appointmentsMetaLocation: String,
+    val appointmentsMemo: String,
+    val appointmentsExtraNotes: String,
+    val appointmentsExtraNotesHint: String,
+    val appointmentsOpenFull: String,
+    val appointmentsCloseFull: String,
     val appointmentsDefaultQuestions: List<String>,
 )

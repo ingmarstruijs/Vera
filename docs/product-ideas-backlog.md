@@ -1,6 +1,30 @@
 # Vera — product ideas backlog
 
-Captured 2026-11-04 (Europe/Amsterdam). Raw product notes from Ingmar; not prioritized or scoped yet.
+Captured 2026-11-04 (Europe/Amsterdam). Raw product notes from Ingmar; prioritized below for a first slice.
+
+## First step (in progress)
+
+**Readable + editable pocket guide** on the existing Appointment Navigator path.
+
+Why this first:
+- Highest UX gap vs code that already exists (`generatePocketGuide`, STT/TTS, appointments UI)
+- Local-only — no new permissions, calendar APIs, or cloud STT decisions
+- Unlocks later work (action items → guide, appointment prep notes) without locking product model answers
+
+Scope of the slice:
+- Structured guide model (sections, not raw markdown in the UI)
+- Editable extra notes for the appointment
+- Full-page / full-screen view
+- Plain-text export for TTS (no `#` / `**` / `##` in what the user sees or hears)
+
+## Priority order (proposed)
+
+1. **Pocket guide polish** — readable, editable, full-page *(this branch)*
+2. **Spoken symptoms finish** — delete one note, re-read as text, re-record/replace (not only clear-all)
+3. **Care-plan chrome** — subtler IKNL, morphing title into app header, less “go to Decoder” friction
+4. **Contacts section** — practitioners / institutes / department phones (“who do I call?”)
+5. **Calendar sync** — start one-way Vera → device calendar after privacy copy is clear
+6. **Appointment session audio** — record → transcript → simplify; needs on-device vs cloud call first
 
 ## Appointments
 
@@ -11,9 +35,9 @@ Captured 2026-11-04 (Europe/Amsterdam). Raw product notes from Ingmar; not prior
 
 ## Pocket guide
 
-- Full-page view
-- Editable / expandable (e.g. jot extra notes for an appointment)
-- Format: source may stay markdown, but the user sees a readable/normalized format (no markdown syntax)
+- [x] Full-page view *(first step)*
+- [x] Editable / expandable (e.g. jot extra notes for an appointment) *(first step)*
+- [x] Format: source may stay structured internally, but the user sees a readable/normalized format (no markdown syntax) *(first step)*
 
 ## Care plan UX / content
 

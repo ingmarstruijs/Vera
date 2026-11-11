@@ -31,7 +31,7 @@ class AppointmentsViewModelTest {
     }
 
     @Test
-    fun generatePocketGuide_includesSymptoms() = runBlocking {
+    fun generatePocketGuide_isStructuredReadable() = runBlocking {
         val speech = FakeSpeechToText(transcript = "Hoofdpijn")
         val vm = AppointmentsViewModel(MockDataService(), speechToText = speech)
         vm.load()
@@ -43,7 +43,26 @@ class AppointmentsViewModelTest {
         vm.generatePocketGuide(id)
         val guide = vm.state.value.pocketGuide
         assertNotNull(guide)
-        assertTrue(guide.contains("Hoofdpijn") || guide.contains("Pocket Gids"))
+        assertEquals(id, guide.appointmentId)
+        assertTrue(guide.symptoms.contains("Hoofdpijn") || guide.title.isNotBlank())
+        val plain = guide.plainText()
+        assertFalse(plain.contains("**"), "plain text must not include markdown bold")
+        assertFalse(plain.contains("##"), "plain text must not include markdown headings")
+        assertFalse(plain.startsWith("#"))
+        assertTrue(plain.contains(guide.title))
+        vm.dispose()
+    }
+
+    @Test
+    fun updateExtraNotes_persistsOnGuide() = runBlocking {
+        val vm = AppointmentsViewModel(MockDataService())
+        vm.load()
+        awaitLoaded(vm)
+        val id = vm.state.value.appointments.first().id
+        vm.generatePocketGuide(id)
+        vm.updateExtraNotes("Vragen over vermoeidheid")
+        assertEquals("Vragen over vermoeidheid", vm.state.value.pocketGuide?.extraNotes)
+        assertTrue(vm.state.value.pocketGuide!!.plainText().contains("Vragen over vermoeidheid"))
         vm.dispose()
     }
 
@@ -58,7 +77,7 @@ class AppointmentsViewModelTest {
         vm.generatePocketGuide(id)
         vm.readAloudPocketGuide()
         delay(50)
-        assertEquals(vm.state.value.pocketGuide, tts.lastSpoken)
+        assertEquals(vm.state.value.pocketGuide?.plainText(), tts.lastSpoken)
         vm.dispose()
     }
 
