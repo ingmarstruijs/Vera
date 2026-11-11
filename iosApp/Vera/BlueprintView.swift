@@ -38,16 +38,6 @@ struct BlueprintView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Uw zorgplan")
-                    .font(.title2.weight(.bold))
-                    .accessibilityAddTraits(.isHeader)
-                Text("Uw diagnose afgezet tegen IKNL-richtlijnen")
-                    .font(.subheadline)
-                    .foregroundStyle(ClinicalColors.textSecondary)
-                Label("Bron: IKNL Richtlijnendatabase", systemImage: "checkmark.seal")
-                    .font(.caption)
-                    .foregroundStyle(ClinicalColors.primary)
-
                 HStack(spacing: 14) {
                     LegendDot(color: ClinicalColors.statusCompleted, label: "Afgerond")
                     LegendDot(color: ClinicalColors.statusInProgress, label: "Huidig")
@@ -210,7 +200,7 @@ private struct EventDetailCard: View {
                 }
             }
             if !event.dateIso.isEmpty {
-                Text("Gepland: \(event.dateIso)")
+                Text("Gepland: \(DateDisplay.formatIso(event.dateIso))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

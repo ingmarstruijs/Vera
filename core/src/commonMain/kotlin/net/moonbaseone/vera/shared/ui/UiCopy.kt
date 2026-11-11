@@ -89,6 +89,12 @@ object UiCopy {
     val APPOINTMENTS_EXTRA_NOTES_HINT get() = s.appointmentsExtraNotesHint
     val APPOINTMENTS_OPEN_FULL get() = s.appointmentsOpenFull
     val APPOINTMENTS_CLOSE_FULL get() = s.appointmentsCloseFull
+    val APPOINTMENTS_DELETE_NOTE get() = s.appointmentsDeleteNote
+    val APPOINTMENTS_RE_RECORD get() = s.appointmentsReRecord
+    val APPOINTMENTS_READ_SYMPTOM get() = s.appointmentsReadSymptom
+    val APPOINTMENTS_CONTACTS_TITLE get() = s.appointmentsContactsTitle
+    val APPOINTMENTS_CONTACTS_SUBTITLE get() = s.appointmentsContactsSubtitle
+    val APPOINTMENTS_CALL get() = s.appointmentsCall
 
     val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
         get() = s.appointmentsDefaultQuestions

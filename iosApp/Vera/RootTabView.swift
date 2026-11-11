@@ -6,8 +6,17 @@ struct RootTabView: View {
         TabView {
             NavigationStack {
                 BlueprintView()
-                    .navigationTitle("Vera")
+                    .navigationTitle("Uw zorgplan")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            VStack(spacing: 0) {
+                                Text("Uw zorgplan").font(.headline)
+                                Text("IKNL-richtlijn")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                         ToolbarItem(placement: .topBarTrailing) {
                             PrivacySentinelDot()
                         }
@@ -20,7 +29,8 @@ struct RootTabView: View {
 
             NavigationStack {
                 DecoderView()
-                    .navigationTitle("Vera")
+                    .navigationTitle("Klaritaal Decoder")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             PrivacySentinelDot()
@@ -33,7 +43,8 @@ struct RootTabView: View {
 
             NavigationStack {
                 AppointmentsView()
-                    .navigationTitle("Vera")
+                    .navigationTitle("Afspraak Navigator")
+                    .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             PrivacySentinelDot()

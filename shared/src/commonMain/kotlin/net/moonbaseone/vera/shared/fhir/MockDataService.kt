@@ -848,6 +848,9 @@ class MockDataService(
                         "actor" to mapOf(
                             "reference" to "Practitioner/oncoloog-001",
                             "display" to "Dr. A. de Vries – Medisch oncoloog",
+                            "telecom" to listOf(
+                                mapOf("system" to "phone", "value" to "088 755 6303"),
+                            ),
                         ),
                         "status" to "accepted",
                     ),
@@ -859,6 +862,9 @@ class MockDataService(
                 "location" to mapOf(
                     "reference" to "Location/umcu-oncologie",
                     "display" to "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
+                    "telecom" to listOf(
+                        mapOf("system" to "phone", "value" to "088 755 6300"),
+                    ),
                 ),
                 "comment" to
                     "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
@@ -888,12 +894,18 @@ class MockDataService(
                         "actor" to mapOf(
                             "reference" to "Practitioner/cardioloog-001",
                             "display" to "Afdeling Cardiologie",
+                            "telecom" to listOf(
+                                mapOf("system" to "phone", "value" to "088 755 5555"),
+                            ),
                         ),
                         "status" to "accepted",
                     ),
                 ),
                 "location" to mapOf(
                     "display" to "UMC Utrecht – Afdeling Cardiologie",
+                    "telecom" to listOf(
+                        mapOf("system" to "phone", "value" to "088 755 5555"),
+                    ),
                 ),
             ),
         ),
@@ -917,12 +929,18 @@ class MockDataService(
                         "actor" to mapOf(
                             "reference" to "Practitioner/radiotherapeut-001",
                             "display" to "Dr. M. Peters – Radiotherapeut-oncoloog",
+                            "telecom" to listOf(
+                                mapOf("system" to "phone", "value" to "088 755 8800"),
+                            ),
                         ),
                         "status" to "accepted",
                     ),
                 ),
                 "location" to mapOf(
                     "display" to "UMC Utrecht – Afdeling Radiotherapie",
+                    "telecom" to listOf(
+                        mapOf("system" to "phone", "value" to "088 755 8800"),
+                    ),
                 ),
             ),
         ),

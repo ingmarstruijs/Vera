@@ -6,8 +6,24 @@ struct AppointmentItem: Identifiable {
     let startIso: String
     let location: String
     let practitioner: String
+    let phone: String
     let reason: String
     let comment: String
+
+    var startDisplay: String { DateDisplay.formatIso(startIso) }
+}
+
+struct SymptomNoteItem: Identifiable {
+    let id: String
+    var text: String
+}
+
+struct CareContactItem: Identifiable {
+    let id: String
+    let name: String
+    let role: String
+    let organization: String
+    let phone: String
 }
 
 struct PocketGuideModel {
@@ -53,12 +69,30 @@ struct PocketGuideModel {
     }
 }
 
+enum DateDisplay {
+    static func formatIso(_ iso: String) -> String {
+        let trimmed = iso.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 16 else { return trimmed }
+        let months = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+        let year = String(trimmed.prefix(4))
+        guard let month = Int(trimmed.dropFirst(5).prefix(2)),
+              let day = Int(trimmed.dropFirst(8).prefix(2)),
+              month >= 1, month <= 12 else { return trimmed }
+        let hour = String(trimmed.dropFirst(11).prefix(2))
+        let minute = String(trimmed.dropFirst(14).prefix(2))
+        return "\(day) \(months[month - 1]) \(year) · \(hour):\(minute)"
+    }
+}
+
 struct AppointmentsView: View {
     @StateObject private var speech = SpeechCoordinator()
     @State private var selectedId: String?
     @State private var pocketGuide: PocketGuideModel?
     @State private var showFullGuide = false
     @State private var appointments = AppointmentMockData.items
+    @State private var symptomNotes: [SymptomNoteItem] = []
+    @State private var reRecordId: String?
+    @State private var contacts = AppointmentMockData.contacts
 
     private let defaultQuestions = [
         "Wat zijn de resultaten van mijn laatste LVEF-meting?",
@@ -71,12 +105,6 @@ struct AppointmentsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Afspraak Navigator")
-                    .font(.title2.weight(.bold))
-                Text("Uw gepersonaliseerde afsprakengids")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-
                 ForEach(appointments) { appt in
                     appointmentCard(appt)
                 }
@@ -85,7 +113,7 @@ struct AppointmentsView: View {
                 Text("Symptomen registreren").font(.title3.weight(.semibold))
 
                 Button {
-                    speech.toggleListening()
+                    toggleVoice()
                 } label: {
                     Label(
                         speech.isListening ? "Stop opname" : "Symptomen inspreken",
@@ -102,6 +130,9 @@ struct AppointmentsView: View {
                     Text("Luistert…")
                         .font(.caption)
                         .foregroundStyle(.red)
+                    if !speech.transcript.isEmpty {
+                        Text(speech.transcript).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
 
                 if !speech.available {
@@ -110,18 +141,51 @@ struct AppointmentsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                if !speech.transcript.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Geregistreerde symptomen:").font(.caption.weight(.semibold))
-                            Spacer()
-                            Button("Wissen") { speech.clearTranscript() }
+                if !symptomNotes.isEmpty {
+                    HStack {
+                        Text("Geregistreerde symptomen:").font(.caption.weight(.semibold))
+                        Spacer()
+                        Button("Voorlezen") {
+                            speech.speak(symptomNotes.map(\.text).joined(separator: "\n"))
                         }
-                        Text(speech.transcript).font(.caption)
+                        Button("Wissen") { symptomNotes.removeAll() }
                     }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    ForEach(symptomNotes) { note in
+                        HStack(alignment: .top) {
+                            Text(note.text).font(.caption)
+                            Spacer()
+                            Button {
+                                speech.speak(note.text)
+                            } label: {
+                                Image(systemName: "speaker.wave.2")
+                            }
+                            .accessibilityLabel("Voorlezen")
+                            Button {
+                                reRecordId = note.id
+                                if !speech.isListening { speech.toggleListening() }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .accessibilityLabel("Opnieuw inspelen")
+                            Button(role: .destructive) {
+                                symptomNotes.removeAll { $0.id == note.id }
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .accessibilityLabel("Verwijderen")
+                        }
+                        .padding(10)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                    }
+                }
+
+                Divider().padding(.vertical, 4)
+                Text("Wie bel ik?").font(.title3.weight(.semibold))
+                Text("Praktijk, afdeling en arts – telefoonnummers bij de hand")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(contacts) { contact in
+                    contactCard(contact)
                 }
 
                 if let binding = pocketGuideBinding {
@@ -155,6 +219,11 @@ struct AppointmentsView: View {
             .padding(20)
         }
         .onAppear { speech.prepare() }
+        .onChange(of: speech.isListening) { _, listening in
+            if !listening {
+                commitTranscript()
+            }
+        }
         .sheet(isPresented: $showFullGuide) {
             NavigationStack {
                 ScrollView {
@@ -189,6 +258,58 @@ struct AppointmentsView: View {
         return Binding(
             get: { pocketGuide! },
             set: { pocketGuide = $0 }
+        )
+    }
+
+    private func toggleVoice() {
+        if speech.isListening {
+            speech.toggleListening()
+        } else {
+            reRecordId = nil
+            speech.clearTranscript()
+            speech.toggleListening()
+        }
+    }
+
+    private func commitTranscript() {
+        let text = speech.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            reRecordId = nil
+            return
+        }
+        if let replaceId = reRecordId,
+           let index = symptomNotes.firstIndex(where: { $0.id == replaceId }) {
+            symptomNotes[index].text = text
+        } else {
+            symptomNotes.append(SymptomNoteItem(id: UUID().uuidString, text: text))
+        }
+        reRecordId = nil
+        speech.clearTranscript()
+    }
+
+    @ViewBuilder
+    private func contactCard(_ contact: CareContactItem) -> some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(contact.name).font(.headline)
+                Text(contact.role).font(.caption).foregroundStyle(.secondary)
+                Text(contact.organization).font(.caption2).foregroundStyle(.secondary)
+                Text(contact.phone)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+            }
+            Spacer()
+            if let url = URL(string: "tel:\(contact.phone.filter { $0.isNumber || $0 == "+" })") {
+                Link(destination: url) {
+                    Image(systemName: "phone")
+                }
+                .accessibilityLabel("Bellen")
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
         )
     }
 
@@ -260,7 +381,7 @@ struct AppointmentsView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label(appt.serviceType, systemImage: "calendar")
                         .font(.headline)
-                    Text(appt.startIso)
+                    Text(appt.startDisplay)
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
                     if !appt.location.isEmpty {
@@ -297,16 +418,16 @@ struct AppointmentsView: View {
     }
 
     private func buildGuide(_ appt: AppointmentItem) -> PocketGuideModel {
-        let symptoms = speech.transcript.isEmpty
+        let symptoms = symptomNotes.isEmpty
             ? "(geen symptomen geregistreerd – gebruik de spraakfunctie)"
-            : speech.transcript
+            : symptomNotes.map(\.text).joined(separator: "\n")
         let preservedNotes = pocketGuide?.appointmentId == appt.id
             ? (pocketGuide?.extraNotes ?? "")
             : ""
         return PocketGuideModel(
             appointmentId: appt.id,
             title: "Pocket Gids voor uw afspraak",
-            date: appt.startIso,
+            date: appt.startDisplay,
             serviceType: appt.serviceType,
             location: appt.location,
             reason: appt.reason.isEmpty ? "—" : appt.reason,
@@ -327,6 +448,7 @@ enum AppointmentMockData {
             startIso: "2025-04-08T10:30:00+02:00",
             location: "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
             practitioner: "Dr. A. de Vries – Medisch oncoloog",
+            phone: "088 755 6303",
             reason: "Tussentijdse evaluatie radiotherapie + trastuzumab bijwerkingen",
             comment: "Meenemen: bijwerkingendagboek, lijst met huidige medicatie."
         ),
@@ -336,6 +458,7 @@ enum AppointmentMockData {
             startIso: "2025-04-22T09:00:00+02:00",
             location: "UMC Utrecht – Afdeling Cardiologie",
             practitioner: "Afdeling Cardiologie",
+            phone: "088 755 5555",
             reason: "LVEF-monitoring trastuzumab: cardiotoxiciteitscontrole q3m",
             comment: ""
         ),
@@ -345,8 +468,34 @@ enum AppointmentMockData {
             startIso: "2025-04-25T14:00:00+02:00",
             location: "UMC Utrecht – Afdeling Radiotherapie",
             practitioner: "Dr. M. Peters – Radiotherapeut-oncoloog",
+            phone: "088 755 8800",
             reason: "Afsluiting radiotherapie – beoordeling huidreactie",
             comment: ""
         ),
     ]
+
+    static let contacts: [CareContactItem] = [
+        CareContactItem(
+            id: "contact-gp",
+            name: "Huisartsenpraktijk Utrecht Noord",
+            role: "Huisarts",
+            organization: "Eerste lijn",
+            phone: "030 123 4567"
+        ),
+        CareContactItem(
+            id: "contact-oncology-desk",
+            name: "Polikliniek Oncologie",
+            role: "Afdelingstelefoon",
+            organization: "UMC Utrecht – Afdeling Oncologie",
+            phone: "088 755 6300"
+        ),
+    ] + items.map {
+        CareContactItem(
+            id: "appt-contact-\($0.id)",
+            name: $0.practitioner.isEmpty ? $0.serviceType : $0.practitioner,
+            role: $0.serviceType,
+            organization: $0.location,
+            phone: $0.phone
+        )
+    }
 }
