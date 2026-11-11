@@ -229,25 +229,23 @@ private struct EventDetailCard: View {
                 Text(event.description).font(.body)
             } else {
                 if let instruction = event.patientInstruction, !instruction.isEmpty {
-                    Text("Wat u moet weten").font(.subheadline.weight(.semibold))
                     Text(instruction).font(.body)
                 }
 
-                if let next = event.nextSteps, !next.isEmpty {
-                    Text("Volgende stap").font(.subheadline.weight(.semibold))
-                    Text(next).font(.body)
-                }
-
-                if !event.actionItems.isEmpty {
+                let checklist = distinctActionItems(
+                    instruction: event.patientInstruction,
+                    actionItems: event.actionItems
+                )
+                if !checklist.isEmpty {
                     Text("Actiepunten:").font(.subheadline.weight(.semibold))
-                    ForEach(event.actionItems, id: \.self) { item in
+                    ForEach(checklist, id: \.self) { item in
                         Label(item, systemImage: "checkmark.circle")
                             .font(.caption)
                     }
                 }
 
                 if !event.jargon.isEmpty {
-                    Text("Begrijpelijke uitleg").font(.subheadline.weight(.semibold))
+                    Text("Moeilijke woorden").font(.subheadline.weight(.semibold))
                     Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -305,6 +303,19 @@ private struct EventDetailCard: View {
         default: return status
         }
     }
+
+    /// Drop checklist rows that merely restate the plain-language body.
+    private func distinctActionItems(instruction: String?, actionItems: [String]) -> [String] {
+        let body = (instruction ?? "").lowercased()
+        guard !body.isEmpty else { return actionItems }
+        return actionItems.filter { item in
+            var normalized = item.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if normalized.hasSuffix(".") {
+                normalized = String(normalized.dropLast())
+            }
+            return !normalized.isEmpty && !body.contains(normalized)
+        }
+    }
 }
 
 enum BlueprintMockData {
@@ -321,6 +332,7 @@ enum BlueprintMockData {
             phase: .completed,
             fhirStatus: "completed",
             patientInstruction:
+                "Voor de operatie kreeg u chemotherapie (TCHP) om de tumor te verkleinen. " +
                 "Noteer koorts >38,5°C of kortademigheid tijdens trastuzumab in het bijwerkingendagboek.",
             nextSteps: "Door naar borstsparende chirurgie (BCS) met schildwachtklierprocedure (SLNB).",
             actionItems: [
@@ -361,6 +373,7 @@ enum BlueprintMockData {
             phase: .completed,
             fhirStatus: "completed",
             patientInstruction:
+                "U bent geopereerd: de tumor is uit de borst gehaald en de schildwachtklier is onderzocht. " +
                 "Wond droog houden; meld roodheid, zwelling of koorts. Geen zwaar tillen met de linkerarm.",
             nextSteps: "Start adjuvante radiotherapie (hypofractionering) en hervat trastuzumab + pertuzumab.",
             actionItems: [
@@ -394,9 +407,11 @@ enum BlueprintMockData {
             phase: .current,
             fhirStatus: "in-progress",
             patientInstruction:
-                "Alleen goedgekeurde crème; vermijd zonlicht. Noteer huidreacties dagelijks.",
+                "U krijgt bestraling van de linkerborst in kortere sessies (ongeveer 15 keer over drie weken). " +
+                "Dit is standaard na een borstsparende operatie. Alleen goedgekeurde crème; vermijd zonlicht. " +
+                "Noteer huidreacties dagelijks.",
             nextSteps: "Nacontrole na laatste fractie; verder met trastuzumab en LVEF-controles.",
-            actionItems: ["Noteer huidreacties in uw bijwerkingendagboek."],
+            actionItems: ["Vraag hoeveel fracties u nog heeft en wanneer vermoeidheid piekt."],
             jargon: [
                 JargonMatch(
                     term: "Hypofractionering",
@@ -417,6 +432,7 @@ enum BlueprintMockData {
             phase: .current,
             fhirStatus: "in-progress",
             patientInstruction:
+                "U krijgt nog ongeveer een jaar trastuzumab en pertuzumab (HER2-medicatie) via het infuus. " +
                 "Meld kortademigheid of enkeloedeem meteen. Neem echo-uitslagen mee naar elk consult.",
             nextSteps: "Volgende LVEF-meting plannen; bij stabiele LVEF schema voortzetten.",
             actionItems: [
@@ -449,6 +465,7 @@ enum BlueprintMockData {
             phase: .future,
             fhirStatus: "scheduled",
             patientInstruction:
+                "Na de behandeling volgt vijf jaar controle met jaarlijkse mammografie. " +
                 "Zet mammografie in uw agenda; meld nieuwe knobbels zonder te wachten op jaarcontrole.",
             nextSteps: "Eerste surveillance-mammografie plannen na afronding van HER2-therapie.",
             actionItems: [

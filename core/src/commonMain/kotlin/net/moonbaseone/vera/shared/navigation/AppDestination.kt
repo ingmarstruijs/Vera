@@ -12,20 +12,22 @@ sealed class AppDestination(val route: String) {
     data object CarePlan : AppDestination("careplan")
     data object Decoder : AppDestination("decoder")
     data object Appointments : AppDestination("appointments")
+    data object Contacts : AppDestination("contacts")
 
     companion object {
         /**
-         * Post-unlock shell IA: care plan → decoder → appointments.
+         * Post-unlock shell IA: care plan → decoder → appointments → contacts.
          * Computed (not stored) to avoid sealed nested-object init-order nulls.
          */
         val primaryShell: List<AppDestination>
-            get() = listOf(CarePlan, Decoder, Appointments)
+            get() = listOf(CarePlan, Decoder, Appointments, Contacts)
 
         fun fromRoute(route: String): AppDestination? = when (route) {
             Unlock.route -> Unlock
             CarePlan.route -> CarePlan
             Decoder.route -> Decoder
             Appointments.route -> Appointments
+            Contacts.route -> Contacts
             // Legacy P5 route alias
             "timeline" -> CarePlan
             else -> null

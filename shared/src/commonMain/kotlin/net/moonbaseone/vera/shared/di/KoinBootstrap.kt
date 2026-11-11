@@ -1,8 +1,10 @@
 package net.moonbaseone.vera.shared.di
 
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
+import net.moonbaseone.vera.shared.appointments.ContactsViewModel
 import net.moonbaseone.vera.shared.appointments.InMemoryPocketGuideStore
 import net.moonbaseone.vera.shared.appointments.PocketGuideStore
+import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.auth.AuthViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.careplan.CarePlanRepository
@@ -91,12 +93,21 @@ fun appointmentsModule(): Module = module {
     single<TextToSpeech> { FakeTextToSpeech() }
     single<PocketGuideStore> { InMemoryPocketGuideStore() }
     single {
+        SymptomLogViewModel(
+            speechToText = get(),
+            textToSpeech = get(),
+        )
+    }
+    single {
         AppointmentsViewModel(
             carePlanRepository = get(),
-            speechToText = get(),
+            symptomLog = get(),
             textToSpeech = get(),
             pocketGuideStore = get(),
         )
+    }
+    single {
+        ContactsViewModel(carePlanRepository = get())
     }
 }
 

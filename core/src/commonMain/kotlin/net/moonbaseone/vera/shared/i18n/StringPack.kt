@@ -25,6 +25,7 @@ data class StringPack(
     val navCarePlan: String,
     val navDecoder: String,
     val navAppointments: String,
+    val navContacts: String,
     val blueprintTitle: String,
     val blueprintSubtitle: String,
     val blueprintPhaseCompleted: String,
@@ -91,5 +92,7 @@ data class StringPack(
     val appointmentsContactsTitle: String,
     val appointmentsContactsSubtitle: String,
     val appointmentsCall: String,
+    val symptomsHistoryTitle: String,
+    val symptomsJustNow: String,
     val appointmentsDefaultQuestions: List<String>,
 )
