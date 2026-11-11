@@ -12,7 +12,7 @@ object VeraShared {
     const val APP_NAME: String = "Vera"
     const val PACKAGE_ID: String = "net.moonbaseone.vera"
 
-    /** Post-unlock shell destinations — care plan → decoder → appointments → contacts. */
+    /** Post-unlock shell destinations — care plan → dictionary → appointments → contacts. */
     val primaryTabs: List<VeraTab> = listOf(
         VeraTab.CarePlan,
         VeraTab.Decoder,
@@ -26,7 +26,7 @@ object VeraShared {
 
 enum class VeraTab(val route: String, val titleEn: String) {
     CarePlan(route = AppDestination.CarePlan.route, titleEn = "Care plan"),
-    Decoder(route = AppDestination.Decoder.route, titleEn = "Decoder"),
+    Decoder(route = AppDestination.Decoder.route, titleEn = "Dictionary"),
     Appointments(route = AppDestination.Appointments.route, titleEn = "Appointments"),
     Contacts(route = AppDestination.Contacts.route, titleEn = "Contact"),
 }
