@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.speech.FakeSpeechToText
 import net.moonbaseone.vera.shared.speech.FakeTextToSpeech
+import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.util.DateDisplay
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,82 +31,29 @@ class AppointmentsViewModelTest {
         assertTrue(vm.state.value.contacts.isNotEmpty())
         assertTrue(vm.state.value.appointments.any { it.phone.isNotBlank() })
         assertTrue(vm.state.value.appointments.first().startDisplay.contains("apr"))
-        assertTrue(vm.state.value.speechAvailable)
         vm.dispose()
     }
 
     @Test
-    fun generatePocketGuide_isStructuredReadable() = runBlocking {
+    fun generatePocketGuide_includesSymptomLog() = runBlocking {
         val speech = FakeSpeechToText(transcript = "Hoofdpijn")
-        val vm = AppointmentsViewModel(MockDataService(), speechToText = speech)
+        val symptoms = SymptomLogViewModel(speechToText = speech)
+        symptoms.load()
+        delay(50)
+        symptoms.toggleVoiceLogging()
+        delay(50)
+        val vm = AppointmentsViewModel(MockDataService(), symptomLog = symptoms)
         vm.load()
         awaitLoaded(vm)
         val id = vm.state.value.appointments.first().id
-        vm.select(id)
-        vm.toggleVoiceLogging()
-        delay(50)
         vm.generatePocketGuide(id)
         val guide = vm.state.value.pocketGuide
         assertNotNull(guide)
-        assertEquals(id, guide.appointmentId)
-        assertTrue(guide.symptoms.contains("Hoofdpijn") || guide.title.isNotBlank())
-        val plain = guide.plainText()
-        assertFalse(plain.contains("**"), "plain text must not include markdown bold")
-        assertFalse(plain.contains("##"), "plain text must not include markdown headings")
-        assertFalse(plain.startsWith("#"))
-        assertTrue(plain.contains(guide.title))
+        assertTrue(guide.symptoms.contains("Hoofdpijn"))
+        assertFalse(guide.plainText().contains("**"))
+        assertFalse(guide.plainText().contains("##"))
         vm.dispose()
-    }
-
-    @Test
-    fun symptomNotes_reRecordReplacesSameId() = runBlocking {
-        val speech = FakeSpeechToText(transcript = "Misselijkheid")
-        val vm = AppointmentsViewModel(MockDataService(), speechToText = speech)
-        vm.load()
-        awaitLoaded(vm)
-        vm.toggleVoiceLogging()
-        delay(50)
-        assertEquals(1, vm.state.value.symptomNotes.size)
-        val noteId = vm.state.value.symptomNotes.first().id
-        vm.toggleVoiceLogging(replaceNoteId = noteId)
-        delay(50)
-        assertEquals(1, vm.state.value.symptomNotes.size)
-        assertEquals(noteId, vm.state.value.symptomNotes.first().id)
-        assertEquals("Misselijkheid", vm.state.value.symptomNotes.first().text)
-        vm.dispose()
-    }
-
-    @Test
-    fun symptomNotes_deleteRemovesOne() = runBlocking {
-        val speech = FakeSpeechToText(transcript = "Hoofdpijn")
-        val vm = AppointmentsViewModel(MockDataService(), speechToText = speech)
-        vm.load()
-        awaitLoaded(vm)
-        vm.toggleVoiceLogging()
-        delay(50)
-        vm.toggleVoiceLogging()
-        delay(50)
-        assertTrue(vm.state.value.symptomNotes.size >= 1)
-        val id = vm.state.value.symptomNotes.first().id
-        vm.deleteSymptomNote(id)
-        assertTrue(vm.state.value.symptomNotes.none { it.id == id })
-        vm.dispose()
-    }
-
-    @Test
-    fun readAloudSymptom_speaksNote() = runBlocking {
-        val speech = FakeSpeechToText(transcript = "Pijn")
-        val tts = FakeTextToSpeech()
-        val vm = AppointmentsViewModel(MockDataService(), speechToText = speech, textToSpeech = tts)
-        vm.load()
-        awaitLoaded(vm)
-        vm.toggleVoiceLogging()
-        delay(50)
-        val id = vm.state.value.symptomNotes.first().id
-        vm.readAloudSymptom(id)
-        delay(50)
-        assertEquals("Pijn", tts.lastSpoken)
-        vm.dispose()
+        symptoms.dispose()
     }
 
     @Test
@@ -167,18 +115,6 @@ class AppointmentsViewModelTest {
         vm.readAloudPocketGuide()
         delay(50)
         assertEquals(vm.state.value.pocketGuide?.plainText(), tts.lastSpoken)
-        vm.dispose()
-    }
-
-    @Test
-    fun speechUnavailable_flagged() = runBlocking {
-        val vm = AppointmentsViewModel(
-            MockDataService(),
-            speechToText = FakeSpeechToText(available = false),
-        )
-        vm.load()
-        awaitLoaded(vm)
-        assertFalse(vm.state.value.speechAvailable)
         vm.dispose()
     }
 

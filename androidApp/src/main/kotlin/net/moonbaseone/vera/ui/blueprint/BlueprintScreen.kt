@@ -49,16 +49,20 @@ import net.moonbaseone.vera.shared.blueprint.BlueprintUiState
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.domain.TimelineEvent
 import net.moonbaseone.vera.shared.domain.TimelinePhase
-import net.moonbaseone.vera.shared.ui.DesignTokens
+import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.shared.util.DateDisplay
+import net.moonbaseone.vera.ui.symptoms.SymptomLogSection
 import net.moonbaseone.vera.ui.theme.statusColor
 
 private val TimelineNodeWidth = 140.dp
 private val TimelineConnectorWidth = 24.dp
 
 @Composable
-fun BlueprintScreen(viewModel: BlueprintViewModel) {
+fun BlueprintScreen(
+    viewModel: BlueprintViewModel,
+    symptomLogViewModel: SymptomLogViewModel,
+) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -124,6 +128,11 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
                 }
             }
         }
+
+        SymptomLogSection(
+            viewModel = symptomLogViewModel,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+        )
     }
 }
 
@@ -136,9 +145,9 @@ private fun LegendRow(modifier: Modifier = Modifier) {
         },
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        LegendItem(Color(DesignTokens.STATUS_COMPLETED), UiCopy.BLUEPRINT_PHASE_COMPLETED)
-        LegendItem(Color(DesignTokens.STATUS_IN_PROGRESS), UiCopy.BLUEPRINT_PHASE_CURRENT)
-        LegendItem(Color(DesignTokens.STATUS_SCHEDULED), UiCopy.BLUEPRINT_PHASE_FUTURE)
+        LegendItem(statusColor("completed"), UiCopy.BLUEPRINT_PHASE_COMPLETED)
+        LegendItem(statusColor("in-progress"), UiCopy.BLUEPRINT_PHASE_CURRENT)
+        LegendItem(statusColor("scheduled"), UiCopy.BLUEPRINT_PHASE_FUTURE)
     }
 }
 
@@ -362,9 +371,9 @@ private fun EventDetailPanel(
                     }
                 }
             } else {
-                event.patientInstruction?.let { instruction ->
-                    Text(UiCopy.BLUEPRINT_INSTRUCTION, style = MaterialTheme.typography.titleSmall)
-                    Spacer(modifier = Modifier.height(4.dp))
+                // Lead with the patient-friendly step explanation as body copy
+                // (no "Wat u moet weten" heading — that felt like a second todo list).
+                event.patientInstruction?.takeIf { it.isNotBlank() }?.let { instruction ->
                     Text(
                         instruction,
                         style = MaterialTheme.typography.bodyMedium,
@@ -373,21 +382,13 @@ private fun EventDetailPanel(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                event.nextSteps?.let { next ->
-                    Text(UiCopy.BLUEPRINT_NEXT_STEPS, style = MaterialTheme.typography.titleSmall)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        next,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                val checklist = remember(event.patientInstruction, event.actionItems) {
+                    distinctActionItems(event.patientInstruction, event.actionItems)
                 }
-
-                if (event.actionItems.isNotEmpty()) {
+                if (checklist.isNotEmpty()) {
                     Text(UiCopy.BLUEPRINT_ACTION_POINTS, style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    event.actionItems.forEach { item ->
+                    checklist.forEach { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -506,4 +507,17 @@ private fun phaseStatus(phase: TimelinePhase): String = when (phase) {
     TimelinePhase.Completed -> "completed"
     TimelinePhase.Current -> "in-progress"
     TimelinePhase.Future -> "scheduled"
+}
+
+/** Drop checklist rows that merely restate the plain-language body. */
+private fun distinctActionItems(
+    patientInstruction: String?,
+    actionItems: List<String>,
+): List<String> {
+    val body = patientInstruction.orEmpty().lowercase()
+    if (body.isBlank()) return actionItems
+    return actionItems.filter { item ->
+        val normalized = item.trim().lowercase().trimEnd('.')
+        normalized.isNotEmpty() && !body.contains(normalized)
+    }
 }

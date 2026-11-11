@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,13 +38,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
+import net.moonbaseone.vera.shared.appointments.ContactsViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.navigation.AppDestination
+import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.ui.appointments.AppointmentsScreen
 import net.moonbaseone.vera.ui.blueprint.BlueprintScreen
+import net.moonbaseone.vera.ui.contacts.ContactsScreen
 import net.moonbaseone.vera.ui.decoder.DecoderScreen
 
 private data class TabDest(
@@ -58,12 +62,15 @@ fun AppShell(
     blueprintViewModel: BlueprintViewModel,
     decoderViewModel: DecoderViewModel,
     appointmentsViewModel: AppointmentsViewModel,
+    contactsViewModel: ContactsViewModel,
+    symptomLogViewModel: SymptomLogViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
     val tabs = listOf(
         TabDest(AppDestination.CarePlan, UiCopy.NAV_CARE_PLAN, Icons.AutoMirrored.Outlined.EventNote),
         TabDest(AppDestination.Decoder, UiCopy.NAV_DECODER, Icons.Outlined.Translate),
         TabDest(AppDestination.Appointments, UiCopy.NAV_APPOINTMENTS, Icons.Outlined.CalendarMonth),
+        TabDest(AppDestination.Contacts, UiCopy.NAV_CONTACTS, Icons.Outlined.Call),
     )
     val backStack by navController.currentBackStackEntryAsState()
     val currentDestination = backStack?.destination
@@ -72,12 +79,14 @@ fun AppShell(
         AppDestination.CarePlan.route -> UiCopy.BLUEPRINT_TITLE
         AppDestination.Decoder.route -> UiCopy.DECODER_TITLE
         AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_TITLE
+        AppDestination.Contacts.route -> UiCopy.APPOINTMENTS_CONTACTS_TITLE
         else -> UiCopy.APP_NAME
     }
     val headerSubtitle = when (route) {
         AppDestination.CarePlan.route -> "${UiCopy.BLUEPRINT_SUBTITLE} · ${UiCopy.BLUEPRINT_IKNL_SOURCE}"
         AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_SUBTITLE
         AppDestination.Decoder.route -> UiCopy.DECODER_SUBTITLE
+        AppDestination.Contacts.route -> UiCopy.APPOINTMENTS_CONTACTS_SUBTITLE
         else -> null
     }
 
@@ -145,13 +154,19 @@ fun AppShell(
             modifier = Modifier.padding(padding),
         ) {
             composable(AppDestination.CarePlan.route) {
-                BlueprintScreen(viewModel = blueprintViewModel)
+                BlueprintScreen(
+                    viewModel = blueprintViewModel,
+                    symptomLogViewModel = symptomLogViewModel,
+                )
             }
             composable(AppDestination.Decoder.route) {
                 DecoderScreen(viewModel = decoderViewModel)
             }
             composable(AppDestination.Appointments.route) {
                 AppointmentsScreen(viewModel = appointmentsViewModel)
+            }
+            composable(AppDestination.Contacts.route) {
+                ContactsScreen(viewModel = contactsViewModel)
             }
         }
     }

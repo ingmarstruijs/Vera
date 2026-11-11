@@ -12,10 +12,10 @@ class VeraSharedTest {
     }
 
     @Test
-    fun primaryTabs_areCarePlanDecoderAppointments() {
-        assertEquals(3, VeraShared.primaryTabs.size)
+    fun primaryTabs_areCarePlanDecoderAppointmentsContacts() {
+        assertEquals(4, VeraShared.primaryTabs.size)
         assertEquals(
-            listOf("careplan", "decoder", "appointments"),
+            listOf("careplan", "decoder", "appointments", "contacts"),
             VeraShared.primaryTabs.map { it.route },
         )
         assertEquals(AppDestination.primaryShell, VeraShared.primaryDestinations)

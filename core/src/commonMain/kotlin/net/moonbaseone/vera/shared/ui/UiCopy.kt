@@ -33,6 +33,7 @@ object UiCopy {
     val NAV_CARE_PLAN get() = s.navCarePlan
     val NAV_DECODER get() = s.navDecoder
     val NAV_APPOINTMENTS get() = s.navAppointments
+    val NAV_CONTACTS get() = s.navContacts
 
     val BLUEPRINT_TITLE get() = s.blueprintTitle
     val BLUEPRINT_SUBTITLE get() = s.blueprintSubtitle
@@ -102,6 +103,8 @@ object UiCopy {
     val APPOINTMENTS_CONTACTS_TITLE get() = s.appointmentsContactsTitle
     val APPOINTMENTS_CONTACTS_SUBTITLE get() = s.appointmentsContactsSubtitle
     val APPOINTMENTS_CALL get() = s.appointmentsCall
+    val SYMPTOMS_HISTORY_TITLE get() = s.symptomsHistoryTitle
+    val SYMPTOMS_JUST_NOW get() = s.symptomsJustNow
 
     val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
         get() = s.appointmentsDefaultQuestions

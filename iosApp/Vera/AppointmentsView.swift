@@ -13,11 +13,6 @@ struct AppointmentItem: Identifiable {
     var startDisplay: String { DateDisplay.formatIso(startIso) }
 }
 
-struct SymptomNoteItem: Identifiable {
-    let id: String
-    var text: String
-}
-
 struct CareContactItem: Identifiable {
     let id: String
     let name: String
@@ -87,6 +82,7 @@ enum DateDisplay {
 }
 
 struct AppointmentsView: View {
+    @EnvironmentObject private var symptoms: SymptomLogModel
     @StateObject private var speech = SpeechCoordinator()
     @State private var selectedId: String?
     @State private var pocketGuide: PocketGuideModel?
@@ -94,9 +90,6 @@ struct AppointmentsView: View {
     @State private var guideJustSaved = false
     @State private var savedGuides: [PocketGuideModel] = []
     @State private var appointments = AppointmentMockData.items
-    @State private var symptomNotes: [SymptomNoteItem] = []
-    @State private var reRecordId: String?
-    @State private var contacts = AppointmentMockData.contacts
 
     private let defaultQuestions = [
         "Wat zijn de resultaten van mijn laatste LVEF-meting?",
@@ -138,93 +131,8 @@ struct AppointmentsView: View {
                     }
                 }
 
-                Divider().padding(.vertical, 4)
-                Text("Symptomen registreren").font(.title3.weight(.semibold))
-
-                Button {
-                    toggleVoice()
-                } label: {
-                    Label(
-                        speech.isListening ? "Stop opname" : "Symptomen inspreken",
-                        systemImage: speech.isListening ? "stop.fill" : "mic"
-                    )
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(speech.isListening ? .red : Color(red: 0.11, green: 0.37, blue: 0.13))
-                .disabled(!speech.available && !speech.isListening)
-
-                if speech.isListening {
-                    Text("Luistert…")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                    if !speech.transcript.isEmpty {
-                        Text(speech.transcript).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-
-                if !speech.available {
-                    Text("Spraakregistratie vereist microfoon- en spraakrechten.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                if !symptomNotes.isEmpty {
-                    HStack {
-                        Text("Geregistreerde symptomen:").font(.caption.weight(.semibold))
-                        Spacer()
-                        Button("Voorlezen") {
-                            speech.speak(symptomNotes.map(\.text).joined(separator: "\n"))
-                        }
-                        Button("Wissen") { symptomNotes.removeAll() }
-                    }
-                    ForEach(symptomNotes) { note in
-                        HStack(alignment: .top) {
-                            Text(note.text).font(.caption)
-                            Spacer()
-                            Button {
-                                speech.speak(note.text)
-                            } label: {
-                                Image(systemName: "speaker.wave.2")
-                            }
-                            .accessibilityLabel("Voorlezen")
-                            Button {
-                                reRecordId = note.id
-                                if !speech.isListening { speech.toggleListening() }
-                            } label: {
-                                Image(systemName: "arrow.clockwise")
-                            }
-                            .accessibilityLabel("Opnieuw inspelen")
-                            Button(role: .destructive) {
-                                symptomNotes.removeAll { $0.id == note.id }
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .accessibilityLabel("Verwijderen")
-                        }
-                        .padding(10)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
-                    }
-                }
-
-                Divider().padding(.vertical, 4)
-                Text("Wie bel ik?").font(.title3.weight(.semibold))
-                Text("Praktijk, afdeling en arts – telefoonnummers bij de hand")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                ForEach(contacts) { contact in
-                    contactCard(contact)
-                }
-
             }
             .padding(20)
-        }
-        .onAppear { speech.prepare() }
-        .onChange(of: speech.isListening) { _, listening in
-            if !listening {
-                commitTranscript()
-            }
         }
         .sheet(isPresented: $showFullGuide) {
             NavigationStack {
@@ -239,12 +147,12 @@ struct AppointmentsView: View {
                     HStack {
                         if guideJustSaved || (pocketGuide?.isSaved == true) {
                             Text("Opgeslagen")
-                                .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                                .foregroundStyle(ClinicalColors.primary)
                         }
                         Spacer()
                         Button("Opslaan") { saveCurrentGuide() }
                             .buttonStyle(.borderedProminent)
-                            .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+                            .tint(ClinicalColors.primary)
                     }
                     .padding(16)
                 }
@@ -286,58 +194,6 @@ struct AppointmentsView: View {
         return Binding(
             get: { pocketGuide! },
             set: { pocketGuide = $0 }
-        )
-    }
-
-    private func toggleVoice() {
-        if speech.isListening {
-            speech.toggleListening()
-        } else {
-            reRecordId = nil
-            speech.clearTranscript()
-            speech.toggleListening()
-        }
-    }
-
-    private func commitTranscript() {
-        let text = speech.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else {
-            reRecordId = nil
-            return
-        }
-        if let replaceId = reRecordId,
-           let index = symptomNotes.firstIndex(where: { $0.id == replaceId }) {
-            symptomNotes[index].text = text
-        } else {
-            symptomNotes.append(SymptomNoteItem(id: UUID().uuidString, text: text))
-        }
-        reRecordId = nil
-        speech.clearTranscript()
-    }
-
-    @ViewBuilder
-    private func contactCard(_ contact: CareContactItem) -> some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(contact.name).font(.headline)
-                Text(contact.role).font(.caption).foregroundStyle(.secondary)
-                Text(contact.organization).font(.caption2).foregroundStyle(.secondary)
-                Text(contact.phone)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
-            }
-            Spacer()
-            if let url = URL(string: "tel:\(contact.phone.filter { $0.isNumber || $0 == "+" })") {
-                Link(destination: url) {
-                    Image(systemName: "phone")
-                }
-                .accessibilityLabel("Bellen")
-            }
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
         )
     }
 
@@ -411,7 +267,7 @@ struct AppointmentsView: View {
                         .font(.headline)
                     Text(appt.startDisplay)
                         .font(.subheadline.weight(.bold))
-                        .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                        .foregroundStyle(ClinicalColors.primary)
                     if !appt.location.isEmpty {
                         Text(appt.location).font(.caption).foregroundStyle(.secondary)
                     }
@@ -448,23 +304,23 @@ struct AppointmentsView: View {
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+                .tint(ClinicalColors.primary)
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(
-                    selected ? Color(red: 0.11, green: 0.37, blue: 0.13) : Color.secondary.opacity(0.3),
+                    selected ? ClinicalColors.primary : Color.secondary.opacity(0.3),
                     lineWidth: selected ? 2 : 1
                 )
         )
     }
 
     private func buildGuide(_ appt: AppointmentItem) -> PocketGuideModel {
-        let symptoms = symptomNotes.isEmpty
-            ? "(geen symptomen geregistreerd – gebruik de spraakfunctie)"
-            : symptomNotes.map(\.text).joined(separator: "\n")
+        let symptomText = symptoms.notes.isEmpty
+            ? "(geen symptomen geregistreerd – registreer ze op uw zorgplan)"
+            : symptoms.notesText
         let preservedNotes = savedGuides.first(where: { $0.appointmentId == appt.id })?.extraNotes
             ?? (pocketGuide?.appointmentId == appt.id ? (pocketGuide?.extraNotes ?? "") : "")
         return PocketGuideModel(
@@ -474,7 +330,7 @@ struct AppointmentsView: View {
             serviceType: appt.serviceType,
             location: appt.location,
             reason: appt.reason.isEmpty ? "—" : appt.reason,
-            symptoms: symptoms,
+            symptoms: symptomText,
             questions: defaultQuestions,
             memo: appt.comment.isEmpty ? "—" : appt.comment,
             footer: "Gegenereerd door Vera – IKNL Richtlijn Borstkanker 2023",

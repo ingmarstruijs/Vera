@@ -8,7 +8,7 @@ class AppDestinationTest {
     @Test
     fun primaryShell_orderIsCarePlanFirst() {
         assertEquals(
-            listOf("careplan", "decoder", "appointments"),
+            listOf("careplan", "decoder", "appointments", "contacts"),
             AppDestination.primaryShell.map { it.route },
         )
     }

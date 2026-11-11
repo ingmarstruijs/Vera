@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Shell IA: Care plan → Decoder → Appointments (unlock happens before this view).
+/// Shell IA: Care plan → Decoder → Appointments → Contact (unlock happens before this view).
 struct RootTabView: View {
+    @StateObject private var symptoms = SymptomLogModel()
+
     var body: some View {
         TabView {
             NavigationStack {
@@ -63,7 +65,32 @@ struct RootTabView: View {
             .tabItem {
                 Label("Afspraken", systemImage: "clock")
             }
+
+            NavigationStack {
+                ContactsView()
+                    .navigationTitle("Wie bel ik?")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            VStack(spacing: 0) {
+                                Text("Wie bel ik?").font(.headline)
+                                Text("Praktijk, afdeling en arts")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            PrivacySentinelDot()
+                        }
+                    }
+            }
+            .tabItem {
+                Label("Contact", systemImage: "phone")
+            }
+            .accessibilityLabel("Contact")
         }
+        .environmentObject(symptoms)
         // Dynamic Type: rely on semantic fonts; tint matches DesignTokens.PRIMARY_GREEN.
         .tint(ClinicalColors.primary)
         .dynamicTypeSize(...DynamicTypeSize.accessibility3)
