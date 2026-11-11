@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Vera" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- DayNight so the splash / system chrome follow device dark mode with Compose VeraTheme. -->
+    <style name="Theme.Vera" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>
