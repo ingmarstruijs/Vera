@@ -1,7 +1,9 @@
 package net.moonbaseone.vera.ui.appointments
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -27,8 +29,11 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.MicNone
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,7 +65,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import net.moonbaseone.vera.shared.appointments.AppointmentSummary
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
+import net.moonbaseone.vera.shared.appointments.CareContact
 import net.moonbaseone.vera.shared.appointments.PocketGuide
+import net.moonbaseone.vera.shared.appointments.SymptomNote
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 
@@ -69,10 +76,25 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var fullScreenGuide by remember { mutableStateOf(false) }
+    var pendingReplaceId by remember { mutableStateOf<String?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) viewModel.toggleVoiceLogging()
+        if (granted) viewModel.toggleVoiceLogging(pendingReplaceId)
+        pendingReplaceId = null
+    }
+
+    fun startVoice(replaceId: String? = null) {
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            viewModel.toggleVoiceLogging(replaceId)
+        } else {
+            pendingReplaceId = replaceId
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -92,15 +114,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
             .padding(horizontal = 20.dp),
     ) {
         item {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(UiCopy.APPOINTMENTS_TITLE, style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                UiCopy.APPOINTMENTS_SUBTITLE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         if (state.appointments.isEmpty()) {
@@ -127,17 +141,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
 
             if (state.speechAvailable) {
                 Button(
-                    onClick = {
-                        val granted = ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.RECORD_AUDIO,
-                        ) == PackageManager.PERMISSION_GRANTED
-                        if (granted) {
-                            viewModel.toggleVoiceLogging()
-                        } else {
-                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                        }
-                    },
+                    onClick = { startVoice(null) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -169,6 +173,13 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(DesignTokens.ERROR_RED),
                     )
+                    if (state.draftSymptomText.isNotBlank()) {
+                        Text(
+                            state.draftSymptomText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             } else {
                 Text(
@@ -177,32 +188,63 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                 )
             }
 
-            if (state.symptomNotes.isNotBlank()) {
+            if (state.symptomNotes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                UiCopy.APPOINTMENTS_NOTES_LABEL,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.weight(1f),
-                            )
-                            TextButton(onClick = viewModel::clearSymptomNotes) {
-                                Text(UiCopy.APPOINTMENTS_CLEAR)
-                            }
-                        }
-                        Text(state.symptomNotes, style = MaterialTheme.typography.bodySmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        UiCopy.APPOINTMENTS_NOTES_LABEL,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = viewModel::readAloudSymptoms) {
+                        Text(UiCopy.APPOINTMENTS_READ_ALOUD)
                     }
+                    TextButton(onClick = viewModel::clearSymptomNotes) {
+                        Text(UiCopy.APPOINTMENTS_CLEAR)
+                    }
+                }
+                state.symptomNotes.forEach { note ->
+                    SymptomNoteRow(
+                        note = note,
+                        onDelete = { viewModel.deleteSymptomNote(note.id) },
+                        onReRecord = { startVoice(note.id) },
+                        onReadAloud = { viewModel.readAloudSymptom(note.id) },
+                    )
                 }
             }
 
             state.errorMessage?.let { msg ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(msg, color = Color(DesignTokens.ERROR_RED), style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        if (state.contacts.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(UiCopy.APPOINTMENTS_CONTACTS_TITLE, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    UiCopy.APPOINTMENTS_CONTACTS_SUBTITLE,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            items(state.contacts, key = { it.id }) { contact ->
+                ContactCard(
+                    contact = contact,
+                    onCall = {
+                        if (contact.phone.isNotBlank()) {
+                            val dial = contact.phone.filter { it.isDigit() || it == '+' }
+                            context.startActivity(
+                                Intent(Intent.ACTION_DIAL, Uri.parse("tel:$dial")),
+                            )
+                        }
+                    },
+                )
             }
         }
 
@@ -300,6 +342,100 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SymptomNoteRow(
+    note: SymptomNote,
+    onDelete: () -> Unit,
+    onReRecord: () -> Unit,
+    onReadAloud: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+        ) {
+            Text(
+                note.text,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f).padding(start = 4.dp),
+            )
+            IconButton(onClick = onReadAloud) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.VolumeUp,
+                    contentDescription = UiCopy.APPOINTMENTS_READ_SYMPTOM,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            IconButton(onClick = onReRecord) {
+                Icon(
+                    Icons.Outlined.Refresh,
+                    contentDescription = UiCopy.APPOINTMENTS_RE_RECORD,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Outlined.DeleteOutline,
+                    contentDescription = UiCopy.APPOINTMENTS_DELETE_NOTE,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContactCard(contact: CareContact, onCall: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(14.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(contact.name, style = MaterialTheme.typography.titleSmall)
+                if (contact.role.isNotBlank()) {
+                    Text(
+                        contact.role,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    )
+                }
+                if (contact.organization.isNotBlank()) {
+                    Text(
+                        contact.organization,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    )
+                }
+                if (contact.phone.isNotBlank()) {
+                    Text(
+                        contact.phone,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            if (contact.phone.isNotBlank()) {
+                IconButton(onClick = onCall) {
+                    Icon(Icons.Outlined.Call, contentDescription = UiCopy.APPOINTMENTS_CALL)
                 }
             }
         }
@@ -412,10 +548,11 @@ private fun AppointmentCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(appointment.serviceType, style = MaterialTheme.typography.titleSmall)
             }
-            if (appointment.startIso.isNotBlank()) {
+            val whenLabel = appointment.startDisplay.ifBlank { appointment.startIso }
+            if (whenLabel.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    appointment.startIso,
+                    whenLabel,
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary,
                 )

@@ -78,5 +78,11 @@ data class StringPack(
     val appointmentsExtraNotesHint: String,
     val appointmentsOpenFull: String,
     val appointmentsCloseFull: String,
+    val appointmentsDeleteNote: String,
+    val appointmentsReRecord: String,
+    val appointmentsReadSymptom: String,
+    val appointmentsContactsTitle: String,
+    val appointmentsContactsSubtitle: String,
+    val appointmentsCall: String,
     val appointmentsDefaultQuestions: List<String>,
 )

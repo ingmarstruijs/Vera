@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -38,9 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +51,7 @@ import net.moonbaseone.vera.shared.domain.TimelineEvent
 import net.moonbaseone.vera.shared.domain.TimelinePhase
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.shared.util.DateDisplay
 import net.moonbaseone.vera.ui.theme.statusColor
 
 private val TimelineNodeWidth = 140.dp
@@ -71,30 +71,7 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
             .verticalScroll(rememberScrollState())
             .padding(bottom = 8.dp),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Text(
-                UiCopy.BLUEPRINT_TITLE,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.semantics { heading() },
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                UiCopy.BLUEPRINT_SUBTITLE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            FilterChip(
-                selected = false,
-                onClick = {},
-                enabled = false,
-                leadingIcon = {
-                    Icon(Icons.Outlined.Verified, contentDescription = null, modifier = Modifier.size(16.dp))
-                },
-                label = { Text(UiCopy.BLUEPRINT_IKNL_SOURCE, style = MaterialTheme.typography.labelSmall) },
-            )
-        }
-
+        Spacer(modifier = Modifier.height(8.dp))
         LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp))
 
         when (val ui = state) {
@@ -280,6 +257,7 @@ private fun EventDetailPanel(
     expandedJargonTerm: String?,
     onToggleJargon: (String) -> Unit,
 ) {
+    val uriHandler = LocalUriHandler.current
     Surface(
         shape = RoundedCornerShape(14.dp),
         tonalElevation = 0.dp,
@@ -300,7 +278,7 @@ private fun EventDetailPanel(
             if (event.dateIso.isNotBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "${UiCopy.BLUEPRINT_SCHEDULED_PREFIX}${event.dateIso}",
+                    "${UiCopy.BLUEPRINT_SCHEDULED_PREFIX}${DateDisplay.formatIso(event.dateIso)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
@@ -387,10 +365,10 @@ private fun EventDetailPanel(
                 }
             }
 
-            if (event.iknlGuidelineRef != null) {
+            event.iknlGuidelineRef?.let { url ->
                 Spacer(modifier = Modifier.height(4.dp))
                 TextButton(
-                    onClick = { /* open URL in later phase */ },
+                    onClick = { uriHandler.openUri(url) },
                     modifier = Modifier.padding(0.dp),
                 ) {
                     Text(UiCopy.BLUEPRINT_IKNL_LINK)

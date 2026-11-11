@@ -2,6 +2,7 @@ package net.moonbaseone.vera.ui.shell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -65,6 +66,19 @@ fun AppShell(
     )
     val backStack by navController.currentBackStackEntryAsState()
     val currentDestination = backStack?.destination
+    val route = currentDestination?.route
+    val headerTitle = when (route) {
+        AppDestination.CarePlan.route -> UiCopy.BLUEPRINT_TITLE
+        AppDestination.Decoder.route -> UiCopy.DECODER_TITLE
+        AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_TITLE
+        else -> UiCopy.APP_NAME
+    }
+    val headerSubtitle = when (route) {
+        AppDestination.CarePlan.route -> "${UiCopy.BLUEPRINT_SUBTITLE} · ${UiCopy.BLUEPRINT_IKNL_SOURCE}"
+        AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_SUBTITLE
+        AppDestination.Decoder.route -> UiCopy.DECODER_SUBTITLE
+        else -> null
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -75,11 +89,21 @@ fun AppShell(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 title = {
-                    Text(
-                        UiCopy.APP_NAME,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.semantics { heading() },
-                    )
+                    Column {
+                        Text(
+                            headerTitle,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                        if (headerSubtitle != null) {
+                            Text(
+                                headerSubtitle,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
                 },
                 actions = {
                     PrivacySentinelDot()
