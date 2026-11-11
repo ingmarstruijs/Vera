@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shell IA: Care plan → Decoder → Appointments → Contact (unlock happens before this view).
+/// Shell IA: Care plan → Woordenboek → Appointments → Contact (unlock happens before this view).
 struct RootTabView: View {
     @StateObject private var symptoms = SymptomLogModel()
 
@@ -31,12 +31,12 @@ struct RootTabView: View {
 
             NavigationStack {
                 DecoderView()
-                    .navigationTitle("Slim Systeem Decoder")
+                    .navigationTitle("Woordenboek")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .principal) {
                             VStack(spacing: 0) {
-                                Text("Slim Systeem Decoder").font(.headline)
+                                Text("Woordenboek").font(.headline)
                                 Text("Medische vaktaal, begrijpelijk Nederlands")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
@@ -49,7 +49,7 @@ struct RootTabView: View {
                     }
             }
             .tabItem {
-                Label("Decoder", systemImage: "text.magnifyingglass")
+                Label("Woordenboek", systemImage: "text.magnifyingglass")
             }
 
             NavigationStack {

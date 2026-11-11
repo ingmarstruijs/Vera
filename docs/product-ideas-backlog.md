@@ -17,6 +17,44 @@ Captured 2026-11-04 (Europe/Amsterdam). Raw product notes from Ingmar; prioritiz
 - True scroll-linked collapsing header (large → compact) beyond tab-title morph
 - Care-plan action items ↔ pocket guide model decision
 
+## Roadmap — medische data & FHIR-toegang
+
+FHIR is een **open formaat**, geen vrijbrief voor EPD-toegang. Vera blijft local-first tot onderstaande stappen klaar zijn. Niet elke app mag zomaar FHIR-koppelen met zorgsystemen.
+
+### Fase 0 — nu (local-first)
+- [x] Mock / lokale FHIR-achtige payloads (geen live EPD)
+- [x] Privacy-first copy: data blijft op het apparaat waar mogelijk
+- [ ] Productcopy die uitlegt: geen live dossierkoppeling totdat MedMij/autorisatie rond is
+
+### Fase 1 — toestemming & lokale bronnen
+- [ ] Expliciete patiënttoestemming-UX vóór elke import/koppeling (per bron, per gegevenstype)
+- [ ] Dataminimalisatie: alleen bouwstenen die Vera echt nodig heeft (bijv. CarePlan, Medication, lab)
+- [ ] Optioneel: **HealthKit** / **Health Connect** als lokale FHIR-achtige bron (OS-toestemming per type)
+- [ ] Duidelijke revoke/uitleg: wat Vera wel/niet leest van lokale health stores
+
+### Fase 2 — autorisatie-techniek (SMART on FHIR)
+- [ ] App-registratie bij IdP / authorization server
+- [ ] **OAuth 2.0** + **SMART on FHIR** launch/scopes (geen brede EPD-toegang)
+- [ ] Token-opslag encrypted on-device; refresh/revoke flows
+- [ ] Scope-matrix per feature (care plan vs medicatie vs afspraken)
+
+### Fase 3 — Nederland: MedMij & DigiD
+- [ ] Aansluiting **MedMij**-afsprakenstelsel (juridisch + technisch)
+- [ ] MedMij-label / keuringstraject
+- [ ] Inloggen met **DigiD** (of opvolger) en per-sessie toestemming welke gegevens Vera mag inzien
+- [ ] Koppeling met huisarts/ziekenhuis alleen via goedgekeurde MedMij-routes
+
+### Fase 4 — compliance & beveiliging
+- [ ] AVG / bijzondere persoonsgegevens: DPIA, verwerkersafspraken waar nodig
+- [ ] Zorg-IB: **NEN 7510** (en waar relevant ISO 27001) als ontwerpnorm
+- [ ] Logging/audit van toestemming en datatoegang (lokaal + server waar van toepassing)
+- [ ] Pen-test / security review vóór productie-koppeling
+
+### Guardrails (niet doen)
+- Geen willekeurige of “brede” EPD-API-calls zonder registratie, keuring en patiënttoestemming
+- Geen cloud-sync van medische dossiers als default; local-first blijft uitgangspunt
+- Geen feature die MedMij/SMART vereist shippen alsof die al live is (mock duidelijk labelen)
+
 ## Appointments
 
 - Record audio of appointments
@@ -52,3 +90,5 @@ Captured 2026-11-04 (Europe/Amsterdam). Raw product notes from Ingmar; prioritiz
 1. Relationship **care-plan action items ↔ pocket guide ↔ appointments** (one model or separate flows?)
 2. Calendar sync: one-way Vera → device calendar, or bidirectional?
 3. Appointment audio: local / on-device only, or cloud STT + simplify?
+4. Eerste echte datakoppeling: **HealthKit/Health Connect** (lokaal) of direct **MedMij**?
+5. Welke FHIR/MedMij-bouwstenen zijn MVP (CarePlan alleen vs + medicatie/lab/afspraken)?

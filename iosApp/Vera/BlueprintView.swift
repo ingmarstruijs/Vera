@@ -30,7 +30,6 @@ struct BlueprintView: View {
     @StateObject private var speech = SpeechCoordinator()
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
-    @State private var expandedJargonTerm: String?
     @State private var showClinicalText = false
     @State private var didCenterOnLaunch = false
     @State private var reRecordId: String?
@@ -59,7 +58,6 @@ struct BlueprintView: View {
                                     expanded: expandedId == event.id
                                 ) {
                                     expandedId = expandedId == event.id ? nil : event.id
-                                    expandedJargonTerm = nil
                                     if let id = expandedId {
                                         withAnimation(.easeInOut(duration: 0.25)) {
                                             proxy.scrollTo(id, anchor: .center)
@@ -90,14 +88,9 @@ struct BlueprintView: View {
                 if let expanded = events.first(where: { $0.id == expandedId }) {
                     EventDetailCard(
                         event: expanded,
-                        expandedJargonTerm: expandedJargonTerm,
                         showClinicalText: showClinicalText,
-                        onToggleJargon: { term in
-                            expandedJargonTerm = expandedJargonTerm == term ? nil : term
-                        },
                         onShowClinicalText: { clinical in
                             showClinicalText = clinical
-                            if clinical { expandedJargonTerm = nil }
                         }
                     )
                 }
@@ -301,9 +294,7 @@ private struct TimelineNodeView: View {
 
 private struct EventDetailCard: View {
     let event: TimelineEventModel
-    let expandedJargonTerm: String?
     let showClinicalText: Bool
-    let onToggleJargon: (String) -> Void
     let onShowClinicalText: (Bool) -> Void
 
     var body: some View {
@@ -353,49 +344,6 @@ private struct EventDetailCard: View {
                     ForEach(checklist, id: \.self) { item in
                         Label(item, systemImage: "checkmark.circle")
                             .font(.caption)
-                    }
-                }
-
-                if !event.jargon.isEmpty {
-                    Text("Moeilijke woorden").font(.subheadline.weight(.semibold))
-                    Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(event.jargon) { match in
-                                let selected = expandedJargonTerm == match.term
-                                Button {
-                                    onToggleJargon(match.term)
-                                } label: {
-                                    Text(match.term)
-                                        .font(.caption.weight(.semibold))
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            Capsule()
-                                                .fill(selected ? ClinicalColors.primary : Color(.secondarySystemBackground))
-                                        )
-                                        .foregroundStyle(selected ? Color.white : Color.primary)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel(match.term)
-                            }
-                        }
-                    }
-                    if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(open.term).font(.subheadline.weight(.bold))
-                            Text(open.explanation).font(.caption)
-                            if !open.actionItem.isEmpty {
-                                Text("Actie: \(open.actionItem)")
-                                    .font(.caption)
-                                    .italic()
-                            }
-                        }
-                        .padding(10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
                     }
                 }
             }
