@@ -819,134 +819,140 @@ class MockDataService(
     )
 
     private fun buildAppointments(): List<FhirResource> = listOf(
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-001",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-001",
-                "status" to "booked",
-                "serviceCategory" to listOf(
-                    mapOf(
-                        "coding" to listOf(
-                            mapOf(
-                                "system" to "http://snomed.info/sct",
-                                "code" to "363346000",
-                                "display" to "Oncologie",
-                            ),
+        buildOncologyConsultAppointment(),
+        buildEchoAppointment(),
+        buildRadiotherapyFollowUpAppointment(),
+    )
+
+    private fun buildOncologyConsultAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-001",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-001",
+            "status" to "booked",
+            "serviceCategory" to listOf(
+                mapOf(
+                    "coding" to listOf(
+                        mapOf(
+                            "system" to "http://snomed.info/sct",
+                            "code" to "363346000",
+                            "display" to "Oncologie",
                         ),
-                        "text" to "Oncologie",
                     ),
-                ),
-                "serviceType" to listOf(
-                    mapOf("text" to "Poliklinisch consult medisch oncoloog"),
-                ),
-                "reasonCode" to listOf(
-                    mapOf(
-                        "text" to
-                            "Tussentijdse evaluatie radiotherapie + trastuzumab bijwerkingen",
-                    ),
-                ),
-                "start" to "2025-04-08T10:30:00+02:00",
-                "end" to "2025-04-08T11:00:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/oncoloog-001",
-                            "display" to "Dr. A. de Vries – Medisch oncoloog",
-                            "telecom" to listOf(
-                                mapOf("system" to "phone", "value" to "088 755 6303"),
-                            ),
-                        ),
-                        "status" to "accepted",
-                    ),
-                    mapOf(
-                        "actor" to mapOf("reference" to "Patient/patient-001"),
-                        "status" to "accepted",
-                    ),
-                ),
-                "location" to mapOf(
-                    "reference" to "Location/umcu-oncologie",
-                    "display" to "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
-                    "telecom" to listOf(
-                        mapOf("system" to "phone", "value" to "088 755 6300"),
-                    ),
-                ),
-                "comment" to
-                    "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
-                    "vragen over LVEF-uitslag echocardiografie.",
-            ),
-        ),
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-002",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-002",
-                "status" to "booked",
-                "serviceType" to listOf(
-                    mapOf("text" to "Echocardiografie – LVEF-meting"),
-                ),
-                "reasonCode" to listOf(
-                    mapOf(
-                        "text" to
-                            "LVEF-monitoring trastuzumab: cardiotoxiciteitscontrole q3m",
-                    ),
-                ),
-                "start" to "2025-04-22T09:00:00+02:00",
-                "end" to "2025-04-22T09:30:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/cardioloog-001",
-                            "display" to "Afdeling Cardiologie",
-                            "telecom" to listOf(
-                                mapOf("system" to "phone", "value" to "088 755 5555"),
-                            ),
-                        ),
-                        "status" to "accepted",
-                    ),
-                ),
-                "location" to mapOf(
-                    "display" to "UMC Utrecht – Afdeling Cardiologie",
-                    "telecom" to listOf(
-                        mapOf("system" to "phone", "value" to "088 755 5555"),
-                    ),
+                    "text" to "Oncologie",
                 ),
             ),
-        ),
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-003",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-003",
-                "status" to "booked",
-                "serviceType" to listOf(
-                    mapOf("text" to "Nacontrole radiotherapie"),
+            "serviceType" to listOf(
+                mapOf("text" to "Poliklinisch consult medisch oncoloog"),
+            ),
+            "reasonCode" to listOf(
+                mapOf(
+                    "text" to
+                        "Tussentijdse evaluatie radiotherapie + trastuzumab bijwerkingen",
                 ),
-                "reasonCode" to listOf(
-                    mapOf("text" to "Afsluiting radiotherapie – beoordeling huidreactie"),
-                ),
-                "start" to "2025-04-25T14:00:00+02:00",
-                "end" to "2025-04-25T14:30:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/radiotherapeut-001",
-                            "display" to "Dr. M. Peters – Radiotherapeut-oncoloog",
-                            "telecom" to listOf(
-                                mapOf("system" to "phone", "value" to "088 755 8800"),
-                            ),
+            ),
+            "start" to "2025-04-08T10:30:00+02:00",
+            "end" to "2025-04-08T11:00:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/oncoloog-001",
+                        "display" to "Dr. A. de Vries – Medisch oncoloog",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 6303"),
                         ),
-                        "status" to "accepted",
                     ),
+                    "status" to "accepted",
                 ),
-                "location" to mapOf(
-                    "display" to "UMC Utrecht – Afdeling Radiotherapie",
-                    "telecom" to listOf(
-                        mapOf("system" to "phone", "value" to "088 755 8800"),
+                mapOf(
+                    "actor" to mapOf("reference" to "Patient/patient-001"),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "reference" to "Location/umcu-oncologie",
+                "display" to "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 6300"),
+                ),
+            ),
+            "comment" to
+                "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
+                "vragen over LVEF-uitslag echocardiografie.",
+        ),
+    )
+
+    private fun buildEchoAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-002",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-002",
+            "status" to "booked",
+            "serviceType" to listOf(
+                mapOf("text" to "Echocardiografie – LVEF-meting"),
+            ),
+            "reasonCode" to listOf(
+                mapOf(
+                    "text" to
+                        "LVEF-monitoring trastuzumab: cardiotoxiciteitscontrole q3m",
+                ),
+            ),
+            "start" to "2025-04-22T09:00:00+02:00",
+            "end" to "2025-04-22T09:30:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/cardioloog-001",
+                        "display" to "Afdeling Cardiologie",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 5555"),
+                        ),
                     ),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "display" to "UMC Utrecht – Afdeling Cardiologie",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 5555"),
+                ),
+            ),
+        ),
+    )
+
+    private fun buildRadiotherapyFollowUpAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-003",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-003",
+            "status" to "booked",
+            "serviceType" to listOf(
+                mapOf("text" to "Nacontrole radiotherapie"),
+            ),
+            "reasonCode" to listOf(
+                mapOf("text" to "Afsluiting radiotherapie – beoordeling huidreactie"),
+            ),
+            "start" to "2025-04-25T14:00:00+02:00",
+            "end" to "2025-04-25T14:30:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/radiotherapeut-001",
+                        "display" to "Dr. M. Peters – Radiotherapeut-oncoloog",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 8800"),
+                        ),
+                    ),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "display" to "UMC Utrecht – Afdeling Radiotherapie",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 8800"),
                 ),
             ),
         ),
