@@ -29,9 +29,18 @@ struct RootTabView: View {
 
             NavigationStack {
                 DecoderView()
-                    .navigationTitle("Klaritaal Decoder")
+                    .navigationTitle("Slim Systeem Decoder")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            VStack(spacing: 0) {
+                                Text("Slim Systeem Decoder").font(.headline)
+                                Text("Medische vaktaal, begrijpelijk Nederlands")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
                         ToolbarItem(placement: .topBarTrailing) {
                             PrivacySentinelDot()
                         }
