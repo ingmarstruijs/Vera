@@ -26,12 +26,6 @@ struct DecoderView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Slim Systeem Decoder")
-                    .font(.title2.weight(.bold))
-                Text("Medische vaktaal vertaald naar begrijpelijk Nederlands")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-
                 Text("Doeltaal")
                     .font(.subheadline.weight(.semibold))
                 Picker("Doeltaal", selection: $selectedLanguage) {

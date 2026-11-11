@@ -68,15 +68,7 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
             .padding(horizontal = 20.dp),
     ) {
         item {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(UiCopy.DECODER_TITLE, style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                UiCopy.DECODER_SUBTITLE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(UiCopy.DECODER_LANGUAGE_LABEL, style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(8.dp))
