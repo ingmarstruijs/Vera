@@ -33,6 +33,7 @@ object UiCopy {
     val NAV_CARE_PLAN get() = s.navCarePlan
     val NAV_DECODER get() = s.navDecoder
     val NAV_APPOINTMENTS get() = s.navAppointments
+    val NAV_CONTACTS get() = s.navContacts
 
     val BLUEPRINT_TITLE get() = s.blueprintTitle
     val BLUEPRINT_SUBTITLE get() = s.blueprintSubtitle
@@ -48,6 +49,9 @@ object UiCopy {
     val BLUEPRINT_INSTRUCTION get() = s.blueprintInstruction
     val BLUEPRINT_NEXT_STEPS get() = s.blueprintNextSteps
     val BLUEPRINT_TAP_TERM_HINT get() = s.blueprintTapTermHint
+    val BLUEPRINT_MODE_PLAIN get() = s.blueprintModePlain
+    val BLUEPRINT_MODE_CLINICAL get() = s.blueprintModeClinical
+    val BLUEPRINT_CLINICAL_LABEL get() = s.blueprintClinicalLabel
 
     val DECODER_TITLE get() = s.decoderTitle
     val DECODER_SUBTITLE get() = s.decoderSubtitle
@@ -81,6 +85,26 @@ object UiCopy {
     val APPOINTMENTS_CLEAR get() = s.appointmentsClear
     val APPOINTMENTS_READ_ALOUD get() = s.appointmentsReadAloud
     val APPOINTMENTS_NOTES_LABEL get() = s.appointmentsNotesLabel
+    val APPOINTMENTS_META_DATE get() = s.appointmentsMetaDate
+    val APPOINTMENTS_META_TYPE get() = s.appointmentsMetaType
+    val APPOINTMENTS_META_LOCATION get() = s.appointmentsMetaLocation
+    val APPOINTMENTS_MEMO get() = s.appointmentsMemo
+    val APPOINTMENTS_EXTRA_NOTES get() = s.appointmentsExtraNotes
+    val APPOINTMENTS_EXTRA_NOTES_HINT get() = s.appointmentsExtraNotesHint
+    val APPOINTMENTS_OPEN_FULL get() = s.appointmentsOpenFull
+    val APPOINTMENTS_CLOSE_FULL get() = s.appointmentsCloseFull
+    val APPOINTMENTS_SAVE_GUIDE get() = s.appointmentsSaveGuide
+    val APPOINTMENTS_GUIDE_SAVED get() = s.appointmentsGuideSaved
+    val APPOINTMENTS_OPEN_SAVED get() = s.appointmentsOpenSaved
+    val APPOINTMENTS_SAVED_GUIDES get() = s.appointmentsSavedGuides
+    val APPOINTMENTS_DELETE_NOTE get() = s.appointmentsDeleteNote
+    val APPOINTMENTS_RE_RECORD get() = s.appointmentsReRecord
+    val APPOINTMENTS_READ_SYMPTOM get() = s.appointmentsReadSymptom
+    val APPOINTMENTS_CONTACTS_TITLE get() = s.appointmentsContactsTitle
+    val APPOINTMENTS_CONTACTS_SUBTITLE get() = s.appointmentsContactsSubtitle
+    val APPOINTMENTS_CALL get() = s.appointmentsCall
+    val SYMPTOMS_HISTORY_TITLE get() = s.symptomsHistoryTitle
+    val SYMPTOMS_JUST_NOW get() = s.symptomsJustNow
 
     val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
         get() = s.appointmentsDefaultQuestions

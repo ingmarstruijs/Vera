@@ -1,0 +1,10 @@
+---
+description: Do not auto-build, install, or relaunch the Android app unless the user asks
+alwaysApply: true
+---
+
+# No auto-install / relaunch
+
+- Do **not** run Gradle `assemble*` / `installDebug`, `adb install`, or force-stop/relaunch the app unless the user explicitly asks to install or run.
+- Prefer compile or unit tests only when needed to verify your own change; avoid full `installDebug`.
+- When multiple agents work in parallel, never all install to the emulator — at most one agent installs, and only if the user asked.
