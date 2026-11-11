@@ -26,11 +26,14 @@ struct JargonMatch: Identifiable, Equatable {
 
 /// Blueprint timeline UI (CarePlan mock aligned with shared MockDataService).
 struct BlueprintView: View {
+    @EnvironmentObject private var symptoms: SymptomLogModel
+    @StateObject private var speech = SpeechCoordinator()
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
     @State private var expandedJargonTerm: String?
     @State private var showClinicalText = false
     @State private var didCenterOnLaunch = false
+    @State private var reRecordId: String?
 
     private var focusId: String? {
         expandedId ?? events.first(where: { $0.phase == .current })?.id
@@ -98,16 +101,125 @@ struct BlueprintView: View {
                         }
                     )
                 }
+
+                Divider().padding(.vertical, 8)
+                symptomLogSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 8)
         }
         .onAppear {
+            speech.prepare()
             if expandedId == nil {
                 expandedId = events.first(where: { $0.phase == .current })?.id
             }
         }
+        .onChange(of: speech.isListening) { listening in
+            if !listening { commitTranscript() }
+        }
+    }
+
+    @ViewBuilder
+    private var symptomLogSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Symptomen registreren").font(.title3.weight(.semibold))
+            Button {
+                toggleVoice()
+            } label: {
+                Label(
+                    speech.isListening ? "Stop opname" : "Symptomen inspreken",
+                    systemImage: speech.isListening ? "stop.fill" : "mic"
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(speech.isListening ? .red : ClinicalColors.primary)
+            .disabled(!speech.available && !speech.isListening)
+
+            if speech.isListening {
+                Text("Luistert…").font(.caption).foregroundStyle(.red)
+                if !speech.transcript.isEmpty {
+                    Text(speech.transcript).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            if !speech.available {
+                Text("Spraakregistratie vereist microfoon- en spraakrechten.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !symptoms.notes.isEmpty {
+                HStack {
+                    Text("Eerdere symptomen").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Button("Voorlezen") { speech.speak(symptoms.notesText) }
+                    Button("Wissen") { symptoms.clear() }
+                }
+                ForEach(symptoms.notes) { note in
+                    VStack(alignment: .leading, spacing: 4) {
+                        if !note.recordedAtLabel.isEmpty {
+                            Text(note.recordedAtLabel)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        HStack(alignment: .top) {
+                            Text(note.text).font(.body)
+                            Spacer()
+                            Button { speech.speak(note.text) } label: {
+                                Image(systemName: "speaker.wave.2")
+                            }
+                            .accessibilityLabel("Voorlezen")
+                            Button {
+                                reRecordId = note.id
+                                if !speech.isListening {
+                                    speech.clearTranscript()
+                                    speech.toggleListening()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .accessibilityLabel("Opnieuw inspelen")
+                            Button(role: .destructive) {
+                                symptoms.delete(id: note.id)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .accessibilityLabel("Verwijderen")
+                        }
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                }
+            }
+        }
+    }
+
+    private func toggleVoice() {
+        if speech.isListening {
+            speech.toggleListening()
+        } else {
+            reRecordId = nil
+            speech.clearTranscript()
+            speech.toggleListening()
+        }
+    }
+
+    private func commitTranscript() {
+        let text = speech.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            reRecordId = nil
+            return
+        }
+        if let replaceId = reRecordId {
+            symptoms.replace(id: replaceId, text: text)
+        } else {
+            symptoms.append(text)
+        }
+        reRecordId = nil
+        speech.clearTranscript()
     }
 
     private func centerCurrentItem(proxy: ScrollViewProxy) {
