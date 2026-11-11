@@ -68,21 +68,21 @@ struct DecoderView: View {
     private var privacyNote: some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "shield")
-                .foregroundStyle(Color(red: 0.11, green: 0.48, blue: 0.24))
+                .foregroundStyle(ClinicalColors.sentinel)
             Text(
                 "Vertaling vindt volledig op uw apparaat plaats. " +
                 "Geen tekst wordt naar externe servers verstuurd."
             )
             .font(.caption)
-            .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+            .foregroundStyle(ClinicalColors.text)
         }
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(red: 0.91, green: 0.96, blue: 0.93))
+                .fill(ClinicalColors.sentinelBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(red: 0.11, green: 0.48, blue: 0.24), lineWidth: 1)
+                        .stroke(ClinicalColors.sentinel, lineWidth: 1)
                 )
         )
     }
@@ -115,11 +115,11 @@ struct DecoderView: View {
                 Text(entry.explanation).font(.body)
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "checkmark.circle")
-                        .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                        .foregroundStyle(ClinicalColors.primary)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Actiepunt")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                            .foregroundStyle(ClinicalColors.primary)
                         Text(entry.actionItem).font(.caption)
                     }
                 }
@@ -127,7 +127,7 @@ struct DecoderView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(red: 0.84, green: 0.95, blue: 0.86))
+                        .fill(ClinicalColors.primaryContainer)
                 )
             }
         }

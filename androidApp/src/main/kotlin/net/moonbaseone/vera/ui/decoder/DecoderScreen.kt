@@ -53,8 +53,12 @@ import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.decoder.SupportedDecoderLanguages
 import net.moonbaseone.vera.shared.decoder.TranslatedGlossaryFields
 import net.moonbaseone.vera.shared.domain.JargonEntry
-import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.ui.theme.errorBannerBackground
+import net.moonbaseone.vera.ui.theme.sentinelAccent
+import net.moonbaseone.vera.ui.theme.sentinelBackground
+import net.moonbaseone.vera.ui.theme.warningBannerBackground
+import net.moonbaseone.vera.ui.theme.warningBannerForeground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,13 +141,13 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
                 Spacer(modifier = Modifier.height(12.dp))
             } else {
                 state.translationNotice?.let { notice ->
-                    StatusBanner(notice, Color(0xFFFFF3E0), Color(DesignTokens.AMBER))
+                    StatusBanner(notice, warningBannerBackground(), warningBannerForeground())
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
 
             state.translationError?.let { error ->
-                StatusBanner(error, Color(0xFFFFEBEE), MaterialTheme.colorScheme.error)
+                StatusBanner(error, errorBannerBackground(), MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -204,10 +208,11 @@ private fun StatusBanner(message: String, background: Color, foreground: Color) 
 
 @Composable
 private fun PrivacyNote() {
+    val accent = sentinelAccent()
     Surface(
-        color = Color(DesignTokens.SENTINEL_BG),
+        color = sentinelBackground(),
         shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, Color(DesignTokens.SENTINEL_GREEN)),
+        border = BorderStroke(1.dp, accent),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -217,14 +222,14 @@ private fun PrivacyNote() {
             Icon(
                 Icons.Outlined.Shield,
                 contentDescription = null,
-                tint = Color(DesignTokens.SENTINEL_GREEN),
+                tint = accent,
                 modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 UiCopy.DECODER_PRIVACY_NOTE,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(DesignTokens.PRIMARY_GREEN),
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

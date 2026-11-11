@@ -31,16 +31,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.moonbaseone.vera.shared.auth.AuthStep
+import net.moonbaseone.vera.ui.theme.errorBannerBackground
+import net.moonbaseone.vera.ui.theme.warningBannerBackground
+import net.moonbaseone.vera.ui.theme.warningBannerForeground
 import net.moonbaseone.vera.shared.auth.AuthUiState
 import net.moonbaseone.vera.shared.auth.AuthViewModel
-import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 
 @Composable
@@ -203,8 +204,12 @@ private fun UnlockContent(state: AuthUiState, onUnlock: () -> Unit) {
 
 @Composable
 private fun AuthErrorBanner(message: String, critical: Boolean) {
-    val border = if (critical) Color(DesignTokens.ERROR_RED) else Color(DesignTokens.AMBER)
-    val bg = if (critical) Color(0xFFFFEBEE) else Color(0xFFFFF3E0)
+    val border = if (critical) {
+        MaterialTheme.colorScheme.error
+    } else {
+        warningBannerForeground()
+    }
+    val bg = if (critical) errorBannerBackground() else warningBannerBackground()
     Surface(
         color = bg,
         shape = RoundedCornerShape(12.dp),
