@@ -111,7 +111,9 @@ fun BlueprintScreen(viewModel: BlueprintViewModel) {
                             event = expanded,
                             jargon = viewModel.jargonMatches(expanded),
                             expandedJargonTerm = ui.expandedJargonTerm,
+                            showClinicalText = ui.showClinicalText,
                             onToggleJargon = viewModel::toggleJargon,
+                            onShowClinicalText = viewModel::setShowClinicalText,
                         )
                     }
                 }
@@ -255,7 +257,9 @@ private fun EventDetailPanel(
     event: TimelineEvent,
     jargon: List<net.moonbaseone.vera.shared.domain.JargonEntry>,
     expandedJargonTerm: String?,
+    showClinicalText: Boolean,
     onToggleJargon: (String) -> Unit,
+    onShowClinicalText: (Boolean) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     Surface(
@@ -284,114 +288,137 @@ private fun EventDetailPanel(
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
-            Text(event.description, style = MaterialTheme.typography.bodyMedium)
-
-            event.patientInstruction?.let { instruction ->
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(UiCopy.BLUEPRINT_INSTRUCTION, style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(instruction, style = MaterialTheme.typography.bodySmall)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                FilterChip(
+                    selected = !showClinicalText,
+                    onClick = { onShowClinicalText(false) },
+                    label = { Text(UiCopy.BLUEPRINT_MODE_PLAIN) },
+                )
+                FilterChip(
+                    selected = showClinicalText,
+                    onClick = { onShowClinicalText(true) },
+                    label = { Text(UiCopy.BLUEPRINT_MODE_CLINICAL) },
+                )
             }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            event.nextSteps?.let { next ->
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(UiCopy.BLUEPRINT_NEXT_STEPS, style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(next, style = MaterialTheme.typography.bodySmall)
-            }
-
-            if (jargon.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(UiCopy.BLUEPRINT_PLAIN_LANGUAGE, style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(2.dp))
+            if (showClinicalText) {
                 Text(
-                    UiCopy.BLUEPRINT_TAP_TERM_HINT,
+                    UiCopy.BLUEPRINT_CLINICAL_LABEL,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    jargon.forEach { entry ->
-                        val selected = expandedJargonTerm == entry.term
-                        FilterChip(
-                            selected = selected,
-                            onClick = { onToggleJargon(entry.term) },
-                            label = {
-                                Text(
-                                    entry.term,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            },
-                            modifier = Modifier.semantics {
-                                role = Role.Button
-                                contentDescription = entry.term
-                            },
-                        )
+                Text(event.description, style = MaterialTheme.typography.bodyMedium)
+                event.iknlGuidelineRef?.let { url ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TextButton(
+                        onClick = { uriHandler.openUri(url) },
+                        modifier = Modifier.padding(0.dp),
+                    ) {
+                        Text(UiCopy.BLUEPRINT_IKNL_LINK)
                     }
                 }
-                val open = remember(expandedJargonTerm, jargon) {
-                    jargon.firstOrNull { it.term == expandedJargonTerm }
+            } else {
+                event.patientInstruction?.let { instruction ->
+                    Text(UiCopy.BLUEPRINT_INSTRUCTION, style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(instruction, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
-                if (open != null) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text(
-                                open.term,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+
+                event.nextSteps?.let { next ->
+                    Text(UiCopy.BLUEPRINT_NEXT_STEPS, style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(next, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (event.actionItems.isNotEmpty()) {
+                    Text(UiCopy.BLUEPRINT_ACTION_POINTS, style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    event.actionItems.forEach { item ->
+                        Row(
+                            modifier = Modifier.padding(bottom = 3.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Icon(
+                                Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(open.dutchExplanation, style = MaterialTheme.typography.bodySmall)
-                            if (open.actionItem.isNotBlank()) {
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    "${UiCopy.DECODER_ACTION_LABEL}: ${open.actionItem}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Medium,
-                                )
-                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(item, style = MaterialTheme.typography.bodySmall)
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-            }
 
-            event.iknlGuidelineRef?.let { url ->
-                Spacer(modifier = Modifier.height(4.dp))
-                TextButton(
-                    onClick = { uriHandler.openUri(url) },
-                    modifier = Modifier.padding(0.dp),
-                ) {
-                    Text(UiCopy.BLUEPRINT_IKNL_LINK)
-                }
-            }
-
-            if (event.actionItems.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(UiCopy.BLUEPRINT_ACTION_POINTS, style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(4.dp))
-                event.actionItems.forEach { item ->
+                if (jargon.isNotEmpty()) {
+                    Text(UiCopy.BLUEPRINT_PLAIN_LANGUAGE, style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        UiCopy.BLUEPRINT_TAP_TERM_HINT,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
                     Row(
-                        modifier = Modifier.padding(bottom = 3.dp),
-                        verticalAlignment = Alignment.Top,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(item, style = MaterialTheme.typography.bodySmall)
+                        jargon.forEach { entry ->
+                            val selected = expandedJargonTerm == entry.term
+                            FilterChip(
+                                selected = selected,
+                                onClick = { onToggleJargon(entry.term) },
+                                label = {
+                                    Text(
+                                        entry.term,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                                modifier = Modifier.semantics {
+                                    role = Role.Button
+                                    contentDescription = entry.term
+                                },
+                            )
+                        }
+                    }
+                    val open = remember(expandedJargonTerm, jargon) {
+                        jargon.firstOrNull { it.term == expandedJargonTerm }
+                    }
+                    if (open != null) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text(
+                                    open.term,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(open.dutchExplanation, style = MaterialTheme.typography.bodySmall)
+                                if (open.actionItem.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        "${UiCopy.DECODER_ACTION_LABEL}: ${open.actionItem}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

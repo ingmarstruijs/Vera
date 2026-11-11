@@ -48,6 +48,9 @@ object UiCopy {
     val BLUEPRINT_INSTRUCTION get() = s.blueprintInstruction
     val BLUEPRINT_NEXT_STEPS get() = s.blueprintNextSteps
     val BLUEPRINT_TAP_TERM_HINT get() = s.blueprintTapTermHint
+    val BLUEPRINT_MODE_PLAIN get() = s.blueprintModePlain
+    val BLUEPRINT_MODE_CLINICAL get() = s.blueprintModeClinical
+    val BLUEPRINT_CLINICAL_LABEL get() = s.blueprintClinicalLabel
 
     val DECODER_TITLE get() = s.decoderTitle
     val DECODER_SUBTITLE get() = s.decoderSubtitle

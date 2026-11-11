@@ -23,6 +23,8 @@ sealed class BlueprintUiState {
         val expandedId: String? = null,
         /** Term currently expanded inline (tap-to-explain); null = chips only. */
         val expandedJargonTerm: String? = null,
+        /** false = plain-language patient view (default); true = original clinical text. */
+        val showClinicalText: Boolean = false,
     ) : BlueprintUiState()
     data class Error(val message: String) : BlueprintUiState()
 }
@@ -81,6 +83,14 @@ class BlueprintViewModel(
         val current = _state.value as? BlueprintUiState.Ready ?: return
         _state.value = current.copy(
             expandedJargonTerm = if (current.expandedJargonTerm == term) null else term,
+        )
+    }
+
+    fun setShowClinicalText(showClinical: Boolean) {
+        val current = _state.value as? BlueprintUiState.Ready ?: return
+        _state.value = current.copy(
+            showClinicalText = showClinical,
+            expandedJargonTerm = if (showClinical) null else current.expandedJargonTerm,
         )
     }
 
