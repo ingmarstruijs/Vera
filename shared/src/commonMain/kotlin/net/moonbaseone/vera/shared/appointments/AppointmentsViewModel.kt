@@ -62,6 +62,7 @@ data class PocketGuide(
     val memo: String,
     val footer: String,
     val extraNotes: String = "",
+    val isSaved: Boolean = false,
 ) {
     fun plainText(): String = buildString {
         appendLine(title)
@@ -94,6 +95,7 @@ data class AppointmentsUiState(
     val isLoading: Boolean = true,
     val appointments: List<AppointmentSummary> = emptyList(),
     val contacts: List<CareContact> = emptyList(),
+    val savedGuides: List<PocketGuide> = emptyList(),
     val selectedId: String? = null,
     val symptomNotes: List<SymptomNote> = emptyList(),
     val draftSymptomText: String = "",
@@ -101,24 +103,31 @@ data class AppointmentsUiState(
     val isListening: Boolean = false,
     val speechAvailable: Boolean = false,
     val pocketGuide: PocketGuide? = null,
+    val guideDialogOpen: Boolean = false,
+    val guideJustSaved: Boolean = false,
     val errorMessage: String? = null,
 ) {
     val symptomNotesText: String
         get() = symptomNotes.joinToString("\n") { it.text }
+
+    fun savedGuideFor(appointmentId: String): PocketGuide? =
+        savedGuides.firstOrNull { it.appointmentId == appointmentId }
 }
 
 class AppointmentsViewModel(
     private val carePlanRepository: CarePlanRepository,
     private val speechToText: SpeechToText = FakeSpeechToText(),
     private val textToSpeech: TextToSpeech = FakeTextToSpeech(),
+    private val pocketGuideStore: PocketGuideStore = InMemoryPocketGuideStore(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     constructor(
         mockData: MockDataService,
         speechToText: SpeechToText = FakeSpeechToText(),
         textToSpeech: TextToSpeech = FakeTextToSpeech(),
+        pocketGuideStore: PocketGuideStore = InMemoryPocketGuideStore(),
         scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-    ) : this(LocalCarePlanRepository(mockData), speechToText, textToSpeech, scope)
+    ) : this(LocalCarePlanRepository(mockData), speechToText, textToSpeech, pocketGuideStore, scope)
 
     private val _state = MutableStateFlow(AppointmentsUiState())
     val state: StateFlow<AppointmentsUiState> = _state.asStateFlow()
@@ -129,11 +138,13 @@ class AppointmentsViewModel(
             try {
                 val available = speechToText.isAvailable()
                 val summaries = carePlanRepository.fetchAppointments().map { it.toSummary() }
+                val saved = pocketGuideStore.list().map { it.copy(isSaved = true) }
                 _state.update {
                     it.copy(
                         isLoading = false,
                         appointments = summaries,
                         contacts = buildContacts(summaries),
+                        savedGuides = saved,
                         speechAvailable = available,
                     )
                 }
@@ -149,17 +160,23 @@ class AppointmentsViewModel(
     }
 
     fun select(id: String) {
-        _state.update { it.copy(selectedId = id, pocketGuide = null) }
+        _state.update {
+            it.copy(
+                selectedId = id,
+                pocketGuide = null,
+                guideDialogOpen = false,
+                guideJustSaved = false,
+            )
+        }
     }
 
     fun generatePocketGuide(id: String? = _state.value.selectedId) {
         val targetId = id ?: return
         val appt = _state.value.appointments.firstOrNull { it.id == targetId } ?: return
         val notes = _state.value.symptomNotesText
-        val previousNotes = _state.value.pocketGuide
-            ?.takeIf { it.appointmentId == targetId }
-            ?.extraNotes
-            .orEmpty()
+        val previousNotes = pocketGuideStore.get(targetId)?.extraNotes
+            ?: _state.value.pocketGuide?.takeIf { it.appointmentId == targetId }?.extraNotes
+            ?: ""
         val guide = PocketGuide(
             appointmentId = appt.id,
             title = UiCopy.APPOINTMENTS_POCKET_TITLE,
@@ -172,13 +189,56 @@ class AppointmentsViewModel(
             memo = appt.comment.ifBlank { "—" },
             footer = UiCopy.APPOINTMENTS_POCKET_FOOTER,
             extraNotes = previousNotes,
+            isSaved = false,
         )
-        _state.update { it.copy(selectedId = targetId, pocketGuide = guide) }
+        _state.update {
+            it.copy(
+                selectedId = targetId,
+                pocketGuide = guide,
+                guideDialogOpen = true,
+                guideJustSaved = false,
+            )
+        }
+    }
+
+    fun openSavedGuide(appointmentId: String) {
+        val guide = pocketGuideStore.get(appointmentId)?.copy(isSaved = true) ?: return
+        _state.update {
+            it.copy(
+                selectedId = appointmentId,
+                pocketGuide = guide,
+                guideDialogOpen = true,
+                guideJustSaved = false,
+            )
+        }
+    }
+
+    fun dismissGuideDialog() {
+        _state.update { it.copy(guideDialogOpen = false, guideJustSaved = false) }
+    }
+
+    fun savePocketGuide() {
+        val guide = _state.value.pocketGuide ?: return
+        val saved = guide.copy(isSaved = true)
+        pocketGuideStore.save(saved)
+        _state.update {
+            it.copy(
+                pocketGuide = saved,
+                savedGuides = pocketGuideStore.list().map { g -> g.copy(isSaved = true) },
+                guideJustSaved = true,
+                guideDialogOpen = true,
+            )
+        }
     }
 
     fun updateExtraNotes(text: String) {
         val guide = _state.value.pocketGuide ?: return
-        _state.update { it.copy(pocketGuide = guide.copy(extraNotes = text)) }
+        _state.update {
+            it.copy(
+                pocketGuide = guide.copy(extraNotes = text, isSaved = false),
+                guideJustSaved = false,
+            )
+        }
     }
 
     fun toggleVoiceLogging(replaceNoteId: String? = null) {

@@ -122,6 +122,40 @@ class AppointmentsViewModelTest {
     }
 
     @Test
+    fun generatePocketGuide_opensDialog() = runBlocking {
+        val vm = AppointmentsViewModel(MockDataService())
+        vm.load()
+        awaitLoaded(vm)
+        val id = vm.state.value.appointments.first().id
+        vm.generatePocketGuide(id)
+        assertTrue(vm.state.value.guideDialogOpen)
+        assertNotNull(vm.state.value.pocketGuide)
+        vm.dismissGuideDialog()
+        assertFalse(vm.state.value.guideDialogOpen)
+        vm.dispose()
+    }
+
+    @Test
+    fun savePocketGuide_canReopenLater() = runBlocking {
+        val store = InMemoryPocketGuideStore()
+        val vm = AppointmentsViewModel(MockDataService(), pocketGuideStore = store)
+        vm.load()
+        awaitLoaded(vm)
+        val id = vm.state.value.appointments.first().id
+        vm.generatePocketGuide(id)
+        vm.updateExtraNotes("Meenemen: vragenlijst")
+        vm.savePocketGuide()
+        assertTrue(vm.state.value.pocketGuide?.isSaved == true)
+        assertEquals(1, vm.state.value.savedGuides.size)
+        vm.dismissGuideDialog()
+        vm.select(vm.state.value.appointments.last().id)
+        vm.openSavedGuide(id)
+        assertTrue(vm.state.value.guideDialogOpen)
+        assertEquals("Meenemen: vragenlijst", vm.state.value.pocketGuide?.extraNotes)
+        vm.dispose()
+    }
+
+    @Test
     fun readAloud_speaksGuide() = runBlocking {
         val tts = FakeTextToSpeech()
         val vm = AppointmentsViewModel(MockDataService(), textToSpeech = tts)

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Stop
@@ -41,6 +40,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -75,7 +75,6 @@ import net.moonbaseone.vera.shared.ui.UiCopy
 fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    var fullScreenGuide by remember { mutableStateOf(false) }
     var pendingReplaceId by remember { mutableStateOf<String?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -126,8 +125,26 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                 AppointmentCard(
                     appointment = appt,
                     selected = state.selectedId == appt.id,
+                    hasSavedGuide = state.savedGuideFor(appt.id) != null,
                     onSelect = { viewModel.select(appt.id) },
                     onGenerateGuide = { viewModel.generatePocketGuide(appt.id) },
+                    onOpenSaved = { viewModel.openSavedGuide(appt.id) },
+                )
+            }
+        }
+
+        if (state.savedGuides.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(UiCopy.APPOINTMENTS_SAVED_GUIDES, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            items(state.savedGuides, key = { "saved-${it.appointmentId}" }) { guide ->
+                SavedGuideRow(
+                    guide = guide,
+                    onOpen = { viewModel.openSavedGuide(guide.appointmentId) },
                 )
             }
         }
@@ -248,58 +265,13 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
             }
         }
 
-        state.pocketGuide?.let { guide ->
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        UiCopy.APPOINTMENTS_POCKET_PANEL,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(
-                        onClick = { fullScreenGuide = true },
-                        modifier = Modifier.semantics {
-                            contentDescription = UiCopy.APPOINTMENTS_OPEN_FULL
-                        },
-                    ) {
-                        Icon(Icons.Outlined.Fullscreen, contentDescription = UiCopy.APPOINTMENTS_OPEN_FULL)
-                    }
-                    IconButton(
-                        onClick = viewModel::readAloudPocketGuide,
-                        modifier = Modifier.semantics {
-                            contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD
-                        },
-                    ) {
-                        Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    PocketGuideContent(
-                        guide = guide,
-                        onExtraNotesChange = viewModel::updateExtraNotes,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
-            }
-        }
-
         item { Spacer(modifier = Modifier.height(40.dp)) }
     }
 
-    if (fullScreenGuide) {
+    if (state.guideDialogOpen) {
         state.pocketGuide?.let { guide ->
             Dialog(
-                onDismissRequest = { fullScreenGuide = false },
+                onDismissRequest = viewModel::dismissGuideDialog,
                 properties = DialogProperties(usePlatformDefaultWidth = false),
             ) {
                 Surface(
@@ -314,10 +286,16 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         ) {
+                            Icon(
+                                Icons.AutoMirrored.Outlined.MenuBook,
+                                contentDescription = null,
+                                modifier = Modifier.padding(start = 8.dp).size(20.dp),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 UiCopy.APPOINTMENTS_POCKET_PANEL,
                                 style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                modifier = Modifier.weight(1f),
                             )
                             IconButton(onClick = viewModel::readAloudPocketGuide) {
                                 Icon(
@@ -325,7 +303,7 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                                     contentDescription = UiCopy.APPOINTMENTS_READ_ALOUD,
                                 )
                             }
-                            TextButton(onClick = { fullScreenGuide = false }) {
+                            TextButton(onClick = viewModel::dismissGuideDialog) {
                                 Text(UiCopy.APPOINTMENTS_CLOSE_FULL)
                             }
                         }
@@ -341,8 +319,58 @@ fun AppointmentsScreen(viewModel: AppointmentsViewModel) {
                                 onExtraNotesChange = viewModel::updateExtraNotes,
                             )
                         }
+                        HorizontalDivider()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        ) {
+                            if (state.guideJustSaved || guide.isSaved) {
+                                Text(
+                                    UiCopy.APPOINTMENTS_GUIDE_SAVED,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f),
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                            Button(onClick = viewModel::savePocketGuide) {
+                                Text(UiCopy.APPOINTMENTS_SAVE_GUIDE)
+                            }
+                        }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SavedGuideRow(guide: PocketGuide, onOpen: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp)
+            .clickable(onClick = onOpen),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(14.dp),
+        ) {
+            Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(guide.serviceType, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    guide.date,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                )
+            }
+            TextButton(onClick = onOpen) {
+                Text(UiCopy.APPOINTMENTS_OPEN_SAVED)
             }
         }
     }
@@ -523,8 +551,10 @@ private fun GuideSection(title: String, body: String) {
 private fun AppointmentCard(
     appointment: AppointmentSummary,
     selected: Boolean,
+    hasSavedGuide: Boolean,
     onSelect: () -> Unit,
     onGenerateGuide: () -> Unit,
+    onOpenSaved: () -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -575,6 +605,19 @@ private fun AppointmentCard(
             }
             if (selected) {
                 Spacer(modifier = Modifier.height(12.dp))
+                if (hasSavedGuide) {
+                    OutlinedButton(
+                        onClick = onOpenSaved,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                    ) {
+                        Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(UiCopy.APPOINTMENTS_OPEN_SAVED)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
                 Button(
                     onClick = onGenerateGuide,
                     modifier = Modifier

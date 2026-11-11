@@ -1,6 +1,8 @@
 package net.moonbaseone.vera.shared.di
 
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
+import net.moonbaseone.vera.shared.appointments.InMemoryPocketGuideStore
+import net.moonbaseone.vera.shared.appointments.PocketGuideStore
 import net.moonbaseone.vera.shared.auth.AuthViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.careplan.CarePlanRepository
@@ -87,11 +89,13 @@ fun decoderModule(): Module = module {
 fun appointmentsModule(): Module = module {
     single<SpeechToText> { FakeSpeechToText() }
     single<TextToSpeech> { FakeTextToSpeech() }
+    single<PocketGuideStore> { InMemoryPocketGuideStore() }
     single {
         AppointmentsViewModel(
             carePlanRepository = get(),
             speechToText = get(),
             textToSpeech = get(),
+            pocketGuideStore = get(),
         )
     }
 }

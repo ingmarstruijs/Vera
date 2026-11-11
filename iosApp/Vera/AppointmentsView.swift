@@ -26,7 +26,8 @@ struct CareContactItem: Identifiable {
     let phone: String
 }
 
-struct PocketGuideModel {
+struct PocketGuideModel: Identifiable {
+    var id: String { appointmentId }
     let appointmentId: String
     let title: String
     let date: String
@@ -38,6 +39,7 @@ struct PocketGuideModel {
     let memo: String
     let footer: String
     var extraNotes: String
+    var isSaved: Bool = false
 
     func plainText() -> String {
         var lines: [String] = [
@@ -89,6 +91,8 @@ struct AppointmentsView: View {
     @State private var selectedId: String?
     @State private var pocketGuide: PocketGuideModel?
     @State private var showFullGuide = false
+    @State private var guideJustSaved = false
+    @State private var savedGuides: [PocketGuideModel] = []
     @State private var appointments = AppointmentMockData.items
     @State private var symptomNotes: [SymptomNoteItem] = []
     @State private var reRecordId: String?
@@ -107,6 +111,31 @@ struct AppointmentsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(appointments) { appt in
                     appointmentCard(appt)
+                }
+
+                if !savedGuides.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    Text("Opgeslagen pocket gidsen").font(.title3.weight(.semibold))
+                    ForEach(savedGuides) { guide in
+                        Button {
+                            pocketGuide = guide
+                            showFullGuide = true
+                            guideJustSaved = false
+                        } label: {
+                            HStack {
+                                Label(guide.serviceType, systemImage: "book")
+                                Spacer()
+                                Text(guide.date).font(.caption).foregroundStyle(.secondary)
+                            }
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
 
                 Divider().padding(.vertical, 4)
@@ -188,33 +217,6 @@ struct AppointmentsView: View {
                     contactCard(contact)
                 }
 
-                if let binding = pocketGuideBinding {
-                    Divider().padding(.vertical, 4)
-                    HStack {
-                        Label("Uw Pocket Gids", systemImage: "book")
-                            .font(.title3.weight(.semibold))
-                        Spacer()
-                        Button {
-                            showFullGuide = true
-                        } label: {
-                            Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        }
-                        .accessibilityLabel("Volledig scherm")
-                        Button {
-                            speech.speak(binding.wrappedValue.plainText())
-                        } label: {
-                            Image(systemName: "speaker.wave.2")
-                        }
-                        .accessibilityLabel("Voorlezen")
-                    }
-                    pocketGuideContent(binding)
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                        )
-                }
             }
             .padding(20)
         }
@@ -226,11 +228,25 @@ struct AppointmentsView: View {
         }
         .sheet(isPresented: $showFullGuide) {
             NavigationStack {
-                ScrollView {
-                    if let binding = pocketGuideBinding {
-                        pocketGuideContent(binding)
-                            .padding(20)
+                VStack(spacing: 0) {
+                    ScrollView {
+                        if let binding = pocketGuideBinding {
+                            pocketGuideContent(binding)
+                                .padding(20)
+                        }
                     }
+                    Divider()
+                    HStack {
+                        if guideJustSaved || (pocketGuide?.isSaved == true) {
+                            Text("Opgeslagen")
+                                .foregroundStyle(Color(red: 0.11, green: 0.37, blue: 0.13))
+                        }
+                        Spacer()
+                        Button("Opslaan") { saveCurrentGuide() }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Color(red: 0.11, green: 0.37, blue: 0.13))
+                    }
+                    .padding(16)
                 }
                 .navigationTitle("Uw Pocket Gids")
                 .navigationBarTitleDisplayMode(.inline)
@@ -251,6 +267,18 @@ struct AppointmentsView: View {
                 }
             }
         }
+    }
+
+    private func saveCurrentGuide() {
+        guard var guide = pocketGuide else { return }
+        guide.isSaved = true
+        pocketGuide = guide
+        if let index = savedGuides.firstIndex(where: { $0.appointmentId == guide.appointmentId }) {
+            savedGuides[index] = guide
+        } else {
+            savedGuides.append(guide)
+        }
+        guideJustSaved = true
     }
 
     private var pocketGuideBinding: Binding<PocketGuideModel>? {
@@ -396,8 +424,24 @@ struct AppointmentsView: View {
             .buttonStyle(.plain)
 
             if selected {
+                if savedGuides.contains(where: { $0.appointmentId == appt.id }) {
+                    Button {
+                        if let saved = savedGuides.first(where: { $0.appointmentId == appt.id }) {
+                            pocketGuide = saved
+                            showFullGuide = true
+                            guideJustSaved = false
+                        }
+                    } label: {
+                        Label("Open pocket gids", systemImage: "book")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                    }
+                    .buttonStyle(.bordered)
+                }
                 Button {
                     pocketGuide = buildGuide(appt)
+                    showFullGuide = true
+                    guideJustSaved = false
                 } label: {
                     Label("Genereer Pocket Gids", systemImage: "sparkles")
                         .frame(maxWidth: .infinity)
@@ -421,9 +465,8 @@ struct AppointmentsView: View {
         let symptoms = symptomNotes.isEmpty
             ? "(geen symptomen geregistreerd – gebruik de spraakfunctie)"
             : symptomNotes.map(\.text).joined(separator: "\n")
-        let preservedNotes = pocketGuide?.appointmentId == appt.id
-            ? (pocketGuide?.extraNotes ?? "")
-            : ""
+        let preservedNotes = savedGuides.first(where: { $0.appointmentId == appt.id })?.extraNotes
+            ?? (pocketGuide?.appointmentId == appt.id ? (pocketGuide?.extraNotes ?? "") : "")
         return PocketGuideModel(
             appointmentId: appt.id,
             title: "Pocket Gids voor uw afspraak",
@@ -435,7 +478,8 @@ struct AppointmentsView: View {
             questions: defaultQuestions,
             memo: appt.comment.isEmpty ? "—" : appt.comment,
             footer: "Gegenereerd door Vera – IKNL Richtlijn Borstkanker 2023",
-            extraNotes: preservedNotes
+            extraNotes: preservedNotes,
+            isSaved: false
         )
     }
 }
