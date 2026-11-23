@@ -13,11 +13,13 @@
 - `pull_request` → `main`
 - `push` → `main`
 
-It does **not** run on push to `cursor/**` (that used to double-fire alongside PR checks).
+It does **not** run on push to `cursor/**` (that used to double-fire alongside PR checks). Superseded runs on the same ref are cancelled (`concurrency`).
 
 Required check name for branch protection:
 
 `Shared tests + Android assembleDebug`
+
+**Build & Sign Android** (Obtainium / GitHub Releases) runs on every `main` push and on `v*` tags — see [RELEASING.md](RELEASING.md). It is **not** a PR required check; merge only when KMP smoke is green.
 
 ## Changelog
 

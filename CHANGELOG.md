@@ -4,6 +4,12 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Added
+
+- Solo-style Android release channel: every `main` push publishes Obtainium preview `0.1.<N>` via **Build & Sign Android**; `v*` tags on `main` publish stable/milestone Releases (`docs/RELEASING.md`)
+- `versioning.gradle.kts` + optional `ANDROID_KEYSTORE_*` signing for `:androidApp:assembleRelease` (debug fallback when secrets absent)
+- KMP smoke concurrency (cancel superseded runs on the same ref)
+
 ### Merged
 
 - [#26](https://github.com/ingmarstruijs/Vera/pull/26) — Add English product ideas backlog doc (2026-11-04)

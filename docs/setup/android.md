@@ -39,7 +39,7 @@ From the repo root:
 ./gradlew :androidApp:installDebug
 ```
 
-Release signing (Play Store) is not wired yet — see open decisions in [migration/kmp-plan.md](../migration/kmp-plan.md).
+Release / Obtainium channel: [RELEASING.md](../RELEASING.md). Local or CI project signing: [signing.md](signing.md).
 
 ## Fonts
 
