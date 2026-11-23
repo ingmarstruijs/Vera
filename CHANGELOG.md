@@ -6,6 +6,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Merged
 
+- [#28](https://github.com/ingmarstruijs/Vera/pull/28) — Readable editable appointment pocket guide (2026-11-23)
 - [#26](https://github.com/ingmarstruijs/Vera/pull/26) — Add English product ideas backlog doc (2026-11-04)
 - [#24](https://github.com/ingmarstruijs/Vera/pull/24) — Update README.md (2026-11-04)
 - [#21](https://github.com/ingmarstruijs/Vera/pull/21) — docs: Actions must be allowed to create PRs for changelog bot (2026-11-04)
