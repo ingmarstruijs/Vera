@@ -58,3 +58,6 @@ GoogleService-Info.plist
 .secret
 *.key
 *.pem
+*.jks
+keystore.properties
+keystore.jks

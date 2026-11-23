@@ -1,8 +1,31 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.composeCompiler)
 }
+
+apply(from = rootProject.file("versioning.gradle.kts"))
+
+val veraVersionCode: Int by extra
+val veraVersionName: String by extra
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
+val releaseStoreFilePath = keystoreProperties.getProperty("storeFile").orEmpty()
+val releaseStoreFile =
+    if (releaseStoreFilePath.isNotEmpty()) rootProject.file(releaseStoreFilePath) else null
+val hasReleaseKeystore =
+    releaseStoreFile != null &&
+        releaseStoreFile.isFile &&
+        !keystoreProperties.getProperty("keyAlias").isNullOrBlank() &&
+        !keystoreProperties.getProperty("storePassword").isNullOrBlank() &&
+        !keystoreProperties.getProperty("keyPassword").isNullOrBlank()
 
 android {
     namespace = "net.moonbaseone.vera"
@@ -12,8 +35,37 @@ android {
         applicationId = "net.moonbaseone.vera"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-kmp-skeleton"
+        versionCode = veraVersionCode
+        versionName = veraVersionName
+    }
+
+    // Keep AGP dependency metadata out of APKs (F-Droid / checkUpdates friendly later).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = releaseStoreFile
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig =
+                if (hasReleaseKeystore) {
+                    signingConfigs.getByName("release")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
+        }
     }
 
     buildFeatures {

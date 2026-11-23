@@ -1,18 +1,48 @@
 # Signing (Android / iOS)
 
-Release signing secrets are **not** required for CI and are **not** stored in this repository.
+Release signing material is **not** stored in this repository. GitHub Actions may use **optional** secrets for Android Obtainium builds; see [RELEASING.md](../RELEASING.md).
 
 ## CI policy
 
-- GitHub Actions builds **unsigned** Android debug (`assembleDebug`) plus shared/core unit tests, detekt, and lint.
-- Play Store / App Store signing keys, keystores, and provisioning profiles stay with the product owner (local or secret store).
-- Do **not** block migration CI on missing signing secrets.
+| Workflow | What it builds | Signing |
+| --- | --- | --- |
+| **KMP smoke** | `assembleDebug` + tests / detekt / lint | Debug (always) |
+| **Build & Sign Android** | `assembleRelease` → GitHub Release APK | Project keystore if `ANDROID_KEYSTORE_*` secrets exist; otherwise **debug** signing |
+
+Do **not** block smoke CI on missing signing secrets. Do **not** share debug-signed APKs as patient-facing builds.
+
+## Android (CI / Obtainium)
+
+Set these repository secrets once a project keystore exists:
+
+| Secret | Purpose |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded `.jks` / `.keystore` |
+| `ANDROID_KEYSTORE_PASSWORD` | Store password |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key password (CI falls back to store password if empty) |
+
+The release workflow decodes the keystore to `keystore.jks` and writes `keystore.properties` on the runner. Both paths are gitignored.
 
 ## Android (local release)
 
-1. Create a release keystore outside the repo.
-2. Point `androidApp` `signingConfigs` at local properties / env vars (`VERA_STORE_FILE`, `VERA_STORE_PASSWORD`, `VERA_KEY_ALIAS`, `VERA_KEY_PASSWORD`).
-3. Wire `buildTypes.release.signingConfig` only when those values are present.
+1. Create a release keystore outside the repo (or reuse the project key).
+2. At the repo root, add gitignored files:
+
+```properties
+# keystore.properties (repo root — gitignored)
+storeFile=keystore.jks
+storePassword=…
+keyAlias=…
+keyPassword=…
+```
+
+3. Place `keystore.jks` next to that file (or set `storeFile` to a path under the repo root).
+4. `androidApp` wires `buildTypes.release.signingConfig` when those values are present; otherwise release falls back to the debug keystore.
+
+```bash
+./gradlew :androidApp:assembleRelease
+```
 
 ## iOS (local release)
 
@@ -20,6 +50,4 @@ Release signing secrets are **not** required for CI and are **not** stored in th
 2. Use automatic signing for development; App Store profiles for distribution.
 3. Shared XCFramework link steps: see [ios.md](ios.md).
 
-## Next CI step (optional)
-
-A future job may assemble `assembleRelease` with GitHub Actions secrets when keys exist — keep it optional and skip cleanly when secrets are absent.
+iOS is **not** part of the GitHub Releases / Obtainium channel yet.

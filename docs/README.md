@@ -6,7 +6,8 @@ English documentation for the Kotlin Multiplatform app (Android + iOS).
 |------|-------------|
 | [setup/android.md](setup/android.md) | Android SDK, Gradle, assemble / install |
 | [setup/ios.md](setup/ios.md) | Xcode project, Shared framework link |
-| [setup/signing.md](setup/signing.md) | Release signing (out of CI; no secrets in repo) |
+| [setup/signing.md](setup/signing.md) | Android / iOS signing; optional CI keystore secrets |
+| [RELEASING.md](RELEASING.md) | Obtainium preview + `v*` GitHub Releases (Solo-style) |
 | [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
 | [contributing.md](contributing.md) | Branching, CI triggers, changelog bot, protect `main` |
 | [product-ideas-backlog.md](product-ideas-backlog.md) | Raw product ideas backlog (unprioritized) |

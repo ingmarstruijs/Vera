@@ -63,7 +63,7 @@ Vera/
 | iOS UI | SwiftUI |
 | Crypto / keys | AES-GCM + EncryptedSharedPreferences / Keychain |
 | ML | Android ML Kit Translate + Entity Extraction; iOS NLTagger (+ Translate stub) |
-| CI | Shared/core tests, detekt, Android lint, assembleDebug (signing out of CI) |
+| CI | KMP smoke (tests, detekt, lint, assembleDebug); Obtainium release APKs on `main` / `v*` — [docs/RELEASING.md](docs/RELEASING.md) |
 
 **Not in v1:** `desktopApp`, `webApp`.
 
@@ -107,7 +107,8 @@ open iosApp/Vera.xcodeproj
 
 Details: [iosApp/README.md](iosApp/README.md).
 
-CI smoke workflow: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smoke.yml) — shared tests + `assembleDebug`.
+CI smoke: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smoke.yml) — shared tests + `assembleDebug`.  
+Android Obtainium releases: [`.github/workflows/build-release.yml`](.github/workflows/build-release.yml) — see [docs/RELEASING.md](docs/RELEASING.md).
 
 ---
 
@@ -116,8 +117,10 @@ CI smoke workflow: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smo
 | Doc | Description |
 |-----|-------------|
 | [docs/README.md](docs/README.md) | Doc index |
+| [docs/RELEASING.md](docs/RELEASING.md) | Obtainium preview + stable `v*` releases |
 | [docs/setup/android.md](docs/setup/android.md) | Android setup & build |
 | [docs/setup/ios.md](docs/setup/ios.md) | iOS setup & build |
+| [docs/setup/signing.md](docs/setup/signing.md) | Keystore / signing secrets |
 | [docs/testing.md](docs/testing.md) | How to run tests |
 | [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) | Migration plan (in-repo mirror) |
 | [docs/migration/module-map.md](docs/migration/module-map.md) | Feature package → module map (P11) |
