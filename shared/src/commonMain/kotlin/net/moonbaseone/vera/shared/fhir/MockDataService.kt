@@ -700,7 +700,8 @@ class MockDataService(
                 "was beperkt. IKNL beveelt neoadjuvante HER2-blokkade aan bij " +
                 "HER2-positief invasief ductaal carcinoom ≥cT2.",
         patientInstruction =
-            "Noteer koorts >38,5°C, aanhoudende misselijkheid of " +
+            "Voor de operatie kreeg u chemotherapie (TCHP) om de tumor te verkleinen. " +
+                "Noteer koorts >38,5°C, aanhoudende misselijkheid of " +
                 "neurologische tintelingen in het bijwerkingendagboek. " +
                 "Neem contact op bij kortademigheid tijdens trastuzumab.",
         nextStep =
@@ -725,9 +726,10 @@ class MockDataService(
                 "okselkliertoilet nodig. Operatie bevestigt Stadium IIA-beeld " +
                 "zonder lymfekliermetastasen.",
         patientInstruction =
-            "Wondzorg: droog houden tot hechtingen zijn verwijderd. " +
-                "Meld roodheid, zwelling of koorts. Vermijd zwaar tillen " +
-                "met de linkerarm de eerste twee weken.",
+            "U bent geopereerd: de tumor is uit de borst gehaald en de " +
+                "schildwachtklier is onderzocht. Wondzorg: droog houden tot " +
+                "hechtingen zijn verwijderd. Meld roodheid, zwelling of koorts. " +
+                "Vermijd zwaar tillen met de linkerarm de eerste twee weken.",
         nextStep =
             "Start adjuvante radiotherapie (hypofractionering) en hervat " +
                 "trastuzumab + pertuzumab volgens schema.",
@@ -750,14 +752,15 @@ class MockDataService(
                 "na borstsparende chirurgie bij Stadium IIA zonder " +
                 "lymfeklieruitzaaiing.",
         patientInstruction =
-            "Smeer alleen de door de radiotherapeut goedgekeurde crème. " +
-                "Vermijd zonlicht en strakke BH’s op de bestraalde huid. " +
-                "Noteer huidreacties (roodheid, jeuk, schilfering) dagelijks.",
+            "U krijgt bestraling van de linkerborst in kortere sessies " +
+                "(ongeveer 15 keer over drie weken). Dit is standaard na een " +
+                "borstsparende operatie. Smeer alleen de door de radiotherapeut " +
+                "goedgekeurde crème. Vermijd zonlicht en strakke BH’s op de " +
+                "bestraalde huid. Noteer huidreacties (roodheid, jeuk, schilfering) dagelijks.",
         nextStep =
             "Nacontrole radiotherapie na de laatste fractie; daarna " +
                 "verder met trastuzumab + pertuzumab en LVEF-controles.",
         actionItems = listOf(
-            "Noteer huidreacties in uw bijwerkingendagboek.",
             "Vraag hoeveel fracties u nog heeft en wanneer vermoeidheid piekt.",
         ),
     )
@@ -775,8 +778,10 @@ class MockDataService(
                 "drie maanden. Bij daling van de ejectiefractie kan de kuur " +
                 "tijdelijk worden onderbroken.",
         patientInstruction =
-            "Meld kortademigheid, enkeloedeem of snelle hartslag meteen. " +
-                "Neem echocardiografie-uitslagen mee naar elk oncologieconsult. " +
+            "U krijgt nog ongeveer een jaar trastuzumab en pertuzumab " +
+                "(HER2-medicatie) via het infuus. Meld kortademigheid, " +
+                "enkeloedeem of snelle hartslag meteen. Neem " +
+                "echocardiografie-uitslagen mee naar elk oncologieconsult. " +
                 "Vaccinaties en tandheelkunde: stem af met de oncoloog.",
         nextStep =
             "Volgende LVEF-meting plannen; bij stabiele LVEF schema " +
@@ -800,7 +805,8 @@ class MockDataService(
                 "voor LVEF onderdeel van de follow-up; daarna op indicatie. " +
                 "IKNL: survivorship-zorg na Stadium IIA borstkanker.",
         patientInstruction =
-            "Zet mammografie en huisartscontroles in uw agenda. " +
+            "Na de behandeling volgt vijf jaar controle met jaarlijkse " +
+                "mammografie. Zet mammografie en huisartscontroles in uw agenda. " +
                 "Blijf borstzelfonderzoek doen en meld nieuwe knobbels of " +
                 "huidveranderingen zonder te wachten op de jaarcontrole.",
         nextStep =
@@ -813,116 +819,140 @@ class MockDataService(
     )
 
     private fun buildAppointments(): List<FhirResource> = listOf(
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-001",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-001",
-                "status" to "booked",
-                "serviceCategory" to listOf(
-                    mapOf(
-                        "coding" to listOf(
-                            mapOf(
-                                "system" to "http://snomed.info/sct",
-                                "code" to "363346000",
-                                "display" to "Oncologie",
-                            ),
+        buildOncologyConsultAppointment(),
+        buildEchoAppointment(),
+        buildRadiotherapyFollowUpAppointment(),
+    )
+
+    private fun buildOncologyConsultAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-001",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-001",
+            "status" to "booked",
+            "serviceCategory" to listOf(
+                mapOf(
+                    "coding" to listOf(
+                        mapOf(
+                            "system" to "http://snomed.info/sct",
+                            "code" to "363346000",
+                            "display" to "Oncologie",
                         ),
-                        "text" to "Oncologie",
                     ),
-                ),
-                "serviceType" to listOf(
-                    mapOf("text" to "Poliklinisch consult medisch oncoloog"),
-                ),
-                "reasonCode" to listOf(
-                    mapOf(
-                        "text" to
-                            "Tussentijdse evaluatie radiotherapie + trastuzumab bijwerkingen",
-                    ),
-                ),
-                "start" to "2025-04-08T10:30:00+02:00",
-                "end" to "2025-04-08T11:00:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/oncoloog-001",
-                            "display" to "Dr. A. de Vries – Medisch oncoloog",
-                        ),
-                        "status" to "accepted",
-                    ),
-                    mapOf(
-                        "actor" to mapOf("reference" to "Patient/patient-001"),
-                        "status" to "accepted",
-                    ),
-                ),
-                "location" to mapOf(
-                    "reference" to "Location/umcu-oncologie",
-                    "display" to "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
-                ),
-                "comment" to
-                    "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
-                    "vragen over LVEF-uitslag echocardiografie.",
-            ),
-        ),
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-002",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-002",
-                "status" to "booked",
-                "serviceType" to listOf(
-                    mapOf("text" to "Echocardiografie – LVEF-meting"),
-                ),
-                "reasonCode" to listOf(
-                    mapOf(
-                        "text" to
-                            "LVEF-monitoring trastuzumab: cardiotoxiciteitscontrole q3m",
-                    ),
-                ),
-                "start" to "2025-04-22T09:00:00+02:00",
-                "end" to "2025-04-22T09:30:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/cardioloog-001",
-                            "display" to "Afdeling Cardiologie",
-                        ),
-                        "status" to "accepted",
-                    ),
-                ),
-                "location" to mapOf(
-                    "display" to "UMC Utrecht – Afdeling Cardiologie",
+                    "text" to "Oncologie",
                 ),
             ),
-        ),
-        FhirResource(
-            resourceType = "Appointment",
-            id = "appt-003",
-            data = mapOf(
-                "resourceType" to "Appointment",
-                "id" to "appt-003",
-                "status" to "booked",
-                "serviceType" to listOf(
-                    mapOf("text" to "Nacontrole radiotherapie"),
+            "serviceType" to listOf(
+                mapOf("text" to "Poliklinisch consult medisch oncoloog"),
+            ),
+            "reasonCode" to listOf(
+                mapOf(
+                    "text" to
+                        "Tussentijdse evaluatie radiotherapie + trastuzumab bijwerkingen",
                 ),
-                "reasonCode" to listOf(
-                    mapOf("text" to "Afsluiting radiotherapie – beoordeling huidreactie"),
-                ),
-                "start" to "2025-04-25T14:00:00+02:00",
-                "end" to "2025-04-25T14:30:00+02:00",
-                "participant" to listOf(
-                    mapOf(
-                        "actor" to mapOf(
-                            "reference" to "Practitioner/radiotherapeut-001",
-                            "display" to "Dr. M. Peters – Radiotherapeut-oncoloog",
+            ),
+            "start" to "2025-04-08T10:30:00+02:00",
+            "end" to "2025-04-08T11:00:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/oncoloog-001",
+                        "display" to "Dr. A. de Vries – Medisch oncoloog",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 6303"),
                         ),
-                        "status" to "accepted",
                     ),
+                    "status" to "accepted",
                 ),
-                "location" to mapOf(
-                    "display" to "UMC Utrecht – Afdeling Radiotherapie",
+                mapOf(
+                    "actor" to mapOf("reference" to "Patient/patient-001"),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "reference" to "Location/umcu-oncologie",
+                "display" to "UMC Utrecht – Afdeling Oncologie, Polikliniek 3B",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 6300"),
+                ),
+            ),
+            "comment" to
+                "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
+                "vragen over LVEF-uitslag echocardiografie.",
+        ),
+    )
+
+    private fun buildEchoAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-002",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-002",
+            "status" to "booked",
+            "serviceType" to listOf(
+                mapOf("text" to "Echocardiografie – LVEF-meting"),
+            ),
+            "reasonCode" to listOf(
+                mapOf(
+                    "text" to
+                        "LVEF-monitoring trastuzumab: cardiotoxiciteitscontrole q3m",
+                ),
+            ),
+            "start" to "2025-04-22T09:00:00+02:00",
+            "end" to "2025-04-22T09:30:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/cardioloog-001",
+                        "display" to "Afdeling Cardiologie",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 5555"),
+                        ),
+                    ),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "display" to "UMC Utrecht – Afdeling Cardiologie",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 5555"),
+                ),
+            ),
+        ),
+    )
+
+    private fun buildRadiotherapyFollowUpAppointment(): FhirResource = FhirResource(
+        resourceType = "Appointment",
+        id = "appt-003",
+        data = mapOf(
+            "resourceType" to "Appointment",
+            "id" to "appt-003",
+            "status" to "booked",
+            "serviceType" to listOf(
+                mapOf("text" to "Nacontrole radiotherapie"),
+            ),
+            "reasonCode" to listOf(
+                mapOf("text" to "Afsluiting radiotherapie – beoordeling huidreactie"),
+            ),
+            "start" to "2025-04-25T14:00:00+02:00",
+            "end" to "2025-04-25T14:30:00+02:00",
+            "participant" to listOf(
+                mapOf(
+                    "actor" to mapOf(
+                        "reference" to "Practitioner/radiotherapeut-001",
+                        "display" to "Dr. M. Peters – Radiotherapeut-oncoloog",
+                        "telecom" to listOf(
+                            mapOf("system" to "phone", "value" to "088 755 8800"),
+                        ),
+                    ),
+                    "status" to "accepted",
+                ),
+            ),
+            "location" to mapOf(
+                "display" to "UMC Utrecht – Afdeling Radiotherapie",
+                "telecom" to listOf(
+                    mapOf("system" to "phone", "value" to "088 755 8800"),
                 ),
             ),
         ),

@@ -26,6 +26,20 @@ Patients sit between complex clinical data and generic internet advice. Vera tur
 
 MedMij / production FHIR sync is a later compliance track; the app uses a mock FHIR R4 oncology bundle today.
 
+### Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/zorgplan.png" alt="Zorgplan — care-plan timeline with plain-language detail" width="240" />
+  &nbsp;
+  <img src="docs/screenshots/woordenboek.png" alt="Woordenboek — on-device medical jargon glossary" width="240" />
+  &nbsp;
+  <img src="docs/screenshots/afspraken.png" alt="Afspraken — Appointment Navigator with pocket guide" width="240" />
+</p>
+
+| Zorgplan | Woordenboek | Afspraken |
+|:---:|:---:|:---:|
+| Care-plan timeline + symptom logging | On-device jargon → clear Dutch | Pocket guide per appointment |
+
 ---
 
 ## Architecture

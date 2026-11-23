@@ -14,8 +14,10 @@
 		A10000000000000000000005 /* BlueprintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* BlueprintView.swift */; };
 		A10000000000000000000006 /* DecoderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* DecoderView.swift */; };
 		A10000000000000000000007 /* AppointmentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* AppointmentsView.swift */; };
+		A1000000000000000000000C /* ContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* ContactsView.swift */; };
 		A10000000000000000000008 /* SpeechCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* SpeechCoordinator.swift */; };
 		A10000000000000000000009 /* ClinicalColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001A /* ClinicalColors.swift */; };
+		A1000000000000000000000A /* SymptomLogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001C /* SymptomLogModel.swift */; };
 		A1000000000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001B /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +34,8 @@
 		A10000000000000000000019 /* SpeechCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechCoordinator.swift; sourceTree = "<group>"; };
 		A1000000000000000000001A /* ClinicalColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClinicalColors.swift; sourceTree = "<group>"; };
 		A1000000000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000000000000000000001C /* SymptomLogModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymptomLogModel.swift; sourceTree = "<group>"; };
+		A1000000000000000000001D /* ContactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,7 +67,9 @@
 				A10000000000000000000016 /* BlueprintView.swift */,
 				A10000000000000000000017 /* DecoderView.swift */,
 				A10000000000000000000018 /* AppointmentsView.swift */,
+				A1000000000000000000001D /* ContactsView.swift */,
 				A10000000000000000000019 /* SpeechCoordinator.swift */,
+				A1000000000000000000001C /* SymptomLogModel.swift */,
 				A1000000000000000000001A /* ClinicalColors.swift */,
 				A1000000000000000000001B /* Assets.xcassets */,
 				A10000000000000000000013 /* Info.plist */,
@@ -155,7 +161,9 @@
 				A10000000000000000000005 /* BlueprintView.swift in Sources */,
 				A10000000000000000000006 /* DecoderView.swift in Sources */,
 				A10000000000000000000007 /* AppointmentsView.swift in Sources */,
+				A1000000000000000000000C /* ContactsView.swift in Sources */,
 				A10000000000000000000008 /* SpeechCoordinator.swift in Sources */,
+				A1000000000000000000000A /* SymptomLogModel.swift in Sources */,
 				A10000000000000000000009 /* ClinicalColors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

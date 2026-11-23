@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Vera</string>
     <string name="tab_care_plan">Zorgplan</string>
-    <string name="tab_decoder">Decoder</string>
+    <string name="tab_decoder">Woordenboek</string>
     <string name="tab_appointments">Afspraken</string>
     <string name="cd_privacy_sentinel">Gegevens lokaal beveiligd. Geen medische gegevens hebben uw apparaat verlaten.</string>
     <string name="cd_unlock">Ontgrendelen</string>

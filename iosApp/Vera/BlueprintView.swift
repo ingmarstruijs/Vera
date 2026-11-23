@@ -26,10 +26,13 @@ struct JargonMatch: Identifiable, Equatable {
 
 /// Blueprint timeline UI (CarePlan mock aligned with shared MockDataService).
 struct BlueprintView: View {
+    @EnvironmentObject private var symptoms: SymptomLogModel
+    @StateObject private var speech = SpeechCoordinator()
     @State private var events: [TimelineEventModel] = BlueprintMockData.events
     @State private var expandedId: String?
-    @State private var expandedJargonTerm: String?
+    @State private var showClinicalText = false
     @State private var didCenterOnLaunch = false
+    @State private var reRecordId: String?
 
     private var focusId: String? {
         expandedId ?? events.first(where: { $0.phase == .current })?.id
@@ -38,16 +41,6 @@ struct BlueprintView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Uw zorgplan")
-                    .font(.title2.weight(.bold))
-                    .accessibilityAddTraits(.isHeader)
-                Text("Uw diagnose afgezet tegen IKNL-richtlijnen")
-                    .font(.subheadline)
-                    .foregroundStyle(ClinicalColors.textSecondary)
-                Label("Bron: IKNL Richtlijnendatabase", systemImage: "checkmark.seal")
-                    .font(.caption)
-                    .foregroundStyle(ClinicalColors.primary)
-
                 HStack(spacing: 14) {
                     LegendDot(color: ClinicalColors.statusCompleted, label: "Afgerond")
                     LegendDot(color: ClinicalColors.statusInProgress, label: "Huidig")
@@ -65,7 +58,6 @@ struct BlueprintView: View {
                                     expanded: expandedId == event.id
                                 ) {
                                     expandedId = expandedId == event.id ? nil : event.id
-                                    expandedJargonTerm = nil
                                     if let id = expandedId {
                                         withAnimation(.easeInOut(duration: 0.25)) {
                                             proxy.scrollTo(id, anchor: .center)
@@ -96,22 +88,131 @@ struct BlueprintView: View {
                 if let expanded = events.first(where: { $0.id == expandedId }) {
                     EventDetailCard(
                         event: expanded,
-                        expandedJargonTerm: expandedJargonTerm,
-                        onToggleJargon: { term in
-                            expandedJargonTerm = expandedJargonTerm == term ? nil : term
+                        showClinicalText: showClinicalText,
+                        onShowClinicalText: { clinical in
+                            showClinicalText = clinical
                         }
                     )
                 }
+
+                Divider().padding(.vertical, 8)
+                symptomLogSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 8)
         }
         .onAppear {
+            speech.prepare()
             if expandedId == nil {
                 expandedId = events.first(where: { $0.phase == .current })?.id
             }
         }
+        .onChange(of: speech.isListening) { listening in
+            if !listening { commitTranscript() }
+        }
+    }
+
+    @ViewBuilder
+    private var symptomLogSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Symptomen registreren").font(.title3.weight(.semibold))
+            Button {
+                toggleVoice()
+            } label: {
+                Label(
+                    speech.isListening ? "Stop opname" : "Symptomen inspreken",
+                    systemImage: speech.isListening ? "stop.fill" : "mic"
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(speech.isListening ? .red : ClinicalColors.primary)
+            .disabled(!speech.available && !speech.isListening)
+
+            if speech.isListening {
+                Text("Luistert…").font(.caption).foregroundStyle(.red)
+                if !speech.transcript.isEmpty {
+                    Text(speech.transcript).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            if !speech.available {
+                Text("Spraakregistratie vereist microfoon- en spraakrechten.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !symptoms.notes.isEmpty {
+                HStack {
+                    Text("Eerdere symptomen").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Button("Voorlezen") { speech.speak(symptoms.notesText) }
+                    Button("Wissen") { symptoms.clear() }
+                }
+                ForEach(symptoms.notes) { note in
+                    VStack(alignment: .leading, spacing: 4) {
+                        if !note.recordedAtLabel.isEmpty {
+                            Text(note.recordedAtLabel)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        HStack(alignment: .top) {
+                            Text(note.text).font(.body)
+                            Spacer()
+                            Button { speech.speak(note.text) } label: {
+                                Image(systemName: "speaker.wave.2")
+                            }
+                            .accessibilityLabel("Voorlezen")
+                            Button {
+                                reRecordId = note.id
+                                if !speech.isListening {
+                                    speech.clearTranscript()
+                                    speech.toggleListening()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .accessibilityLabel("Opnieuw inspelen")
+                            Button(role: .destructive) {
+                                symptoms.delete(id: note.id)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .accessibilityLabel("Verwijderen")
+                        }
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+                }
+            }
+        }
+    }
+
+    private func toggleVoice() {
+        if speech.isListening {
+            speech.toggleListening()
+        } else {
+            reRecordId = nil
+            speech.clearTranscript()
+            speech.toggleListening()
+        }
+    }
+
+    private func commitTranscript() {
+        let text = speech.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            reRecordId = nil
+            return
+        }
+        if let replaceId = reRecordId {
+            symptoms.replace(id: replaceId, text: text)
+        } else {
+            symptoms.append(text)
+        }
+        reRecordId = nil
+        speech.clearTranscript()
     }
 
     private func centerCurrentItem(proxy: ScrollViewProxy) {
@@ -193,8 +294,8 @@ private struct TimelineNodeView: View {
 
 private struct EventDetailCard: View {
     let event: TimelineEventModel
-    let expandedJargonTerm: String?
-    let onToggleJargon: (String) -> Void
+    let showClinicalText: Bool
+    let onShowClinicalText: (Bool) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -210,71 +311,40 @@ private struct EventDetailCard: View {
                 }
             }
             if !event.dateIso.isEmpty {
-                Text("Gepland: \(event.dateIso)")
+                Text("Gepland: \(DateDisplay.formatIso(event.dateIso))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Divider().padding(.vertical, 2)
-            Text(event.description).font(.body)
 
-            if let instruction = event.patientInstruction, !instruction.isEmpty {
-                Text("Wat u moet weten").font(.subheadline.weight(.semibold))
-                Text(instruction).font(.caption)
+            Picker("Tekstmodus", selection: Binding(
+                get: { showClinicalText },
+                set: { onShowClinicalText($0) }
+            )) {
+                Text("Begrijpelijk").tag(false)
+                Text("Dokterstekst").tag(true)
             }
+            .pickerStyle(.segmented)
 
-            if let next = event.nextSteps, !next.isEmpty {
-                Text("Volgende stap").font(.subheadline.weight(.semibold))
-                Text(next).font(.caption)
-            }
-
-            if !event.jargon.isEmpty {
-                Text("Begrijpelijke uitleg").font(.subheadline.weight(.semibold))
-                Text("Tik op een term voor uitleg – zonder naar Decoder te gaan")
+            if showClinicalText {
+                Text("Originele tekst uit uw zorgplan")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(event.jargon) { match in
-                            let selected = expandedJargonTerm == match.term
-                            Button {
-                                onToggleJargon(match.term)
-                            } label: {
-                                Text(match.term)
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        Capsule()
-                                            .fill(selected ? ClinicalColors.primary : Color(.secondarySystemBackground))
-                                    )
-                                    .foregroundStyle(selected ? Color.white : Color.primary)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(match.term)
-                        }
-                    }
+                Text(event.description).font(.body)
+            } else {
+                if let instruction = event.patientInstruction, !instruction.isEmpty {
+                    Text(instruction).font(.body)
                 }
-                if let open = event.jargon.first(where: { $0.term == expandedJargonTerm }) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(open.term).font(.subheadline.weight(.bold))
-                        Text(open.explanation).font(.caption)
-                        if !open.actionItem.isEmpty {
-                            Text("Actie: \(open.actionItem)")
-                                .font(.caption)
-                                .italic()
-                        }
-                    }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-                }
-            }
 
-            if !event.actionItems.isEmpty {
-                Text("Actiepunten:").font(.subheadline.weight(.semibold))
-                ForEach(event.actionItems, id: \.self) { item in
-                    Label(item, systemImage: "checkmark.circle")
-                        .font(.caption)
+                let checklist = distinctActionItems(
+                    instruction: event.patientInstruction,
+                    actionItems: event.actionItems
+                )
+                if !checklist.isEmpty {
+                    Text("Actiepunten:").font(.subheadline.weight(.semibold))
+                    ForEach(checklist, id: \.self) { item in
+                        Label(item, systemImage: "checkmark.circle")
+                            .font(.caption)
+                    }
                 }
             }
         }
@@ -293,6 +363,19 @@ private struct EventDetailCard: View {
         default: return status
         }
     }
+
+    /// Drop checklist rows that merely restate the plain-language body.
+    private func distinctActionItems(instruction: String?, actionItems: [String]) -> [String] {
+        let body = (instruction ?? "").lowercased()
+        guard !body.isEmpty else { return actionItems }
+        return actionItems.filter { item in
+            var normalized = item.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if normalized.hasSuffix(".") {
+                normalized = String(normalized.dropLast())
+            }
+            return !normalized.isEmpty && !body.contains(normalized)
+        }
+    }
 }
 
 enum BlueprintMockData {
@@ -309,6 +392,7 @@ enum BlueprintMockData {
             phase: .completed,
             fhirStatus: "completed",
             patientInstruction:
+                "Voor de operatie kreeg u chemotherapie (TCHP) om de tumor te verkleinen. " +
                 "Noteer koorts >38,5°C of kortademigheid tijdens trastuzumab in het bijwerkingendagboek.",
             nextSteps: "Door naar borstsparende chirurgie (BCS) met schildwachtklierprocedure (SLNB).",
             actionItems: [
@@ -349,6 +433,7 @@ enum BlueprintMockData {
             phase: .completed,
             fhirStatus: "completed",
             patientInstruction:
+                "U bent geopereerd: de tumor is uit de borst gehaald en de schildwachtklier is onderzocht. " +
                 "Wond droog houden; meld roodheid, zwelling of koorts. Geen zwaar tillen met de linkerarm.",
             nextSteps: "Start adjuvante radiotherapie (hypofractionering) en hervat trastuzumab + pertuzumab.",
             actionItems: [
@@ -382,9 +467,11 @@ enum BlueprintMockData {
             phase: .current,
             fhirStatus: "in-progress",
             patientInstruction:
-                "Alleen goedgekeurde crème; vermijd zonlicht. Noteer huidreacties dagelijks.",
+                "U krijgt bestraling van de linkerborst in kortere sessies (ongeveer 15 keer over drie weken). " +
+                "Dit is standaard na een borstsparende operatie. Alleen goedgekeurde crème; vermijd zonlicht. " +
+                "Noteer huidreacties dagelijks.",
             nextSteps: "Nacontrole na laatste fractie; verder met trastuzumab en LVEF-controles.",
-            actionItems: ["Noteer huidreacties in uw bijwerkingendagboek."],
+            actionItems: ["Vraag hoeveel fracties u nog heeft en wanneer vermoeidheid piekt."],
             jargon: [
                 JargonMatch(
                     term: "Hypofractionering",
@@ -405,6 +492,7 @@ enum BlueprintMockData {
             phase: .current,
             fhirStatus: "in-progress",
             patientInstruction:
+                "U krijgt nog ongeveer een jaar trastuzumab en pertuzumab (HER2-medicatie) via het infuus. " +
                 "Meld kortademigheid of enkeloedeem meteen. Neem echo-uitslagen mee naar elk consult.",
             nextSteps: "Volgende LVEF-meting plannen; bij stabiele LVEF schema voortzetten.",
             actionItems: [
@@ -437,6 +525,7 @@ enum BlueprintMockData {
             phase: .future,
             fhirStatus: "scheduled",
             patientInstruction:
+                "Na de behandeling volgt vijf jaar controle met jaarlijkse mammografie. " +
                 "Zet mammografie in uw agenda; meld nieuwe knobbels zonder te wachten op jaarcontrole.",
             nextSteps: "Eerste surveillance-mammografie plannen na afronding van HER2-therapie.",
             actionItems: [
