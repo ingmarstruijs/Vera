@@ -9,9 +9,16 @@ Notable changes to the Vera repository. Dates are UTC.
 - Solo-style Android release channel: every `main` push publishes Obtainium preview `0.1.<N>` via **Build & Sign Android**; `v*` tags on `main` publish stable/milestone Releases (`docs/RELEASING.md`)
 - `versioning.gradle.kts` + optional `ANDROID_KEYSTORE_*` signing for `:androidApp:assembleRelease` (debug fallback when secrets absent)
 - KMP smoke concurrency (cancel superseded runs on the same ref)
+- Cursor agent rule `.cursor/rules/changelog.mdc` — agents update `CHANGELOG.md` in the same PR
+
+### Removed
+
+- GitHub Actions changelog-on-merge bot (follow-up `chore/changelog-record-*` PRs); agents own the changelog instead
 
 ### Merged
 
+- [#29](https://github.com/ingmarstruijs/Vera/pull/29) — feat: Solo-style Obtainium Android release channel (2026-11-23)
+- [#28](https://github.com/ingmarstruijs/Vera/pull/28) — Readable editable appointment pocket guide (2026-11-23)
 - [#26](https://github.com/ingmarstruijs/Vera/pull/26) — Add English product ideas backlog doc (2026-11-04)
 - [#24](https://github.com/ingmarstruijs/Vera/pull/24) — Update README.md (2026-11-04)
 - [#21](https://github.com/ingmarstruijs/Vera/pull/21) — docs: Actions must be allowed to create PRs for changelog bot (2026-11-04)

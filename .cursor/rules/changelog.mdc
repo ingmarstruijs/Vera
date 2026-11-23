@@ -1,0 +1,27 @@
+---
+description: Keep CHANGELOG.md updated in the same PR — no changelog bot
+alwaysApply: true
+---
+
+# Changelog (agents)
+
+Vera has **no** GitHub Actions changelog bot. Agents and maintainers update `CHANGELOG.md` in the **same PR** as the change.
+
+## When you change code or product docs
+
+1. Edit `CHANGELOG.md` under `## Unreleased`.
+2. Prefer Keep a Changelog sections: `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Documentation`.
+3. Write short, user-facing bullets (what landed), not commit hashes or file lists.
+4. If the PR is already numbered / known, you may also prepend under `### Merged`:
+   `- [#N](https://github.com/ingmarstruijs/Vera/pull/N) — <clear title> (YYYY-MM-DD)`
+5. Skip the changelog only for pure chore/meta PRs that do not affect product or process (e.g. typo in an unrelated comment). When skipping, say so in the PR body.
+
+## When releasing
+
+- Preview Obtainium builds (`0.1.<N>`) do **not** require folding `Unreleased`.
+- For annotated `v*` tags, move relevant `## Unreleased` bullets into a new `## [X.Y.Z] - YYYY-MM-DD` section (see `docs/RELEASING.md`).
+
+## Do not
+
+- Do **not** reintroduce `.github/workflows/changelog-on-merge.yml` or open `chore/changelog-record-*` PRs.
+- Do **not** leave `CHANGELOG.md` stale while shipping user-visible or CI/release changes.

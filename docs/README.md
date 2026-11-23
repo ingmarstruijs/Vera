@@ -9,7 +9,7 @@ English documentation for the Kotlin Multiplatform app (Android + iOS).
 | [setup/signing.md](setup/signing.md) | Android / iOS signing; optional CI keystore secrets |
 | [RELEASING.md](RELEASING.md) | Obtainium preview + `v*` GitHub Releases (Solo-style) |
 | [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
-| [contributing.md](contributing.md) | Branching, CI triggers, changelog bot, protect `main` |
+| [contributing.md](contributing.md) | Branching, CI triggers, changelog (agent rule), protect `main` |
 | [product-ideas-backlog.md](product-ideas-backlog.md) | Raw product ideas backlog (unprioritized) |
 | [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror (P0–P11 / Phase 6) |
 | [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` boundaries + CMP gate note |
