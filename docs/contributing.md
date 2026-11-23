@@ -12,6 +12,7 @@
 
 - `pull_request` → `main`
 - `push` → `main`
+- `workflow_dispatch` (manual)
 
 It does **not** run on push to `cursor/**` (that used to double-fire alongside PR checks). Superseded runs on the same ref are cancelled (`concurrency`).
 
@@ -23,26 +24,13 @@ Required check name for branch protection:
 
 ## Changelog
 
-Every merge to `main` should appear in [`CHANGELOG.md`](../CHANGELOG.md) (Keep a Changelog–style under `## Unreleased`).
+Every meaningful PR should update [`CHANGELOG.md`](../CHANGELOG.md) under `## Unreleased` (Keep a Changelog–style).
 
-Automation: [`.github/workflows/changelog-on-merge.yml`](../.github/workflows/changelog-on-merge.yml) opens a follow-up PR (`chore/changelog-record-N`) that prepends a bullet under `### Merged` from the merged PR’s title and number. It does **not** push to `main` (so no Ruleset bypass for `github-actions[bot]` is required).
+There is **no** changelog GitHub Actions bot. Agents follow [`.cursor/rules/changelog.mdc`](../.cursor/rules/changelog.mdc):
 
-- Put a clear, user-facing summary in the **PR title** (that string is what lands in the log).
-- Add `[skip changelog]` to the PR title to opt out (also used by the bot’s follow-up PR title so it does not recurse).
-- Prefer editing `### Added` / `### Changed` / etc. in the feature PR when you want richer categorization; the bot only appends the merge bullet and skips if `#N` is already mentioned.
-- Merge the bot’s changelog PR when its CI is green (or enable auto-merge).
-
-### Actions permission (required once)
-
-GitHub blocks `gh pr create` from workflows until this is on:
-
-1. **Settings → Actions → General → Workflow permissions**
-2. Enable **Allow GitHub Actions to create and approve pull requests**
-3. Save
-
-Without that, the changelog job can push `chore/changelog-record-N` but fails with:  
-`GitHub Actions is not permitted to create or approve pull requests`.  
-Fix: toggle the setting above, then **Re-run** the failed *Changelog on merge* workflow, or open a PR from the already-pushed branch manually.
+- Prefer categorized bullets (`### Added` / `### Changed` / `### Fixed` / …) in the feature PR itself.
+- Optionally add a `### Merged` line with the PR number once known.
+- Do not open `chore/changelog-record-*` follow-up PRs.
 
 ## Protect `main` (GitHub Settings)
 
@@ -55,7 +43,5 @@ The repo token used by agents cannot write branch protection (HTTP 403). A repo 
    - **Require status checks to pass** → **`Shared tests + Android assembleDebug`**
      - Tip: the check must have run at least once before it appears in search
    - **Block force pushes** / **Restrict deletions**
-4. **Bypass list:** leave empty if `github-actions[bot]` is not offered (normal). Changelog automation uses a PR instead.
+4. **Bypass list:** leave empty unless you intentionally allow a bot or admin to skip checks.
 5. **Save / Create**
-
-No Actions bypass is required for the changelog workflow.
