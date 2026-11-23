@@ -14,7 +14,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Changed
 
-- App icon: clinical compass mark (sage `#2F5D50` + cream) replaces shield+V; master `assets/icons/vera-app-icon-1024.png` + Android adaptive/mipmaps
+- App icon: clinical compass (proposal A) replaces shield+V; master + adaptive/mipmaps match the approved artwork (not a simplified vector)
 - Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
 - Root README compacted (release table inline; screenshots removed)
 
