@@ -6,7 +6,7 @@ Release signing material is **not** stored in this repository. GitHub Actions ma
 
 | Workflow | What it builds | Signing |
 | --- | --- | --- |
-| **KMP smoke** | `assembleDebug` + tests / detekt / lint | Debug (always) |
+| **KMP smoke** | `:ui` + `:androidApp` `assembleDebug` + tests / detekt / lint | Debug (always) |
 | **Build & Sign Android** | `assembleRelease` → GitHub Release APK | Project keystore if `ANDROID_KEYSTORE_*` secrets exist; otherwise **debug** signing |
 
 Do **not** block smoke CI on missing signing secrets. Do **not** share debug-signed APKs as patient-facing builds.
@@ -44,10 +44,8 @@ keyPassword=…
 ./gradlew :androidApp:assembleRelease
 ```
 
-## iOS (local release)
+## iOS (future CMP host)
 
-1. Configure Team ID + signing in Xcode for `net.moonbaseone.vera`.
-2. Use automatic signing for development; App Store profiles for distribution.
-3. Shared XCFramework link steps: see [ios.md](ios.md).
+When the Compose Multiplatform iOS host exists, configure Team ID + signing in Xcode for `net.moonbaseone.vera`. Shared framework steps: [ios.md](ios.md).
 
 iOS is **not** part of the GitHub Releases / Obtainium channel yet.

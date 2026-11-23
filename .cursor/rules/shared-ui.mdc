@@ -1,0 +1,11 @@
+---
+description: Shared Compose UI — do not reintroduce SwiftUI
+alwaysApply: true
+---
+
+# Shared UI
+
+- Product UI lives in **`:ui`** (Compose). `androidApp` is only the Android application shell.
+- Do **not** add a separate SwiftUI (or other native) screen tree. iOS will host the same Compose UI via CMP.
+- Prefer editing screens under `ui/src/main/kotlin/net/moonbaseone/vera/ui/`.
+- When adding platform hooks (permissions, dialer, biometrics UI), keep them in `:ui` with clear Android APIs for now; expect/actual or CMP `iosMain` comes with the iOS host.

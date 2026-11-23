@@ -39,7 +39,6 @@ android {
         versionName = veraVersionName
     }
 
-    // Keep AGP dependency metadata out of APKs (F-Droid / checkUpdates friendly later).
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -88,7 +87,6 @@ android {
     }
 
     lint {
-        // Practical a11y-focused checks; warnings do not fail the build forever.
         abortOnError = true
         warningsAsErrors = false
         checkReleaseBuilds = false
@@ -98,28 +96,18 @@ android {
             "LabelFor",
             "ClickableViewAccessibility",
         )
-        // No Play signing secrets in CI — lint unsigned debug only.
         checkDependencies = false
     }
 }
 
 dependencies {
+    implementation(project(":ui"))
     implementation(project(":shared"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-
     implementation(libs.koin.android)
-    implementation(libs.koin.compose)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.biometric)
-
-    debugImplementation(libs.androidx.compose.ui.tooling)
 }

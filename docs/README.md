@@ -1,26 +1,22 @@
 # Vera documentation
 
-English documentation for the Kotlin Multiplatform app (Android + iOS).
-
 | Path | Description |
 |------|-------------|
+| [RELEASING.md](RELEASING.md) | Obtainium preview + `v*` GitHub Releases |
 | [setup/android.md](setup/android.md) | Android SDK, Gradle, assemble / install |
-| [setup/ios.md](setup/ios.md) | Xcode project, Shared framework link |
-| [setup/signing.md](setup/signing.md) | Android / iOS signing; optional CI keystore secrets |
-| [RELEASING.md](RELEASING.md) | Obtainium preview + `v*` GitHub Releases (Solo-style) |
+| [setup/ios.md](setup/ios.md) | iOS via future CMP host (SwiftUI removed) |
+| [setup/signing.md](setup/signing.md) | Keystore / signing secrets |
 | [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
-| [contributing.md](contributing.md) | Branching, CI triggers, changelog (agent rule), protect `main` |
-| [product-ideas-backlog.md](product-ideas-backlog.md) | Raw product ideas backlog (unprioritized) |
-| [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror (P0–P11 / Phase 6) |
-| [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` boundaries + CMP gate note |
-| [migration/navigation.md](migration/navigation.md) | Typed nav + Decompose/Circuit deferral |
+| [contributing.md](contributing.md) | Branching, CI, changelog agent rule, protect `main` |
+| [product-ideas-backlog.md](product-ideas-backlog.md) | Raw product ideas backlog |
+| [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror |
+| [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` / `:ui` map |
+| [migration/navigation.md](migration/navigation.md) | Typed nav notes |
 
 ## Modules
 
-- `core/` — Stable KMP types: domain, failure, i18n, navigation, design tokens
-- `shared/` — Feature KMP logic (vault, shield, FHIR mock, ViewModels); depends on `:core`
-- `androidApp/` — Jetpack Compose UI (`net.moonbaseone.vera`)
-- `iosApp/` — SwiftUI UI
-
-Webviewer / P2P sharing and Flutter hosts are **removed**. No desktop or web KMP modules in v1.  
-**UI gate:** dual-native continues until an explicit CMP product decision (see module-map).
+- `core/` — KMP: domain, failure, i18n, navigation, design tokens  
+- `shared/` — KMP features (vault, shield, FHIR mock, ViewModels)  
+- `ui/` — **Shared Compose UI** (Android library now; CMP iOS next)  
+- `androidApp/` — Thin Android application shell  
+- `iosApp/` — Placeholder for CMP iOS host (no SwiftUI)

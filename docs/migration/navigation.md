@@ -1,28 +1,26 @@
-# Typed navigation (P11 leftover)
+# Typed navigation
 
 ## Current contract
 
 | Piece | Location | Role |
 |-------|----------|------|
-| `AppDestination` | `:core` | Sealed route IDs: unlock → careplan → decoder → appointments |
+| `AppDestination` | `:core` | Sealed route IDs: unlock → careplan → decoder → appointments → contacts |
 | `AppNavigator` | `:core` | Thin navigate / current API |
 | `DefaultAppNavigator` | `:core` | `StateFlow`-backed implementation (Koin `coreModule`) |
-| Android | `AppShell` + Navigation Compose | Maps destinations to tabs |
-| iOS | `RootTabView` + SwiftUI `TabView` | Maps same IA natively |
+| Shared UI | `:ui` `AppShell` + Navigation Compose | Maps destinations to tabs |
 
 ## Decompose / Circuit — deferred
 
-**Decision for this slice:** do **not** adopt Decompose or Circuit yet.
+**Decision:** do **not** adopt Decompose or Circuit yet.
 
 **Why**
 
-- Dual-native UI (Compose + SwiftUI) already owns the back stack / tabs.
-- Product IA is a flat unlock → three-tab shell; no shared multi-stack or deep-link graph yet.
-- Prefs keep DI/state as **Koin + ViewModel/StateFlow**; Decompose Components would overlap until we need cross-platform stack orchestration.
+- Shared Compose `:ui` already owns the tab shell.
+- Product IA is a flat unlock → tab shell; no shared multi-stack or deep-link graph yet.
+- Prefs keep DI/state as **Koin + ViewModel/StateFlow**.
 
 **Concrete next step (when needed)**
 
 1. Keep `AppDestination.route` IDs stable.
-2. Introduce a Decompose `RootComponent` (or Circuit `Presenter`) that owns `DefaultAppNavigator`-equivalent state and child slots for CarePlan / Decoder / Appointments.
-3. Android: host via `Children` / Circuit `NavigableCircuitContent`; iOS: observe child configs in SwiftUI (or keep native tabs and only share destination state).
-4. Do **not** force Compose Multiplatform UI as part of nav adoption — CMP remains a separate product gate.
+2. Introduce a Decompose `RootComponent` (or Circuit `Presenter`) that owns navigator-equivalent state and child slots.
+3. Host from `:ui` (and the future CMP iOS entry) without reintroducing a separate SwiftUI tree.

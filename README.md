@@ -1,135 +1,55 @@
 # Vera
 
-**Your personal oncology compass.** Clear, private, trusted medical guidance — on your device.
+**Your personal oncology compass** — clear, private care-plan guidance on device.
 
-Vera is a **Kotlin Multiplatform** app: shared Kotlin logic with **native UI** (Android Jetpack Compose, iOS SwiftUI). Product IDs use `net.moonbaseone.vera` (`vera.moonbase-one.net`).
+Kotlin Multiplatform **logic** (`:core` / `:shared`) + **one shared Compose UI** (`:ui`). Android ships today (`androidApp`); iOS uses the same UI via Compose Multiplatform (host pending — SwiftUI removed).
 
-## Product
+IDs: `net.moonbaseone.vera` · local-first · no cloud ML for v1.
 
-### Problem & solution
+## Features
 
-Patients sit between complex clinical data and generic internet advice. Vera turns diagnosis and care-plan data into a clear, personalized roadmap — without sending identifiable records to a central server.
+- **Zorgplan** — care-plan timeline (mock FHIR)
+- **Woordenboek** — on-device jargon → plain language
+- **Afspraken** — pocket guide + symptom logging
+- **Contacts** — care-team list
+- **Vault** — AES-256-GCM + biometrics
 
-### Core features
-
-- **Blueprint** — Interactive care-plan timeline (mock FHIR CarePlan today)
-- **Plain-Language Decoder** — On-device jargon glossary + translation (ML Kit on Android; NLTagger / Translate stub on iOS)
-- **Appointment Navigator** — Pocket guide and voice symptom logging (STT/TTS on device)
-- **Identity Shield** — Local PII redaction (regex + NER) before analysis
-- **Local Vault** — AES-256-GCM encrypted records + biometric gate
-
-### Privacy
-
-- **Local-first** — Analysis stays on device; no cloud ML for v1
-- **Encrypted vault** — AES-256-GCM + Android Keystore / iOS Keychain
-- **Privacy sentinel** — Local-only status (no remote share path)
-
-MedMij / production FHIR sync is a later compliance track; the app uses a mock FHIR R4 oncology bundle today.
-
-### Screenshots
-
-<p align="center">
-  <img src="docs/screenshots/zorgplan.png" alt="Zorgplan — care-plan timeline with plain-language detail" width="240" />
-  &nbsp;
-  <img src="docs/screenshots/woordenboek.png" alt="Woordenboek — on-device medical jargon glossary" width="240" />
-  &nbsp;
-  <img src="docs/screenshots/afspraken.png" alt="Afspraken — Appointment Navigator with pocket guide" width="240" />
-</p>
-
-| Zorgplan | Woordenboek | Afspraken |
-|:---:|:---:|:---:|
-| Care-plan timeline + symptom logging | On-device jargon → clear Dutch | Pocket guide per appointment |
-
----
-
-## Architecture
+## Layout
 
 ```
-Vera/
-├── core/            # KMP: domain, failure, i18n, navigation, design tokens
-├── shared/          # KMP: vault/shield/features, SQLDelight, Koin, ViewModels
-├── androidApp/      # Jetpack Compose (applicationId net.moonbaseone.vera)
-├── iosApp/          # SwiftUI + Shared framework (exports :core)
-├── docs/            # English documentation
-├── assets/fonts/    # Atkinson Hyperlegible (wire into app resources as needed)
-├── settings.gradle.kts
-└── gradle/
+core/        KMP domain, i18n, navigation, design tokens
+shared/      KMP features, SQLDelight, Koin, ViewModels
+ui/          Shared Jetpack Compose UI (CMP iOS next)
+androidApp/  Thin Android application shell
+iosApp/      Placeholder for CMP iOS host (no SwiftUI)
 ```
 
-| Layer | Stack |
-|-------|--------|
-| Shared logic | Kotlin Multiplatform (`:core` + `:shared`), Koin, ViewModel / StateFlow, SQLDelight |
-| Android UI | Jetpack Compose, Material 3 |
-| iOS UI | SwiftUI |
-| Crypto / keys | AES-GCM + EncryptedSharedPreferences / Keychain |
-| ML | Android ML Kit Translate + Entity Extraction; iOS NLTagger (+ Translate stub) |
-| CI | KMP smoke (tests, detekt, lint, assembleDebug); Obtainium release APKs on `main` / `v*` — [docs/RELEASING.md](docs/RELEASING.md) |
-
-**Not in v1:** `desktopApp`, `webApp`.
-
-### CMP vs dual-native (Phase 6 / P11 product gate)
-
-Compose Multiplatform **shared UI is not adopted** until an explicit product decision. Until then Vera stays **dual-native** (Jetpack Compose + SwiftUI) with shared Kotlin logic only. Unifying UI under CMP is optional post-parity work and must not be forced for design-drift reasons alone. See [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) and [docs/migration/module-map.md](docs/migration/module-map.md).
-
-Migration history and Phase 6 / P11: [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md).
-
----
-
-## Prerequisites
-
-- **JDK 21** (CI uses Temurin 21)
-- **Android SDK** with platform 35 / build-tools 35 (for `androidApp`)
-- **Xcode 15+** on macOS (for `iosApp`)
-
-See [docs/setup/android.md](docs/setup/android.md) and [docs/setup/ios.md](docs/setup/ios.md).
-
----
-
-## Build & run
+## Build
 
 ```bash
-# Shared unit tests (JVM / Android host)
-./gradlew :shared:testDebugUnitTest
-
-# Android debug APK
-./gradlew :androidApp:assembleDebug
-
-# Install / run on a connected device or emulator (Android Studio or):
-./gradlew :androidApp:installDebug
+./gradlew :shared:testDebugUnitTest :ui:assembleDebug :androidApp:assembleDebug
 ```
 
-**iOS** (macOS + Xcode):
+JDK 21 · Android SDK 35. Setup: [docs/setup/android.md](docs/setup/android.md).
 
-```bash
-./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
-open iosApp/Vera.xcodeproj
-```
+## Release (Obtainium)
 
-Details: [iosApp/README.md](iosApp/README.md).
+Same habit as Solo — details: **[docs/RELEASING.md](docs/RELEASING.md)**.
 
-CI smoke: [`.github/workflows/kmp-smoke.yml`](.github/workflows/kmp-smoke.yml) — shared tests + `assembleDebug`.  
-Android Obtainium releases: [`.github/workflows/build-release.yml`](.github/workflows/build-release.yml) — see [docs/RELEASING.md](docs/RELEASING.md).
+| Channel | Trigger | Tag / version |
+|---------|---------|----------------|
+| Preview | Every push to `main` (+ manual dispatch) | `0.1.<N>` pre-release · `vera-0.1.<N>.apk` |
+| Milestone | Annotated `vX.Y.Z-…` on `main` | GitHub pre-release |
+| Stable | Annotated `vX.Y.Z` on `main` | Full GitHub Release |
 
----
+- `versionCode` = Actions `run_number`; preview tag **equals** `versionName` (Obtainium-friendly).
+- Optional secrets: `ANDROID_KEYSTORE_*` (else debug-signed).
+- Obtainium: include pre-releases · APK filter `^vera-[0-9].*\.apk$`.
 
-## Documentation
+CI: [kmp-smoke](.github/workflows/kmp-smoke.yml) (required on PRs) · [build-release](.github/workflows/build-release.yml) (APKs on `main` / `v*`).
 
-| Doc | Description |
-|-----|-------------|
-| [docs/README.md](docs/README.md) | Doc index |
-| [docs/RELEASING.md](docs/RELEASING.md) | Obtainium preview + stable `v*` releases |
-| [docs/setup/android.md](docs/setup/android.md) | Android setup & build |
-| [docs/setup/ios.md](docs/setup/ios.md) | iOS setup & build |
-| [docs/setup/signing.md](docs/setup/signing.md) | Keystore / signing secrets |
-| [docs/testing.md](docs/testing.md) | How to run tests |
-| [docs/migration/kmp-plan.md](docs/migration/kmp-plan.md) | Migration plan (in-repo mirror) |
-| [docs/migration/module-map.md](docs/migration/module-map.md) | Feature package → module map (P11) |
-| [CHANGELOG.md](CHANGELOG.md) | Notable changes |
+## Docs
 
-App UI copy: EN / NL / DE / FR via shared `StringCatalog` (+ Android `values-*` packs).
+[Index](docs/README.md) · [Contributing](docs/contributing.md) · [Changelog](CHANGELOG.md) · [Testing](docs/testing.md) · [Signing](docs/setup/signing.md)
 
----
-
-## License / contributing
-
-Private product repo. Prefer English in repository docs; keep platform UI multilingual via shared / platform strings.
+EN / NL / DE / FR via shared `StringCatalog`. Prefer English in repo docs.

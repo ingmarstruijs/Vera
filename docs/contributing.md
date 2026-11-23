@@ -22,6 +22,8 @@ Required check name for branch protection:
 
 **Build & Sign Android** (Obtainium / GitHub Releases) runs on every `main` push and on `v*` tags — see [RELEASING.md](RELEASING.md). It is **not** a PR required check; merge only when KMP smoke is green.
 
+UI lives in **`:ui`** (shared Compose). Do not reintroduce a separate SwiftUI app; iOS will host the same UI via CMP.
+
 ## Changelog
 
 Every meaningful PR should update [`CHANGELOG.md`](../CHANGELOG.md) under `## Unreleased` (Keep a Changelog–style).
