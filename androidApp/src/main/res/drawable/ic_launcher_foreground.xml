@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive foreground: shield + stylized V.
-  Viewport 108×108; mark kept inside the ~66dp safe zone for 48dp readability.
-  Colors match DesignTokens (PRIMARY_GREEN field / SURFACE_LIGHT mark).
+  Adaptive foreground: quiet clinical compass (proposal A).
+  Viewport 108×108; mark kept inside the ~66dp safe zone.
+  Cream mark on DesignTokens.PRIMARY_GREEN background.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -10,38 +10,32 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Shield outline (stroke via outer − inner path) -->
+    <!-- Outer ring -->
     <path
-        android:fillColor="#F3F6F5"
-        android:fillType="evenOdd"
-        android:pathData="
-            M54,22
-            C46,22 38,24 32,28
-            L32,48
-            C32,62 40,74 54,86
-            C68,74 76,62 76,48
-            L76,28
-            C70,24 62,22 54,22
-            Z
-            M54,30
-            C60,30 66,31.5 70,34.5
-            L70,48
-            C70,58 64,67.5 54,76.5
-            C44,67.5 38,58 38,48
-            L38,34.5
-            C42,31.5 48,30 54,30
-            Z" />
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-26,0a26,26 0,1,1 52,0a26,26 0,1,1 -52,0"
+        android:strokeWidth="5"
+        android:strokeColor="#F3F6F5" />
 
-    <!-- Stylized V nested in shield -->
+    <!-- Cardinal ticks (N E S W) -->
     <path
         android:fillColor="#F3F6F5"
-        android:pathData="
-            M40,36
-            L46.5,36
-            L54,58
-            L61.5,36
-            L68,36
-            L56.5,68
-            L51.5,68
-            Z" />
+        android:pathData="M52.5,24h3v8h-3z" />
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="M52.5,76h3v8h-3z" />
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="M24,52.5h8v3h-8z" />
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="M76,52.5h8v3h-8z" />
+
+    <!-- Needle pointing NNE (quiet guidance) -->
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="M54,30 L60,58 L54,54 L48,58 Z" />
+    <path
+        android:fillColor="#F3F6F5"
+        android:pathData="M54,54m-3.5,0a3.5,3.5 0,1,1 7,0a3.5,3.5 0,1,1 -7,0" />
 </vector>
