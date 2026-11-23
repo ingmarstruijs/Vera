@@ -45,14 +45,13 @@ jobs:
         run: ./gradlew :shared:testDebugUnitTest --stacktrace
 
       - name: Detekt
-        run: ./gradlew :core:detekt :shared:detekt :androidApp:detekt --stacktrace
+        run: ./gradlew :core:detekt :shared:detekt :ui:detekt :androidApp:detekt --stacktrace
 
       - name: Android lint (a11y-focused)
         run: ./gradlew :androidApp:lintDebug --stacktrace
 
-      - name: Assemble Android debug
-        run: ./gradlew :androidApp:assembleDebug --stacktrace
+      - name: Assemble UI + Android debug
+        run: ./gradlew :ui:assembleDebug :androidApp:assembleDebug --stacktrace
 
-  # iOS compile needs a macOS runner + Xcode; left as a follow-up once Shared
-  # framework packaging is wired into the Xcode project (see iosApp/README.md).
-  # Play / App Store signing secrets are intentionally out of CI — see docs/setup/signing.md.
+  # iOS: shared Compose UI will use a CMP host (SwiftUI removed). macOS compile is a
+  # follow-up once :ui exposes iosMain / MainViewController — see iosApp/README.md.

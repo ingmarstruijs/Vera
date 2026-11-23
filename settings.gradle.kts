@@ -18,4 +18,5 @@ rootProject.name = "Vera"
 
 include(":core")
 include(":shared")
+include(":ui")
 include(":androidApp")

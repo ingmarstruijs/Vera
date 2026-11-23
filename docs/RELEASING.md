@@ -30,7 +30,7 @@ Rules:
 - Preview tags omit the `v` prefix so they do not re-trigger the workflow’s `v*` path.
 - Milestone/production still use normal SemVer; a `-` in the tag → GitHub pre-release.
 - Local builds without `-P` default to `versionName=0.1.0`, `versionCode=1`.
-- iOS versioning stays in Xcode for now; this document covers the Android Obtainium channel only.
+- iOS is not in the Obtainium channel yet (CMP host pending). This document covers **Android** releases only.
 
 Manual dispatch may pass a custom `version` input as `versionName`; channel stays `preview` and `versionCode` is still the run number. Prefer `0.1.<N>`-shaped labels so Obtainium compares cleanly.
 

@@ -1,43 +1,24 @@
 # iOS setup
 
-## Prerequisites
+Vera **does not** ship a SwiftUI UI anymore. Product screens live in shared Compose (`:ui`). An iOS **Compose Multiplatform** host is the planned shell (not wired yet).
 
-- macOS with **Xcode 15+**
-- Apple development team for device / TestFlight (simulator works without distribution signing)
+## Today
 
-## Project
-
-| Item | Value |
-|------|--------|
-| Xcode project | `iosApp/Vera.xcodeproj` |
-| Bundle id (target) | `net.moonbaseone.vera` (align with product domain) |
-| UI | SwiftUI |
-| Shared logic | Kotlin `:shared` framework |
-
-Info.plist includes Face ID / biometry usage strings. Speech (SFSpeech / AVSpeech) is used by the appointments navigator.
-
-## Shared framework
-
-Until SPM / XCFramework packaging is fully automated, build the framework on a Mac:
+- Build shared Kotlin for iOS frameworks from a Mac:
 
 ```bash
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ```
 
-Framework output (typical):
+- There is no runnable Xcode app in-repo until the CMP host lands. See [iosApp/README.md](../../iosApp/README.md).
 
-`shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework`
+## Next
 
-Add / embed it in the Xcode target as needed. See [iosApp/README.md](../../iosApp/README.md).
+1. Turn `:ui` into Compose Multiplatform (`commonMain` + `iosMain`).
+2. Export `MainViewController { VeraApp() }`.
+3. Thin Xcode (or KMP) host embeds that controller.
+4. Add a macOS CI job when the host exists.
 
-## Open & run
+Signing / Team ID notes for that future host: [signing.md](signing.md).
 
-```bash
-open iosApp/Vera.xcodeproj
-```
-
-Select the **Vera** scheme and an iOS Simulator, then Build & Run.
-
-## Fonts
-
-Atkinson Hyperlegible OTFs are under `assets/fonts/`. Add them to the Xcode target when productizing typography.
+Day-to-day device testing is **Android Obtainium** — [RELEASING.md](../RELEASING.md).

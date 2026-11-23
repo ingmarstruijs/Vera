@@ -1,41 +1,27 @@
-# Vera iOS app (SwiftUI)
+# iOS host (Compose Multiplatform — pending)
 
-SwiftUI host for the Kotlin Multiplatform app (Android counterpart: `androidApp/`).
+Vera no longer ships a **separate SwiftUI UI**. Product UI lives in the shared Compose module `:ui`.
 
-## Open in Xcode
+## Current state
 
-1. On a Mac with Xcode 15+:
-   ```bash
-   open iosApp/Vera.xcodeproj
-   ```
-2. Select the **Vera** scheme and an iOS Simulator.
-3. Build & run.
+| Piece | Status |
+|-------|--------|
+| SwiftUI screens / Xcode app | **Removed** |
+| Shared Kotlin (`:core` / `:shared`) | Builds iOS frameworks |
+| Shared Compose UI (`:ui`) | Android library today; CMP iOS target next |
+| iOS app shell | Not wired yet (`ComposeUIViewController` host) |
 
-## Shared Kotlin framework
+## Next (CMP iOS)
 
-The `:shared` KMP module produces a static `Shared` XCFramework/framework for iOS targets.
+1. Convert `:ui` to Compose Multiplatform (`commonMain` + `iosMain`).
+2. Add `MainViewController()` exporting `VeraApp()`.
+3. Thin Xcode (or Amper/KMP) host that embeds that controller.
+4. Extend CI with a macOS job when the host exists.
 
-Until SPM/XCFramework packaging is wired in a later phase, you can build the framework from the repo root on a Mac:
+Until then, day-to-day installs are **Android** via Obtainium — see [docs/RELEASING.md](../docs/RELEASING.md).
+
+Framework link for shared logic (unchanged):
 
 ```bash
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ```
-
-Then add the generated framework under `shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework` to the Xcode project (Embed & Sign / link as needed).
-
-## Tabs (v1)
-
-Timeline · Decoder · Appointments — no sync / share tab (P2P / Webviewer permanently out of scope).
-
-## P5 shell / auth / blueprint
-
-- `AuthGateView` + `AuthCoordinator` — biometric unlock gate (LocalAuthentication; mirrors shared `AuthViewModel`).
-- `RootTabView` — shell with privacy sentinel + three tabs.
-- `BlueprintView` — horizontal CarePlan timeline (mock aligned with shared `MockDataService`).
-
-When `Shared.framework` is linked, replace `AuthCoordinator` with the Kotlin `AuthViewModel` StateFlow bridge.
-
-## P6 decoder / appointments
-
-- `DecoderView` — glossary search + expand (NL; non-NL notice until CocoaPods ML Kit Translate is linked).
-- `AppointmentsView` + `SpeechCoordinator` — CarePlan appointments, pocket guide, SFSpeech / AVSpeech.

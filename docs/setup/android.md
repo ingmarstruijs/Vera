@@ -19,23 +19,21 @@ sdk.dir=/path/to/Android/Sdk
 
 | Item | Value |
 |------|--------|
-| Module | `androidApp/` |
-| applicationId / namespace | `net.moonbaseone.vera` |
+| App shell | `androidApp/` |
+| Shared UI | `ui/` (Compose Material 3) |
+| applicationId | `net.moonbaseone.vera` |
 | minSdk | 26 |
 | compileSdk / targetSdk | 35 |
-| UI | Jetpack Compose + Material 3 |
 
-Permissions (see `androidApp/src/main/AndroidManifest.xml`): biometric unlock, and mic/speech where the appointments navigator needs them.
+Permissions (see `androidApp/src/main/AndroidManifest.xml`): biometric unlock, mic/speech for appointments.
 
-Shared KMP code lives in `:shared` (SQLDelight, vault, Identity Shield, ML Kit Translate / Entity Extraction on Android).
+Logic: `:shared` / `:core`. Screens: `:ui`.
 
 ## Build
 
-From the repo root:
-
 ```bash
 ./gradlew :shared:testDebugUnitTest
-./gradlew :androidApp:assembleDebug
+./gradlew :ui:assembleDebug :androidApp:assembleDebug
 ./gradlew :androidApp:installDebug
 ```
 

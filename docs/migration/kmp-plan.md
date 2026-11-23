@@ -1,7 +1,7 @@
 # Vera — Kotlin Multiplatform migration plan (in-repo mirror)
 
 **Repo:** [github.com/ingmarstruijs/Vera](https://github.com/ingmarstruijs/Vera)  
-**Goal:** Flutter/Dart → **Kotlin Multiplatform (shared logic)** + **native UI** (Android Jetpack Compose, iOS SwiftUI)  
+**Goal:** Flutter/Dart → **Kotlin Multiplatform (shared logic)** + **shared Compose UI** (`:ui`; Android now, CMP iOS host next)  
 **Product domain / IDs:** `vera.moonbase-one.net` → `net.moonbaseone.vera`  
 **Out of scope for migration:** Webviewer / WhatsApp Web-style P2P sharing (removed in P0; signalling host `signal.vera-app.nl` to be decommissioned outside this repo)
 
@@ -12,7 +12,7 @@
 | Topic | Decision |
 |-------|----------|
 | Platforms v1 | **Android + iOS only** — web deferred; desktop out of scope |
-| UI | **Migration v1: native per platform** — shared = Kotlin logic; no CMP shared UI until **Phase 6 product gate** |
+| UI | **Shared Compose** in `:ui` (decision: no separate SwiftUI). Android ships `:ui` today; iOS via Compose Multiplatform host next |
 | DI / state | **Koin + ViewModel/StateFlow** |
 | Storage | **SQLDelight** + platform secure storage for keys |
 | ML | **Android + iOS only** |
@@ -29,26 +29,27 @@ Vera/
 ├── gradle/libs.versions.toml
 ├── core/            # KMP: domain, failure, i18n, navigation, design tokens
 ├── shared/          # KMP: vault/shield/features, SQLDelight, Koin, ViewModels, expect/actual
-├── androidApp/      # Jetpack Compose (net.moonbaseone.vera)
-├── iosApp/          # SwiftUI + Shared framework (exports :core)
+├── ui/              # Shared Compose UI (Android library; CMP iosMain next)
+├── androidApp/      # Thin Android application (net.moonbaseone.vera)
+├── iosApp/          # CMP iOS host placeholder (SwiftUI removed)
 └── docs/
 ```
 
-**Not in v1:** `desktopApp`, `webApp`, Compose Multiplatform shared UI, `desktopMain`, `wasmJsMain`.
+**Not in v1:** `desktopApp`, `webApp`, `desktopMain`, `wasmJsMain`. Separate SwiftUI UI is **out**.
 
-**Navigation:** unlock → **care plan** → decoder → appointments (| Settings later). **No** Share/Sync.  
+**Navigation:** unlock → **care plan** → decoder → appointments → contacts. **No** Share/Sync.  
 **Phase 6 IA:** thinner shell (`AppDestination` + `DefaultAppNavigator`); Decompose/Circuit deferred — [navigation.md](navigation.md).
 
-### Shared layers (`commonMain`)
+### Shared layers
 
 - **`:core`:** domain models, sealed `Failure`, i18n EN/NL/DE/FR, design tokens, typed nav  
 - **`:shared`:** Identity Shield, AES-GCM vault API, SQLDelight, Mock FHIR, Koin, ViewModels (`StateFlow`)  
+- **`:ui`:** Compose screens + theme (single UI codebase)
 
-### Native UI
+### UI hosts
 
-1. **Android:** Jetpack Compose + Material 3  
-2. **iOS:** SwiftUI (+ UIKit bridges where needed)  
-3. **Shared:** no screens in `commonMain` (revisit CMP in Phase 6 gate)
+1. **Android:** `androidApp` → `:ui` (Compose Material 3)  
+2. **iOS:** Compose Multiplatform host embedding `:ui` (pending; SwiftUI removed)
 
 ## Migration phases (summary)
 
@@ -83,7 +84,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 
 **Architecture**
 
-- [x] **Product decision gate documented (P11 slice):** CMP shared UI **vs** dual Compose + SwiftUI remains an **open product decision**. Until decided explicitly, **stay dual-native** — do not force CMP. Gate recorded in README + this plan + [module-map.md](module-map.md).
+- [x] **Product decision (shared UI):** separate SwiftUI UI dropped; Compose lives in `:ui`. CMP iOS host is the follow-up (not dual-native).
 - [~] Split fat `shared` into feature modules — **partial:** `:core` Gradle extract + Koin feature modules ([module-map.md](module-map.md)); `:vault` / `:shield` / … still follow-up
 - [~] Typed/shared navigation — **partial:** `AppDestination` + `DefaultAppNavigator` (`StateFlow`); Decompose/Circuit **deferred** with next step in [navigation.md](navigation.md)
 - [x] Stricter repository boundaries: `CarePlanRepository` (local) vs `FhirClient` stub (future MedMij) — **no** MedMij production
@@ -102,7 +103,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 
 **MedMij/FHIR:** later compliance track. Phase 6 may only prep repository boundaries.
 
-**P11 progress:** first slice + leftover hardening (`:core`, detekt/lint CI, nav deferral, dual-UI token polish). Still open: further Gradle feature extracts, Decompose/Circuit adoption when needed, explicit CMP product decision, optional ktlint.
+**P11 progress:** first slice + leftover hardening (`:core`, detekt/lint CI, nav deferral). Shared Compose in `:ui`; SwiftUI removed. Still open: CMP iOS host, further Gradle feature extracts, Decompose/Circuit when needed, optional ktlint.
 
 ## PR / workstream order
 
@@ -114,11 +115,11 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 | **P2** | Domain + mock FHIR + jargon | Shared tests |
 | **P3** | SQLDelight + vault crypto | Secure-storage interfaces |
 | **P4** | Keystore/Keychain + biometrics | Platform actuals |
-| **P5–P6** | UI shell + features | Compose + SwiftUI; no sync tab |
+| **P5–P6** | UI shell + features | Compose (now `:ui`); SwiftUI removed |
 | **P7** | ML Kit NER/translation | Android ML Kit + iOS NLTagger / Translate stub |
 | **P10** | Remove Flutter tree | **Done** — no Flutter hosts remaining |
 | **P10b** | English KMP cutover docs | **Done** — docs phase C |
-| **P11** | Post-parity hardening / greenfield-inspired refactor | **Optional/phased after P10:** detekt/signing/a11y; CMP-vs-dual gate; feature modules; typed nav; thinner IA; clinical UI; i18n packs; repo boundaries (Phase 6) |
+| **P11** | Post-parity hardening / greenfield-inspired refactor | detekt/signing/a11y; shared `:ui`; typed nav; clinical UI; i18n; CMP iOS host next |
 
 **Dropped vs earlier drafts:** desktop (P8), web (P9) KMP targets.
 
@@ -130,7 +131,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 |-------|--------|
 | Apple Team / Play signing | Open |
 | Reopen desktop/web? | Open; out of v1 |
-| **CMP vs dual-native (Phase 6 gate)** | **Open** — dual-native continues; CMP not forced without explicit decision |
+| **Shared UI / CMP iOS host** | **Decided** — `:ui` Compose shared; SwiftUI removed; wire CMP `iosMain` + thin host next |
 | Further feature-module Gradle extract (`:vault`/…) | Follow-up (`:core` landed) |
 | Decompose/Circuit | Deferred — concrete next step in [navigation.md](navigation.md) |
 | MedMij/FHIR production | Later compliance track (boundary prep landed in P11) |
@@ -151,7 +152,7 @@ Not part of migration parity. Start only after Android+iOS feature parity **and*
 - [x] No desktop/web KMP modules in v1  
 - [x] App i18n EN/NL/DE/FR resource packs (`StringCatalog`) — P11 first slice  
 - [x] CI green: shared tests + Android build (+ iOS when runner available)
-- [~] **P11 / Phase 6 (optional, after P10):** first + leftover slices landed (`:core` extract; detekt + lint CI; signing docs; `DefaultAppNavigator`; dual-UI token/a11y polish; Decompose deferred). Still open: CMP decision, further feature Gradle modules, Decompose/Circuit when product needs it
+- [~] **P11 / Phase 6:** `:core` + shared Compose `:ui` + Obtainium releases; SwiftUI removed. Still open: CMP iOS host, further feature Gradle modules, Decompose/Circuit when needed
 
 ## How to run
 

@@ -6,17 +6,26 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Added
 
+- Shared Compose UI module `:ui` (single UI codebase); thin `androidApp` host
 - Solo-style Android release channel: every `main` push publishes Obtainium preview `0.1.<N>` via **Build & Sign Android**; `v*` tags on `main` publish stable/milestone Releases (`docs/RELEASING.md`)
 - `versioning.gradle.kts` + optional `ANDROID_KEYSTORE_*` signing for `:androidApp:assembleRelease` (debug fallback when secrets absent)
-- KMP smoke concurrency (cancel superseded runs on the same ref)
+- KMP smoke concurrency (cancel superseded runs on the same ref); smoke builds `:ui` + `:androidApp`
 - Cursor agent rule `.cursor/rules/changelog.mdc` — agents update `CHANGELOG.md` in the same PR
+
+### Changed
+
+- Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
+- Root README compacted (release table inline; screenshots removed)
 
 ### Removed
 
+- SwiftUI `iosApp` screens / Xcode project (placeholder README for CMP host)
+- `docs/screenshots/` promo images
 - GitHub Actions changelog-on-merge bot (follow-up `chore/changelog-record-*` PRs); agents own the changelog instead
 
 ### Merged
 
+- [#32](https://github.com/ingmarstruijs/Vera/pull/32) — chore: replace changelog bot with agent rule (2026-11-23)
 - [#29](https://github.com/ingmarstruijs/Vera/pull/29) — feat: Solo-style Obtainium Android release channel (2026-11-23)
 - [#28](https://github.com/ingmarstruijs/Vera/pull/28) — Readable editable appointment pocket guide (2026-11-23)
 - [#26](https://github.com/ingmarstruijs/Vera/pull/26) — Add English product ideas backlog doc (2026-11-04)
