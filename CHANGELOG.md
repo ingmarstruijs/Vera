@@ -12,6 +12,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Merged
 
+- [#29](https://github.com/ingmarstruijs/Vera/pull/29) — feat: Solo-style Obtainium Android release channel (2026-11-23)
 - [#26](https://github.com/ingmarstruijs/Vera/pull/26) — Add English product ideas backlog doc (2026-11-04)
 - [#24](https://github.com/ingmarstruijs/Vera/pull/24) — Update README.md (2026-11-04)
 - [#21](https://github.com/ingmarstruijs/Vera/pull/21) — docs: Actions must be allowed to create PRs for changelog bot (2026-11-04)
