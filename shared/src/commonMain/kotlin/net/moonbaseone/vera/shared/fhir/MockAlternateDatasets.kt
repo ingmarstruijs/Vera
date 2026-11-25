@@ -23,6 +23,7 @@ internal object MockAlternateDatasets {
             "period" to mapOf("start" to "2025-01-10"),
             "activity" to listOf(
                 activity(
+                    ActivitySpec(
                     kind = "Procedure",
                     codeText = "Hemicolectomie rechts – VOLTOOID",
                     status = "completed",
@@ -41,8 +42,10 @@ internal object MockAlternateDatasets {
                         "Noteer wanneer de pathologiebespreking was en wat pN1 betekent.",
                     ),
                     iknl = IKNL_COLON,
+                    ),
                 ),
                 activity(
+                    ActivitySpec(
                     kind = "MedicationRequest",
                     codeText = "Adjuvante chemotherapie CAPOX – ACTIEF",
                     status = "in-progress",
@@ -61,8 +64,10 @@ internal object MockAlternateDatasets {
                         "Plan bloedcontroles vóór elke kuur.",
                     ),
                     iknl = IKNL_COLON,
+                    ),
                 ),
                 activity(
+                    ActivitySpec(
                     kind = "ServiceRequest",
                     codeText = "Follow-up CEA + CT – GEPLAND",
                     status = "scheduled",
@@ -79,6 +84,7 @@ internal object MockAlternateDatasets {
                         "Vraag wie uw vaste contact is op de polikliniek chirurgie/oncologie.",
                     ),
                     iknl = IKNL_COLON,
+                    ),
                 ),
             ),
             "note" to listOf(
@@ -135,6 +141,7 @@ internal object MockAlternateDatasets {
             "period" to mapOf("start" to "2025-04-01"),
             "activity" to listOf(
                 activity(
+                    ActivitySpec(
                     kind = "DiagnosticReport",
                     codeText = "Diagnostiek NSCLC – VOLTOOID",
                     status = "completed",
@@ -153,8 +160,10 @@ internal object MockAlternateDatasets {
                         "Noteer welke behandelopties (chirurgie, chemo, immuno) op tafel liggen.",
                     ),
                     iknl = IKNL_LUNG,
+                    ),
                 ),
                 activity(
+                    ActivitySpec(
                     kind = "ServiceRequest",
                     codeText = "MDO longoncologie – ACTIEF",
                     status = "in-progress",
@@ -173,8 +182,10 @@ internal object MockAlternateDatasets {
                         "Vraag naar timing van operatie versus systemische therapie.",
                     ),
                     iknl = IKNL_LUNG,
+                    ),
                 ),
                 activity(
+                    ActivitySpec(
                     kind = "ServiceRequest",
                     codeText = "Behandeling na MDO – GEPLAND",
                     status = "scheduled",
@@ -192,6 +203,7 @@ internal object MockAlternateDatasets {
                         "Vraag een second opinion-mogelijkheid indien u twijfelt.",
                     ),
                     iknl = IKNL_LUNG,
+                    ),
                 ),
             ),
             "note" to listOf(
@@ -235,28 +247,30 @@ internal object MockAlternateDatasets {
         ),
     )
 
-    private fun activity(
-        kind: String,
-        codeText: String,
-        status: String,
-        start: String,
-        end: String,
-        description: String,
-        patientInstruction: String,
-        nextStep: String,
-        actionItems: List<String>,
-        iknl: String,
-    ): Map<String, Any?> = mapOf(
+    private data class ActivitySpec(
+        val kind: String,
+        val codeText: String,
+        val status: String,
+        val start: String,
+        val end: String,
+        val description: String,
+        val patientInstruction: String,
+        val nextStep: String,
+        val actionItems: List<String>,
+        val iknl: String,
+    )
+
+    private fun activity(spec: ActivitySpec): Map<String, Any?> = mapOf(
         "detail" to mapOf(
-            "kind" to kind,
-            "code" to mapOf("text" to codeText),
-            "status" to status,
-            "scheduledPeriod" to mapOf("start" to start, "end" to end),
-            "description" to description,
-            "patientInstruction" to patientInstruction,
-            "nextStep" to nextStep,
-            "actionItem" to actionItems,
-            "iknlGuidelineRef" to iknl,
+            "kind" to spec.kind,
+            "code" to mapOf("text" to spec.codeText),
+            "status" to spec.status,
+            "scheduledPeriod" to mapOf("start" to spec.start, "end" to spec.end),
+            "description" to spec.description,
+            "patientInstruction" to spec.patientInstruction,
+            "nextStep" to spec.nextStep,
+            "actionItem" to spec.actionItems,
+            "iknlGuidelineRef" to spec.iknl,
         ),
     )
 
