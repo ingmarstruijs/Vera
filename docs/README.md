@@ -8,10 +8,7 @@
 | [setup/signing.md](setup/signing.md) | Keystore / signing secrets |
 | [testing.md](testing.md) | Unit tests, detekt, lint, CI smoke |
 | [contributing.md](contributing.md) | Branching, CI, changelog agent rule, protect `main` |
-| [product-ideas-backlog.md](product-ideas-backlog.md) | Raw product ideas backlog |
-| [migration/kmp-plan.md](migration/kmp-plan.md) | Migration plan mirror |
-| [migration/module-map.md](migration/module-map.md) | `:core` / `:shared` / `:ui` map |
-| [migration/navigation.md](migration/navigation.md) | Typed nav notes |
+| [integrations/medmij.md](integrations/medmij.md) | MedMij / FHIR research notes (no live integration yet) |
 
 ## Modules
 

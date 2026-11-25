@@ -2,7 +2,7 @@ package net.moonbaseone.vera.shared.i18n
 
 /**
  * Immutable UI string pack for one [AppLocale].
- * Replaces hard-coded [net.moonbaseone.vera.shared.ui.UiCopy] stubs (P11).
+ * Immutable UI string pack for one [AppLocale].
  */
 data class StringPack(
     val locale: AppLocale,
@@ -43,6 +43,8 @@ data class StringPack(
     val blueprintModePlain: String,
     val blueprintModeClinical: String,
     val blueprintClinicalLabel: String,
+    val blueprintDatasetLabel: String,
+    val blueprintSourceNote: String,
     val decoderTitle: String,
     val decoderSubtitle: String,
     val decoderSearchHint: String,
@@ -95,4 +97,28 @@ data class StringPack(
     val symptomsHistoryTitle: String,
     val symptomsJustNow: String,
     val appointmentsDefaultQuestions: List<String>,
+    val appointmentsNextLabel: String,
+    val appointmentsSoonLabel: String,
+    val appointmentsPastLabel: String,
+    val appointmentsOpenGuide: String,
+    val appointmentsCreateGuide: String,
+    val appointmentsGuideNone: String,
+    val appointmentsGuideReady: String,
+    val appointmentsGuideRecording: String,
+    val symptomsTitle: String,
+    val symptomsEmpty: String,
+    val symptomsRecordCta: String,
+    val symptomsDelete: String,
+    val symptomsSpeak: String,
+    val pocketPrepTitle: String,
+    val pocketMyQuestions: String,
+    val pocketRecordTitle: String,
+    val pocketRecordStart: String,
+    val pocketRecordStop: String,
+    val pocketPlayRecording: String,
+    val pocketNoSymptomsHint: String,
+    val pocketNoQuestionsHint: String,
+    val addToPocketGuide: String,
+    val inPocketGuide: String,
+    val pickAppointmentForGuide: String,
 )

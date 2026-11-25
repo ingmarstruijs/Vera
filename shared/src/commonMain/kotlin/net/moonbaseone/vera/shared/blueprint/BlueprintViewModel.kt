@@ -13,7 +13,11 @@ import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.domain.GlossaryLinker
 import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.domain.TimelineEvent
+import net.moonbaseone.vera.shared.fhir.ActiveDatasetStore
 import net.moonbaseone.vera.shared.fhir.MockDataService
+import net.moonbaseone.vera.shared.fhir.MockDatasetId
+import net.moonbaseone.vera.shared.fhir.MockDatasetInfo
+import net.moonbaseone.vera.shared.fhir.MockDatasets
 import net.moonbaseone.vera.shared.ui.UiCopy
 
 sealed class BlueprintUiState {
@@ -35,15 +39,29 @@ sealed class BlueprintUiState {
  */
 class BlueprintViewModel(
     private val carePlanRepository: CarePlanRepository,
+    private val datasetStore: ActiveDatasetStore = ActiveDatasetStore(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     constructor(
         mockData: MockDataService,
         scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-    ) : this(LocalCarePlanRepository(mockData), scope)
+    ) : this(LocalCarePlanRepository(mockData), mockData.datasetStore, scope)
 
     private val _state = MutableStateFlow<BlueprintUiState>(BlueprintUiState.Loading)
     val state: StateFlow<BlueprintUiState> = _state.asStateFlow()
+
+    val selectedDatasetId: StateFlow<MockDatasetId> = datasetStore.id
+    val availableDatasets: List<MockDatasetInfo> = MockDatasets.all
+
+    init {
+        scope.launch {
+            datasetStore.id.collect { load() }
+        }
+    }
+
+    fun selectDataset(id: MockDatasetId) {
+        datasetStore.select(id)
+    }
 
     fun load() {
         scope.launch {

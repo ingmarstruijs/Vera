@@ -26,7 +26,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag uw oncoloog of trastuzumab (Herceptin) onderdeel is van uw behandelplan.",
         category = "biomarker",
         fhirCode = "LOINC:18474-7",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("HER2", "Herceptin", "trastuzumab"),
     ),
     JargonEntry(
@@ -38,6 +38,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Bevestig met uw arts dat hormonale behandeling niet geïndiceerd is voor uw tumor.",
         category = "biomarker",
         fhirCode = "LOINC:85319-2",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("ER-negatief", "oestrogeenreceptor"),
     ),
     JargonEntry(
@@ -49,6 +50,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem = "Vraag wat uw Ki-67-percentage betekent voor uw behandelkeuze.",
         category = "pathologie",
         fhirCode = "LOINC:85326-7",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("Ki67", "proliferatieindex"),
     ),
     JargonEntry(
@@ -60,6 +62,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag naar de exacte grootte (T-stadium) en of de randen (marges) vrij zijn na operatie.",
         category = "diagnose",
         fhirCode = "SNOMED:783541009",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("ductaal carcinoom", "IDC"),
     ),
     JargonEntry(
@@ -71,7 +74,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
             "Vraag hoe het stadium uw behandelopties beïnvloedt en wat de te verwachten " +
                 "behandelcyclus is.",
         category = "stadiëring",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("cT2N0M0", "stadium IIA", "Stadium IIA"),
     ),
     JargonEntry(
@@ -83,7 +86,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem =
             "Vraag of uw schildwachtklier vrij was (pN0 SN) en wat dit betekent voor uw prognose.",
         category = "procedure",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("SLNB", "schildwachtklierprocedure", "schildwachtklier"),
     ),
     JargonEntry(
@@ -94,7 +97,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem =
             "Bespreek of u in aanmerking komt voor BCS, anders voor een borstamputatie (mastectomie).",
         category = "procedure",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("BCS", "borstsparende chirurgie", "lumpectomie"),
     ),
     JargonEntry(
@@ -105,7 +108,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem =
             "Vraag hoeveel bestralingsafspraken u totaal heeft en welke bijwerkingen verwacht worden.",
         category = "radiotherapie",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("hypofractionering", "FAST-Forward"),
     ),
     JargonEntry(
@@ -117,7 +120,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem =
             "Zorg dat u uw echocardiografie-afspraken bijhoudt tijdens trastuzumab-behandeling.",
         category = "cardiologie",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("LVEF", "ejectiefractie", "echocardiografie"),
     ),
     JargonEntry(
@@ -129,7 +132,7 @@ val BuiltInGlossary: List<JargonEntry> = listOf(
         actionItem =
             "Vraag uw arts wat pCR voor ú betekent en of het behandelplan hierdoor verandert.",
         category = "respons",
-        iknlRef = "https://www.iknl.nl/richtlijnen/borstkanker",
+        iknlRef = IknlGuidelines.BREAST,
         aliases = listOf("pCR", "pathologisch complete respons", "complete respons"),
     ),
 )

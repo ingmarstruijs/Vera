@@ -46,8 +46,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import net.moonbaseone.vera.ui.common.AddToPocketGuideButton
+import net.moonbaseone.vera.ui.util.openExternalUrl
 import androidx.compose.ui.unit.dp
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.decoder.SupportedDecoderLanguages
@@ -242,6 +245,7 @@ private fun JargonCard(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
+    val context = LocalContext.current
     val explanation = translated?.explanation ?: entry.dutchExplanation
     val actionItem = translated?.actionItem ?: entry.actionItem
 
@@ -309,10 +313,16 @@ private fun JargonCard(
                         }
                     }
                 }
-                if (entry.iknlRef != null) {
-                    TextButton(onClick = { /* open later */ }) {
+                entry.iknlRef?.let { url ->
+                    TextButton(onClick = { context.openExternalUrl(url) }) {
                         Text(UiCopy.DECODER_IKNL_BUTTON)
                     }
+                }
+                if (actionItem.isNotBlank()) {
+                    AddToPocketGuideButton(
+                        actionSource = "decoder:${entry.term}",
+                        actionText = actionItem,
+                    )
                 }
             }
         }

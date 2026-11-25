@@ -1,7 +1,11 @@
 package net.moonbaseone.vera
 
 import android.app.Application
+import net.moonbaseone.vera.audio.AndroidAppointmentAudioPlayer
+import net.moonbaseone.vera.audio.AndroidAppointmentAudioRecorder
 import net.moonbaseone.vera.shared.di.initKoin
+import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
+import net.moonbaseone.vera.shared.pocket.AppointmentAudioRecorder
 import net.moonbaseone.vera.shared.shield.AndroidNerEngine
 import net.moonbaseone.vera.shared.shield.NerEngine
 import net.moonbaseone.vera.shared.speech.AndroidSpeechToText
@@ -34,6 +38,8 @@ class VeraApplication : Application() {
                     single<TextToSpeech> { AndroidTextToSpeech(get()) }
                     single<OnDeviceTranslator> { AndroidOnDeviceTranslator() }
                     single<NerEngine> { AndroidNerEngine() }
+                    single<AppointmentAudioRecorder> { AndroidAppointmentAudioRecorder(get()) }
+                    single<AppointmentAudioPlayer> { AndroidAppointmentAudioPlayer() }
                 },
             )
         }

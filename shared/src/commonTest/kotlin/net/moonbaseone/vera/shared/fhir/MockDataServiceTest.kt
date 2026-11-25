@@ -125,7 +125,7 @@ class MockDataServiceTest {
             assertTrue((detail["nextStep"] as String).isNotBlank())
             @Suppress("UNCHECKED_CAST")
             assertTrue((detail["actionItem"] as List<*>).isNotEmpty())
-            assertTrue((detail["iknlGuidelineRef"] as String).contains("iknl.nl"))
+            assertTrue((detail["iknlGuidelineRef"] as String).contains("richtlijnendatabase.nl"))
         }
     }
 

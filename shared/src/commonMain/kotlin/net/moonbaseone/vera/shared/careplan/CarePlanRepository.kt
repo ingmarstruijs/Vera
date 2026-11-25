@@ -15,7 +15,7 @@ interface CarePlanRepository {
     suspend fun fetchAppointments(): List<FhirResource>
 }
 
-/** Local mock-backed store — production FHIR/MedMij is out of scope for P11. */
+/** Local mock-backed store (switchable [net.moonbaseone.vera.shared.fhir.MockDatasetId] fixtures). */
 class LocalCarePlanRepository(
     private val mockData: MockDataService,
 ) : CarePlanRepository {

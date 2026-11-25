@@ -1,32 +1,44 @@
 package net.moonbaseone.vera.shared.fhir
 
 import kotlinx.coroutines.delay
+import net.moonbaseone.vera.shared.domain.IknlGuidelines
 import net.moonbaseone.vera.shared.failure.FhirParseFailure
 
 /**
  * Simulates a MedMij / HL7 FHIR R4 oncology data pull from a Dutch hospital EPD.
  *
- * Dataset: 51-year-old Dutch female, HER2-positive ER-negative invasief ductaal
- * carcinoom mammae links (stadiumgroep IIA, cT2N0M0).
+ * Default dataset: HER2-positive invasief ductaal carcinoom mammae (stadium IIA).
+ * Switch scenarios via [ActiveDatasetStore] / [MockDatasetId].
  *
  * @param ioDelayMs Simulated I/O latency; 0 in unit tests.
  */
 class MockDataService(
+    val datasetStore: ActiveDatasetStore = ActiveDatasetStore(),
     private val ioDelayMs: Long = 0L,
 ) {
     private companion object {
-        const val IKNL_BORSTKANKER_REF = "https://www.iknl.nl/richtlijnen/borstkanker"
+        const val IKNL_BORSTKANKER_REF = IknlGuidelines.BREAST
     }
+
+    val activeDatasetId: MockDatasetId get() = datasetStore.id.value
 
     suspend fun fetchOncologyBundle(): OncologyBundleResult {
         if (ioDelayMs > 0) delay(ioDelayMs)
         return try {
-            val resources = listOf(
-                buildPatient(),
-                buildCondition(),
-                buildDiagnosticReport(),
-            ) + buildObservations() + buildProcedures() + buildMedicationRequests() +
-                listOf(buildCarePlan()) + buildAppointments()
+            val resources = when (datasetStore.id.value) {
+                MockDatasetId.BreastHer2IIa -> listOf(
+                    buildPatient(),
+                    buildCondition(),
+                    buildDiagnosticReport(),
+                ) + buildObservations() + buildProcedures() + buildMedicationRequests() +
+                    listOf(buildCarePlan()) + buildAppointments()
+                MockDatasetId.ColonStageIii -> listOf(
+                    MockAlternateDatasets.colonCarePlan(),
+                ) + MockAlternateDatasets.colonAppointments()
+                MockDatasetId.LungEarlyStart -> listOf(
+                    MockAlternateDatasets.lungCarePlan(),
+                ) + MockAlternateDatasets.lungAppointments()
+            }
 
             OncologyBundleResult(
                 bundle = FhirBundle(
@@ -41,12 +53,20 @@ class MockDataService(
 
     suspend fun fetchAppointments(): List<FhirResource> {
         if (ioDelayMs > 0) delay(ioDelayMs)
-        return buildAppointments()
+        return when (datasetStore.id.value) {
+            MockDatasetId.BreastHer2IIa -> buildAppointments()
+            MockDatasetId.ColonStageIii -> MockAlternateDatasets.colonAppointments()
+            MockDatasetId.LungEarlyStart -> MockAlternateDatasets.lungAppointments()
+        }
     }
 
     suspend fun fetchCarePlan(): FhirResource {
         if (ioDelayMs > 0) delay(ioDelayMs)
-        return buildCarePlan()
+        return when (datasetStore.id.value) {
+            MockDatasetId.BreastHer2IIa -> buildCarePlan()
+            MockDatasetId.ColonStageIii -> MockAlternateDatasets.colonCarePlan()
+            MockDatasetId.LungEarlyStart -> MockAlternateDatasets.lungCarePlan()
+        }
     }
 
     private fun buildPatient(): FhirResource = FhirResource(

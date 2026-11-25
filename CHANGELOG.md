@@ -11,19 +11,35 @@ Notable changes to the Vera repository. Dates are UTC.
 - `versioning.gradle.kts` + optional `ANDROID_KEYSTORE_*` signing for `:androidApp:assembleRelease` (debug fallback when secrets absent)
 - KMP smoke concurrency (cancel superseded runs on the same ref); smoke builds `:ui` + `:androidApp`
 - Cursor agent rule `.cursor/rules/changelog.mdc` — agents update `CHANGELOG.md` in the same PR
+- Demo dataset switcher for debug builds only (long-press care-plan title): HER2+ mamma, colon stadium III, lung early start; appointments reload with the same selection
+- Clear IKNL source note on the care plan: Vera does not invent clinical content; citations open Richtlijnendatabase
+- Header mic + symptoms list; spoken symptoms store with TTS replay
+- Appointments list redesign (Volgende / Straks) and full-screen pocket guide per appointment (keep screen on, sections, local recording)
+- Link care-plan / decoder action points into a pocket guide with persistent “In gids” state
+- Inline glossary highlights with tap-to-explain sheet
+- MedMij research notes: `docs/integrations/medmij.md`
 
 ### Changed
 
 - App icon: clinical compass (proposal A) replaces shield+V; master + adaptive/mipmaps match the approved artwork (not a simplified vector)
 - Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
 - Root README compacted (release table inline; screenshots removed)
+- Care-plan timeline nodes reduced to 108×72.dp
+- Demo dataset chips removed from the care-plan screen (debug long-press only; not in release)
+- Care-plan jargon uitleg shows explanation only; jargon actiepunten live under Actiepunten with pocket-guide link
+- “Toevoegen aan pocket gids” is a compact text link instead of a large button
+
+### Fixed
+
+- App icon mark optically centered in the circular launcher mask (was sitting high)
+- IKNL guideline buttons now open the official Richtlijnendatabase URLs (care plan, decoder, jargon)
 
 ### Removed
 
 - SwiftUI `iosApp` screens / Xcode project (placeholder README for CMP host)
 - `docs/screenshots/` promo images
 - GitHub Actions changelog-on-merge bot (follow-up `chore/changelog-record-*` PRs); agents own the changelog instead
-
+- Migration docs (`docs/migration/`), product-ideas backlog, and CMP/P11 gate text from README
 ### Merged
 
 - [#32](https://github.com/ingmarstruijs/Vera/pull/32) — chore: replace changelog bot with agent rule (2026-11-23)
@@ -44,7 +60,7 @@ Notable changes to the Vera repository. Dates are UTC.
 ### Changed (P11 / Phase 6 leftover hardening)
 
 - Gradle `:core` extract (domain, failure, i18n, navigation, design tokens); `:shared` exports `:core` for iOS
-- `DefaultAppNavigator` (StateFlow); Decompose/Circuit deferred — [docs/migration/navigation.md](docs/migration/navigation.md)
+- `DefaultAppNavigator` (StateFlow); Decompose/Circuit deferred
 - CI: detekt + `:androidApp:lintDebug` (a11y-minded); signing kept out of CI — [docs/setup/signing.md](docs/setup/signing.md)
 - Dual-UI polish: Android legend/headings use DesignTokens; iOS `ClinicalColors` parity
 
@@ -55,7 +71,7 @@ Notable changes to the Vera repository. Dates are UTC.
 - Typed shell destinations (`AppDestination`); IA unlock → care plan → decoder/appointments
 - EN/NL/DE/FR `StringCatalog` (+ Android `values-*`); calmer clinical DesignTokens / theme
 - Accessibility defaults (content descriptions, iOS Dynamic Type caps); removed unused placeholder screen
-- Module map: [docs/migration/module-map.md](docs/migration/module-map.md)
+- Module map documented for `:core` / `:shared` boundaries
 
 ### Removed (P10 / VER-14)
 
