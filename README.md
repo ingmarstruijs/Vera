@@ -8,9 +8,9 @@ IDs: `net.moonbaseone.vera` · local-first · no cloud ML for v1.
 
 ## Features
 
-- **Zorgplan** — care-plan timeline (mock FHIR)
+- **Zorgplan** — care-plan timeline (mock FHIR) with IKNL source links; debug builds can switch demo datasets (long-press title)
 - **Woordenboek** — on-device jargon → plain language
-- **Afspraken** — pocket guide + symptom logging
+- **Afspraken** — pocket guide per visit + symptom logging (header mic)
 - **Contacts** — care-team list
 - **Vault** — AES-256-GCM + biometrics
 
@@ -50,6 +50,6 @@ CI: [kmp-smoke](.github/workflows/kmp-smoke.yml) (required on PRs) · [build-rel
 
 ## Docs
 
-[Index](docs/README.md) · [Contributing](docs/contributing.md) · [Changelog](CHANGELOG.md) · [Testing](docs/testing.md) · [Signing](docs/setup/signing.md)
+[Index](docs/README.md) · [Contributing](docs/contributing.md) · [Changelog](CHANGELOG.md) · [Testing](docs/testing.md) · [MedMij notes](docs/integrations/medmij.md) · [Signing](docs/setup/signing.md)
 
 EN / NL / DE / FR via shared `StringCatalog`. Prefer English in repo docs.

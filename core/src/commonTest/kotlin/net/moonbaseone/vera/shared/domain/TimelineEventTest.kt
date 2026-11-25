@@ -57,7 +57,7 @@ class TimelineEventTest {
                     "patientInstruction" to "Noteer huidreacties.",
                     "nextStep" to "Nacontrole na laatste fractie.",
                     "actionItem" to listOf("Vraag hoeveel fracties u nog heeft."),
-                    "iknlGuidelineRef" to "https://www.iknl.nl/richtlijnen/borstkanker",
+                    "iknlGuidelineRef" to IknlGuidelines.BREAST,
                 ),
             ),
         )
@@ -67,7 +67,7 @@ class TimelineEventTest {
         assertEquals("Noteer huidreacties.", event.patientInstruction)
         assertEquals("Nacontrole na laatste fractie.", event.nextSteps)
         assertEquals(listOf("Vraag hoeveel fracties u nog heeft."), event.actionItems)
-        assertEquals("https://www.iknl.nl/richtlijnen/borstkanker", event.iknlGuidelineRef)
+        assertEquals(IknlGuidelines.BREAST, event.iknlGuidelineRef)
         assertTrue(event.glossaryHaystack().contains("Hypofractionering"))
         assertTrue(event.glossaryHaystack().contains("huidreacties"))
     }

@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -36,8 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -47,26 +49,72 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.moonbaseone.vera.shared.blueprint.BlueprintUiState
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
+import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.domain.TimelineEvent
 import net.moonbaseone.vera.shared.domain.TimelinePhase
-import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.shared.util.DateDisplay
-import net.moonbaseone.vera.ui.symptoms.SymptomLogSection
+import net.moonbaseone.vera.ui.common.AddToPocketGuideButton
+import net.moonbaseone.vera.ui.common.GlossaryLinkedText
 import net.moonbaseone.vera.ui.theme.statusColor
+import net.moonbaseone.vera.ui.util.openExternalUrl
 
-private val TimelineNodeWidth = 140.dp
-private val TimelineConnectorWidth = 24.dp
+private val TimelineNodeWidth = 108.dp
+private val TimelineConnectorWidth = 16.dp
+
+/**
+ * Debug-only demo dataset picker. Shown from the shell when the care-plan title is
+ * long-pressed and `isDebug` is true (never reachable in release builds).
+ */
+@Composable
+fun DebugDatasetPickerDialog(
+    viewModel: BlueprintViewModel,
+    onDismiss: () -> Unit,
+) {
+    val selectedDataset by viewModel.selectedDatasetId.collectAsState()
+    val selectedInfo = remember(selectedDataset) {
+        viewModel.availableDatasets.first { it.id == selectedDataset }
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(UiCopy.BLUEPRINT_DATASET_LABEL) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    selectedInfo.subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                viewModel.availableDatasets.forEach { dataset ->
+                    FilterChip(
+                        selected = dataset.id == selectedDataset,
+                        onClick = {
+                            viewModel.selectDataset(dataset.id)
+                            onDismiss()
+                        },
+                        label = {
+                            Text(dataset.title, style = MaterialTheme.typography.labelMedium)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(UiCopy.OK)
+            }
+        },
+    )
+}
 
 @Composable
-fun BlueprintScreen(
-    viewModel: BlueprintViewModel,
-    symptomLogViewModel: SymptomLogViewModel,
-) {
+fun BlueprintScreen(viewModel: BlueprintViewModel) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.load()
+    val selectedDataset by viewModel.selectedDatasetId.collectAsState()
+    val selectedInfo = remember(selectedDataset) {
+        viewModel.availableDatasets.first { it.id == selectedDataset }
     }
 
     Column(
@@ -82,6 +130,28 @@ fun BlueprintScreen(
                 .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 2.dp),
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                UiCopy.BLUEPRINT_SOURCE_NOTE,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            FilterChip(
+                selected = false,
+                onClick = { context.openExternalUrl(selectedInfo.guidelineUrl) },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Verified, contentDescription = null, modifier = Modifier.size(16.dp))
+                },
+                label = { Text(UiCopy.BLUEPRINT_IKNL_SOURCE, style = MaterialTheme.typography.labelSmall) },
+            )
+        }
 
         when (val ui = state) {
             BlueprintUiState.Loading -> {
@@ -116,8 +186,12 @@ fun BlueprintScreen(
                     )
                     val expanded = ui.events.firstOrNull { it.id == ui.expandedId }
                     if (expanded != null) {
+                        val jargon = remember(expanded.id) { viewModel.jargonMatches(expanded) }
                         EventDetailPanel(
                             event = expanded,
+                            jargon = jargon,
+                            expandedJargonTerm = ui.expandedJargonTerm,
+                            onToggleJargon = viewModel::toggleJargon,
                             showClinicalText = ui.showClinicalText,
                             onShowClinicalText = viewModel::setShowClinicalText,
                         )
@@ -125,14 +199,8 @@ fun BlueprintScreen(
                 }
             }
         }
-
-        SymptomLogSection(
-            viewModel = symptomLogViewModel,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-        )
     }
 }
-
 @Composable
 private fun LegendRow(modifier: Modifier = Modifier) {
     Row(
@@ -231,7 +299,7 @@ private fun TimelineNode(
         border = BorderStroke(if (expanded) 2.dp else 1.5.dp, phaseColor),
         modifier = Modifier
             .width(TimelineNodeWidth)
-            .height(92.dp)
+            .height(72.dp)
             .semantics {
                 role = Role.Button
                 contentDescription = "${event.title}. Status: $phaseLabel."
@@ -263,13 +331,17 @@ private fun TimelineNode(
     }
 }
 
+
 @Composable
 private fun EventDetailPanel(
     event: TimelineEvent,
+    jargon: List<JargonEntry>,
+    expandedJargonTerm: String?,
+    onToggleJargon: (String) -> Unit,
     showClinicalText: Boolean,
     onShowClinicalText: (Boolean) -> Unit,
 ) {
-    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     Surface(
         shape = RoundedCornerShape(14.dp),
         tonalElevation = 0.dp,
@@ -351,42 +423,109 @@ private fun EventDetailPanel(
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                event.iknlGuidelineRef?.let { url ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    TextButton(
-                        onClick = { uriHandler.openUri(url) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            UiCopy.BLUEPRINT_IKNL_LINK,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
             } else {
                 // Lead with the patient-friendly step explanation as body copy
                 // (no "Wat u moet weten" heading — that felt like a second todo list).
-                event.patientInstruction?.takeIf { it.isNotBlank() }?.let { instruction ->
-                    Text(
-                        instruction,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                val body = event.patientInstruction?.takeIf { it.isNotBlank() }
+                    ?: event.description.takeIf { it.isNotBlank() }
+                body?.let {
+                    GlossaryLinkedText(text = it, modifier = Modifier.fillMaxWidth())
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                val checklist = remember(event.patientInstruction, event.actionItems) {
-                    distinctActionItems(event.patientInstruction, event.actionItems)
+                if (jargon.isNotEmpty()) {
+                    Text(UiCopy.BLUEPRINT_PLAIN_LANGUAGE, style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        UiCopy.BLUEPRINT_TAP_TERM_HINT,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        jargon.forEach { entry ->
+                            FilterChip(
+                                selected = expandedJargonTerm == entry.term,
+                                onClick = { onToggleJargon(entry.term) },
+                                label = {
+                                    Text(
+                                        entry.term,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                                modifier = Modifier.semantics {
+                                    role = Role.Button
+                                    contentDescription = entry.term
+                                },
+                            )
+                        }
+                    }
+                    val openJargon = remember(expandedJargonTerm, jargon) {
+                        jargon.firstOrNull { it.term == expandedJargonTerm }
+                    }
+                    // Uitleg only — jargon actiepunten are listed under Actiepunten below.
+                    if (openJargon != null) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text(
+                                    openJargon.term,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(openJargon.dutchExplanation, style = MaterialTheme.typography.bodySmall)
+                                openJargon.iknlRef?.let { url ->
+                                    TextButton(
+                                        onClick = { context.openExternalUrl(url) },
+                                        modifier = Modifier.padding(0.dp),
+                                    ) {
+                                        Text(UiCopy.DECODER_IKNL_BUTTON)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                if (checklist.isNotEmpty()) {
+
+                val openJargonForActions = remember(expandedJargonTerm, jargon) {
+                    jargon.firstOrNull { it.term == expandedJargonTerm }
+                }
+                val actionRows = remember(
+                    event.id,
+                    event.patientInstruction,
+                    event.actionItems,
+                    openJargonForActions?.term,
+                    openJargonForActions?.actionItem,
+                ) {
+                    buildList {
+                        val jargonAction = openJargonForActions?.actionItem?.takeIf { it.isNotBlank() }
+                        if (jargonAction != null && openJargonForActions != null) {
+                            add("jargon:${openJargonForActions.term}" to jargonAction)
+                        }
+                        distinctActionItems(event.patientInstruction, event.actionItems).forEach { item ->
+                            add("careplan:${event.id}" to item)
+                        }
+                    }.distinctBy { it.second }
+                }
+                if (actionRows.isNotEmpty()) {
                     Text(UiCopy.BLUEPRINT_ACTION_POINTS, style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    checklist.forEach { item ->
+                    actionRows.forEach { (source, item) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 3.dp),
+                                .padding(bottom = 6.dp),
                             verticalAlignment = Alignment.Top,
                         ) {
                             Icon(
@@ -396,20 +535,34 @@ private fun EventDetailPanel(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                item,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f),
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(item, style = MaterialTheme.typography.bodySmall)
+                                AddToPocketGuideButton(
+                                    actionSource = source,
+                                    actionText = item,
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            event.iknlGuidelineRef?.let { url ->
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(
+                    onClick = { context.openExternalUrl(url) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        UiCopy.BLUEPRINT_IKNL_LINK,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
         }
     }
 }
-
 @Composable
 private fun StatusBadge(status: String) {
     val color = statusColor(status)
@@ -451,3 +604,4 @@ private fun distinctActionItems(
         normalized.isNotEmpty() && !body.contains(normalized)
     }
 }
+

@@ -25,7 +25,7 @@ sdk.dir=/path/to/Android/Sdk
 | minSdk | 26 |
 | compileSdk / targetSdk | 35 |
 
-Permissions (see `androidApp/src/main/AndroidManifest.xml`): biometric unlock, mic/speech for appointments.
+Permissions (see `androidApp/src/main/AndroidManifest.xml`): biometric unlock, and mic/speech for symptoms and appointment recording.
 
 Logic: `:shared` / `:core`. Screens: `:ui`.
 
@@ -41,4 +41,4 @@ Release / Obtainium channel: [RELEASING.md](../RELEASING.md). Local or CI projec
 
 ## Fonts
 
-Atkinson Hyperlegible OTFs are under `assets/fonts/`. Wire them into Compose typography when productizing UI (Phase 4 leftover / Phase 6 polish).
+Atkinson Hyperlegible OTFs are under `assets/fonts/`. Wire them into Compose typography when productizing UI.

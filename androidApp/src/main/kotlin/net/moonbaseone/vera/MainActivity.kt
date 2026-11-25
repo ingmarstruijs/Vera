@@ -26,7 +26,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         setContent {
             VeraTheme {
-                VeraApp()
+                VeraApp(isDebug = BuildConfig.DEBUG)
             }
         }
     }

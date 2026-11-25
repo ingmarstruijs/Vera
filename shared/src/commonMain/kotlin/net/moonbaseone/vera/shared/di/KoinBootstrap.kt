@@ -2,19 +2,24 @@ package net.moonbaseone.vera.shared.di
 
 import net.moonbaseone.vera.shared.appointments.AppointmentsViewModel
 import net.moonbaseone.vera.shared.appointments.ContactsViewModel
-import net.moonbaseone.vera.shared.appointments.InMemoryPocketGuideStore
-import net.moonbaseone.vera.shared.appointments.PocketGuideStore
-import net.moonbaseone.vera.shared.symptoms.SymptomLogViewModel
 import net.moonbaseone.vera.shared.auth.AuthViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.careplan.CarePlanRepository
 import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
+import net.moonbaseone.vera.shared.fhir.ActiveDatasetStore
 import net.moonbaseone.vera.shared.fhir.FhirClient
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.fhir.UnsupportedFhirClient
 import net.moonbaseone.vera.shared.navigation.AppNavigator
 import net.moonbaseone.vera.shared.navigation.DefaultAppNavigator
+import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
+import net.moonbaseone.vera.shared.pocket.AppointmentAudioRecorder
+import net.moonbaseone.vera.shared.pocket.FakeAppointmentAudioPlayer
+import net.moonbaseone.vera.shared.pocket.FakeAppointmentAudioRecorder
+import net.moonbaseone.vera.shared.pocket.InMemoryPocketGuideStore
+import net.moonbaseone.vera.shared.pocket.PocketGuideStore
+import net.moonbaseone.vera.shared.pocket.PocketGuideViewModel
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
 import net.moonbaseone.vera.shared.shield.NerEngine
 import net.moonbaseone.vera.shared.shield.NoOpNerEngine
@@ -22,6 +27,9 @@ import net.moonbaseone.vera.shared.speech.FakeSpeechToText
 import net.moonbaseone.vera.shared.speech.FakeTextToSpeech
 import net.moonbaseone.vera.shared.speech.SpeechToText
 import net.moonbaseone.vera.shared.speech.TextToSpeech
+import net.moonbaseone.vera.shared.symptoms.InMemorySymptomStore
+import net.moonbaseone.vera.shared.symptoms.SymptomStore
+import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
 import net.moonbaseone.vera.shared.translation.FakeOnDeviceTranslator
 import net.moonbaseone.vera.shared.translation.LocalTranslationService
 import net.moonbaseone.vera.shared.translation.OnDeviceTranslator
@@ -37,11 +45,6 @@ import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
-/**
- * Shared Koin modules split by feature boundary (P11 incremental).
- * Gradle `:core` holds domain / i18n / nav / tokens; feature packages stay in `:shared`.
- * Android/iOS apps override platform actuals (keys, speech, ML, biometrics).
- */
 fun sharedModules(): List<Module> = listOf(
     coreModule(),
     vaultModule(),
@@ -53,11 +56,15 @@ fun sharedModules(): List<Module> = listOf(
 
 fun coreModule(): Module = module {
     single { SharedAppInfo(appId = "net.moonbaseone.vera") }
-    single { MockDataService() }
+    single { ActiveDatasetStore() }
+    single { MockDataService(datasetStore = get()) }
     single<FhirClient> { UnsupportedFhirClient() }
     single { DefaultAppNavigator() }
     single<AppNavigator> { get<DefaultAppNavigator>() }
+    single<SymptomStore> { InMemorySymptomStore() }
+    single<PocketGuideStore> { InMemoryPocketGuideStore() }
 }
+
 fun vaultModule(): Module = module {
     single<SecureKeyStore> { InMemorySecureKeyStore() }
     single<MedicalRecordStore> { InMemoryMedicalRecordStore() }
@@ -79,7 +86,7 @@ fun shieldModule(): Module = module {
 
 fun carePlanModule(): Module = module {
     single<CarePlanRepository> { LocalCarePlanRepository(mockData = get()) }
-    single { BlueprintViewModel(carePlanRepository = get()) }
+    single { BlueprintViewModel(carePlanRepository = get(), datasetStore = get()) }
 }
 
 fun decoderModule(): Module = module {
@@ -91,23 +98,34 @@ fun decoderModule(): Module = module {
 fun appointmentsModule(): Module = module {
     single<SpeechToText> { FakeSpeechToText() }
     single<TextToSpeech> { FakeTextToSpeech() }
-    single<PocketGuideStore> { InMemoryPocketGuideStore() }
+    single<AppointmentAudioRecorder> { FakeAppointmentAudioRecorder() }
+    single<AppointmentAudioPlayer> { FakeAppointmentAudioPlayer() }
     single {
-        SymptomLogViewModel(
+        AppointmentsViewModel(
+            carePlanRepository = get(),
+            datasetStore = get(),
+            pocketGuideStore = get(),
+        )
+    }
+    single {
+        SymptomsViewModel(
+            symptomStore = get(),
             speechToText = get(),
             textToSpeech = get(),
         )
     }
     single {
-        AppointmentsViewModel(
-            carePlanRepository = get(),
-            symptomLog = get(),
-            textToSpeech = get(),
-            pocketGuideStore = get(),
-        )
-    }
-    single {
         ContactsViewModel(carePlanRepository = get())
+    }
+    factory {
+        PocketGuideViewModel(
+            carePlanRepository = get(),
+            pocketGuideStore = get(),
+            symptomStore = get(),
+            audioRecorder = get(),
+            audioPlayer = get(),
+            textToSpeech = get(),
+        )
     }
 }
 

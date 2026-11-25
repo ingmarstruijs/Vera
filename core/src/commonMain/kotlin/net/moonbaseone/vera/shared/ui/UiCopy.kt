@@ -52,6 +52,8 @@ object UiCopy {
     val BLUEPRINT_MODE_PLAIN get() = s.blueprintModePlain
     val BLUEPRINT_MODE_CLINICAL get() = s.blueprintModeClinical
     val BLUEPRINT_CLINICAL_LABEL get() = s.blueprintClinicalLabel
+    val BLUEPRINT_DATASET_LABEL get() = s.blueprintDatasetLabel
+    val BLUEPRINT_SOURCE_NOTE get() = s.blueprintSourceNote
 
     val DECODER_TITLE get() = s.decoderTitle
     val DECODER_SUBTITLE get() = s.decoderSubtitle
@@ -108,4 +110,31 @@ object UiCopy {
 
     val APPOINTMENTS_DEFAULT_QUESTIONS: List<String>
         get() = s.appointmentsDefaultQuestions
+
+    val APPOINTMENTS_NEXT_LABEL get() = s.appointmentsNextLabel
+    val APPOINTMENTS_SOON_LABEL get() = s.appointmentsSoonLabel
+    val APPOINTMENTS_PAST_LABEL get() = s.appointmentsPastLabel
+    val APPOINTMENTS_OPEN_GUIDE get() = s.appointmentsOpenGuide
+    val APPOINTMENTS_CREATE_GUIDE get() = s.appointmentsCreateGuide
+    val APPOINTMENTS_GUIDE_NONE get() = s.appointmentsGuideNone
+    val APPOINTMENTS_GUIDE_READY get() = s.appointmentsGuideReady
+    val APPOINTMENTS_GUIDE_RECORDING get() = s.appointmentsGuideRecording
+
+    val SYMPTOMS_TITLE get() = s.symptomsTitle
+    val SYMPTOMS_EMPTY get() = s.symptomsEmpty
+    val SYMPTOMS_RECORD_CTA get() = s.symptomsRecordCta
+    val SYMPTOMS_DELETE get() = s.symptomsDelete
+    val SYMPTOMS_SPEAK get() = s.symptomsSpeak
+
+    val POCKET_PREP_TITLE get() = s.pocketPrepTitle
+    val POCKET_MY_QUESTIONS get() = s.pocketMyQuestions
+    val POCKET_RECORD_TITLE get() = s.pocketRecordTitle
+    val POCKET_RECORD_START get() = s.pocketRecordStart
+    val POCKET_RECORD_STOP get() = s.pocketRecordStop
+    val POCKET_PLAY_RECORDING get() = s.pocketPlayRecording
+    val POCKET_NO_SYMPTOMS_HINT get() = s.pocketNoSymptomsHint
+    val POCKET_NO_QUESTIONS_HINT get() = s.pocketNoQuestionsHint
+    val ADD_TO_POCKET_GUIDE get() = s.addToPocketGuide
+    val IN_POCKET_GUIDE get() = s.inPocketGuide
+    val PICK_APPOINTMENT_FOR_GUIDE get() = s.pickAppointmentForGuide
 }

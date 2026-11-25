@@ -58,10 +58,10 @@ class JargonEntryTest {
     }
 
     @Test
-    fun iknlRefs_pointToIknl() {
+    fun iknlRefs_pointToRichtlijnendatabase() {
         val withIknl = BuiltInGlossary.filter { it.iknlRef != null }
         assertTrue(withIknl.isNotEmpty())
-        withIknl.forEach { assertTrue(it.iknlRef!!.contains("iknl.nl")) }
+        withIknl.forEach { assertTrue(it.iknlRef!!.contains("richtlijnendatabase.nl")) }
     }
 
     @Test
