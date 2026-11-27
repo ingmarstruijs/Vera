@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
 import net.moonbaseone.vera.shared.pocket.AppointmentAudioRecorder
@@ -51,6 +52,15 @@ class AndroidAppointmentAudioRecorder(
         }
     }
 
+    override fun deleteFile(path: String): Boolean {
+        return try {
+            if (path.isBlank() || path.startsWith("fake://")) return true
+            File(path).delete()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     private fun stopInternal() {
         try {
             recorder?.apply {
@@ -70,25 +80,97 @@ class AndroidAppointmentAudioPlayer : AppointmentAudioPlayer {
 
     override fun isAvailable(): Boolean = true
 
-    override suspend fun play(path: String): Result<Unit> = withContext(Dispatchers.IO) {
+    override suspend fun prepare(path: String): Result<Long> = withContext(Dispatchers.IO) {
         runCatching {
-            stop()
+            releasePlayer()
             val mp = MediaPlayer().apply {
                 setDataSource(path)
                 prepare()
-                start()
             }
             player = mp
-            while (mp.isPlaying) {
-                Thread.sleep(100)
+            mp.duration.toLong().coerceAtLeast(0L)
+        }
+    }
+
+    override fun play() {
+        val mp = player ?: return
+        if (!mp.isPlaying) {
+            try {
+                mp.start()
+            } catch (_: Exception) {
             }
-            stop()
+        }
+    }
+
+    override fun pause() {
+        try {
+            if (player?.isPlaying == true) player?.pause()
+        } catch (_: Exception) {
         }
     }
 
     override fun stop() {
         try {
+            player?.let { mp ->
+                if (mp.isPlaying) mp.pause()
+                mp.seekTo(0)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    override fun seekTo(positionMs: Long) {
+        try {
+            val mp = player ?: return
+            val clamped = positionMs.toInt().coerceIn(0, mp.duration.coerceAtLeast(0))
+            mp.seekTo(clamped)
+        } catch (_: Exception) {
+        }
+    }
+
+    override fun seekBy(deltaMs: Long) {
+        seekTo(getPositionMs() + deltaMs)
+    }
+
+    override fun getPositionMs(): Long =
+        try {
+            player?.currentPosition?.toLong() ?: 0L
+        } catch (_: Exception) {
+            0L
+        }
+
+    override fun getDurationMs(): Long =
+        try {
+            player?.duration?.toLong()?.coerceAtLeast(0L) ?: 0L
+        } catch (_: Exception) {
+            0L
+        }
+
+    override fun isPlaying(): Boolean =
+        try {
+            player?.isPlaying == true
+        } catch (_: Exception) {
+            false
+        }
+
+    override suspend fun play(path: String): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            prepare(path).getOrThrow()
+            play()
+            while (isPlaying()) {
+                delay(100)
+            }
+            stop()
+            releasePlayer()
+        }
+    }
+
+    private fun releasePlayer() {
+        try {
             player?.stop()
+        } catch (_: Exception) {
+        }
+        try {
             player?.release()
         } catch (_: Exception) {
         } finally {

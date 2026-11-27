@@ -23,6 +23,8 @@ interface PocketGuideStore {
     fun upsert(guide: PocketGuide)
     fun ensure(appointmentId: String): PocketGuide
     fun linkActionItem(appointmentId: String, actionId: String, actionText: String)
+    fun unlinkActionItem(appointmentId: String, actionId: String)
+    fun addManualQuestion(appointmentId: String, text: String)
     fun setRecordingPath(appointmentId: String, path: String?)
     fun hasGuide(appointmentId: String): Boolean
     fun hasRecording(appointmentId: String): Boolean
@@ -50,13 +52,38 @@ class InMemoryPocketGuideStore : PocketGuideStore {
 
     override fun linkActionItem(appointmentId: String, actionId: String, actionText: String) {
         val current = ensure(appointmentId)
+        val trimmed = actionText.trim()
+        if (trimmed.isEmpty()) return
         if (actionId in current.linkedActionItemIds) return
         upsert(
             current.copy(
                 linkedActionItemIds = current.linkedActionItemIds + actionId,
-                linkedActionTexts = current.linkedActionTexts + actionText.trim(),
+                linkedActionTexts = current.linkedActionTexts + trimmed,
                 updatedAtMillis = platformCurrentTimeMillis(),
             ),
+        )
+    }
+
+    override fun unlinkActionItem(appointmentId: String, actionId: String) {
+        val current = get(appointmentId) ?: return
+        val idx = current.linkedActionItemIds.indexOf(actionId)
+        if (idx < 0) return
+        upsert(
+            current.copy(
+                linkedActionItemIds = current.linkedActionItemIds.filterIndexed { i, _ -> i != idx },
+                linkedActionTexts = current.linkedActionTexts.filterIndexed { i, _ -> i != idx },
+                updatedAtMillis = platformCurrentTimeMillis(),
+            ),
+        )
+    }
+
+    override fun addManualQuestion(appointmentId: String, text: String) {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return
+        linkActionItem(
+            appointmentId = appointmentId,
+            actionId = actionItemId("manual", "${platformCurrentTimeMillis()}:$trimmed"),
+            actionText = trimmed,
         )
     }
 

@@ -11,6 +11,9 @@ import net.moonbaseone.vera.shared.fhir.ActiveDatasetStore
 import net.moonbaseone.vera.shared.fhir.FhirClient
 import net.moonbaseone.vera.shared.fhir.MockDataService
 import net.moonbaseone.vera.shared.fhir.UnsupportedFhirClient
+import net.moonbaseone.vera.shared.i18n.InMemoryLocalePreferenceStore
+import net.moonbaseone.vera.shared.i18n.LocaleController
+import net.moonbaseone.vera.shared.i18n.LocalePreferenceStore
 import net.moonbaseone.vera.shared.navigation.AppNavigator
 import net.moonbaseone.vera.shared.navigation.DefaultAppNavigator
 import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
@@ -30,6 +33,7 @@ import net.moonbaseone.vera.shared.speech.TextToSpeech
 import net.moonbaseone.vera.shared.symptoms.InMemorySymptomStore
 import net.moonbaseone.vera.shared.symptoms.SymptomStore
 import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
+import net.moonbaseone.vera.shared.translation.DatasetContentLocalizer
 import net.moonbaseone.vera.shared.translation.FakeOnDeviceTranslator
 import net.moonbaseone.vera.shared.translation.LocalTranslationService
 import net.moonbaseone.vera.shared.translation.OnDeviceTranslator
@@ -61,8 +65,10 @@ fun coreModule(): Module = module {
     single<FhirClient> { UnsupportedFhirClient() }
     single { DefaultAppNavigator() }
     single<AppNavigator> { get<DefaultAppNavigator>() }
-    single<SymptomStore> { InMemorySymptomStore() }
+    single<SymptomStore> { InMemorySymptomStore(seedDemoEntries = true) }
     single<PocketGuideStore> { InMemoryPocketGuideStore() }
+    single<LocalePreferenceStore> { InMemoryLocalePreferenceStore() }
+    single { LocaleController(preferenceStore = get()) }
 }
 
 fun vaultModule(): Module = module {
@@ -86,12 +92,19 @@ fun shieldModule(): Module = module {
 
 fun carePlanModule(): Module = module {
     single<CarePlanRepository> { LocalCarePlanRepository(mockData = get()) }
-    single { BlueprintViewModel(carePlanRepository = get(), datasetStore = get()) }
+    single {
+        BlueprintViewModel(
+            carePlanRepository = get(),
+            datasetStore = get(),
+            contentLocalizer = get(),
+        )
+    }
 }
 
 fun decoderModule(): Module = module {
     single<OnDeviceTranslator> { FakeOnDeviceTranslator() }
     single { LocalTranslationService(engine = get(), shield = get()) }
+    single { DatasetContentLocalizer(translation = get()) }
     single { DecoderViewModel(translation = get()) }
 }
 
@@ -105,6 +118,8 @@ fun appointmentsModule(): Module = module {
             carePlanRepository = get(),
             datasetStore = get(),
             pocketGuideStore = get(),
+            audioPlayer = get(),
+            contentLocalizer = get(),
         )
     }
     single {
@@ -115,7 +130,10 @@ fun appointmentsModule(): Module = module {
         )
     }
     single {
-        ContactsViewModel(carePlanRepository = get())
+        ContactsViewModel(
+            carePlanRepository = get(),
+            contentLocalizer = get(),
+        )
     }
     factory {
         PocketGuideViewModel(
@@ -125,6 +143,7 @@ fun appointmentsModule(): Module = module {
             audioRecorder = get(),
             audioPlayer = get(),
             textToSpeech = get(),
+            contentLocalizer = get(),
         )
     }
 }

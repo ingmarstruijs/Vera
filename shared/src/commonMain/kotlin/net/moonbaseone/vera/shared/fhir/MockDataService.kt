@@ -898,8 +898,7 @@ class MockDataService(
                 ),
             ),
             "comment" to
-                "Meenemen: bijwerkingendagboek, lijst met huidige medicatie, " +
-                "vragen over LVEF-uitslag echocardiografie.",
+                "Meenemen: bijwerkingendagboek en lijst met huidige medicatie.",
         ),
     )
 

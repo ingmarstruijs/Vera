@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,17 +20,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.MicNone
-import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,23 +51,26 @@ import net.moonbaseone.vera.shared.symptoms.SymptomEntry
 import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.ui.common.SymptomDetailDialog
+import net.moonbaseone.vera.ui.common.SymptomPreviewText
 
 @Composable
 fun SymptomsScreen(viewModel: SymptomsViewModel) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var draftTyped by remember { mutableStateOf("") }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (granted) viewModel.toggleListening()
+        if (granted) viewModel.startListening()
     }
 
-    fun requestOrToggle() {
+    fun requestOrStart() {
         val granted = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.RECORD_AUDIO,
         ) == PackageManager.PERMISSION_GRANTED
-        if (granted) viewModel.toggleListening()
+        if (granted) viewModel.startListening()
         else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
@@ -70,30 +80,22 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
             .padding(horizontal = 20.dp),
     ) {
         Spacer(modifier = Modifier.height(4.dp))
-        if (state.speechAvailable) {
-            Button(
-                onClick = { requestOrToggle() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = if (state.isListening) {
-                    androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = Color(DesignTokens.ERROR_RED),
-                    )
-                } else {
-                    androidx.compose.material3.ButtonDefaults.buttonColors()
+        if (!state.isListening) {
+            TypedEntryField(
+                value = draftTyped,
+                onValueChange = { draftTyped = it },
+                onSubmit = {
+                    if (viewModel.addTyped(draftTyped)) draftTyped = ""
                 },
-            ) {
-                Icon(
-                    if (state.isListening) Icons.Outlined.Stop else Icons.Outlined.MicNone,
-                    contentDescription = null,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    if (state.isListening) UiCopy.APPOINTMENTS_VOICE_STOP else UiCopy.SYMPTOMS_RECORD_CTA,
-                )
-            }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        if (state.speechAvailable) {
             if (state.isListening) {
+                RecordingStopChoices(
+                    onSave = viewModel::stopAndSave,
+                    onDiscard = viewModel::stopAndDiscard,
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     UiCopy.APPOINTMENTS_VOICE_LISTENING,
@@ -102,6 +104,17 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
                 )
                 if (state.draftText.isNotBlank()) {
                     Text(state.draftText, style = MaterialTheme.typography.bodyMedium)
+                }
+            } else {
+                Button(
+                    onClick = { requestOrStart() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                ) {
+                    Icon(Icons.Outlined.MicNone, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(UiCopy.SYMPTOMS_RECORD_CTA)
                 }
             }
         } else {
@@ -138,6 +151,7 @@ fun SymptomRecordSheetContent(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var draftTyped by remember { mutableStateOf("") }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -145,38 +159,114 @@ fun SymptomRecordSheetContent(
     }
 
     Column(modifier = Modifier.padding(24.dp)) {
-        Text(UiCopy.SYMPTOMS_RECORD_CTA, style = MaterialTheme.typography.titleLarge)
+        Text(UiCopy.SYMPTOMS_TITLE, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = {
-                if (state.isListening) {
-                    viewModel.stopListening()
+        if (state.isListening) {
+            RecordingStopChoices(
+                onSave = {
+                    viewModel.stopAndSave()
                     onFinished()
-                } else {
+                },
+                onDiscard = {
+                    viewModel.stopAndDiscard()
+                    onFinished()
+                },
+            )
+            if (state.draftText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(state.draftText)
+            }
+        } else {
+            TypedEntryField(
+                value = draftTyped,
+                onValueChange = { draftTyped = it },
+                onSubmit = {
+                    if (viewModel.addTyped(draftTyped)) {
+                        draftTyped = ""
+                        onFinished()
+                    }
+                },
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
                     val granted = ContextCompat.checkSelfPermission(
                         context,
                         Manifest.permission.RECORD_AUDIO,
                     ) == PackageManager.PERMISSION_GRANTED
                     if (granted) viewModel.startListening()
                     else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
-            },
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+            ) {
+                Icon(Icons.Outlined.MicNone, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(UiCopy.SYMPTOMS_RECORD_CTA)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TypedEntryField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(UiCopy.SYMPTOMS_TYPE_HINT) },
+            minLines = 2,
+            maxLines = 5,
+        )
+        TextButton(
+            onClick = onSubmit,
+            enabled = value.isNotBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "+ ${UiCopy.SYMPTOMS_ADD_TYPED}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecordingStopChoices(
+    onSave: () -> Unit,
+    onDiscard: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = onSave,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
         ) {
-            Icon(
-                if (state.isListening) Icons.Outlined.Stop else Icons.Outlined.MicNone,
-                contentDescription = null,
-            )
+            Icon(Icons.Outlined.Save, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                if (state.isListening) UiCopy.APPOINTMENTS_VOICE_STOP else UiCopy.SYMPTOMS_RECORD_CTA,
-            )
+            Text(UiCopy.SYMPTOMS_STOP_SAVE)
         }
-        if (state.draftText.isNotBlank()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(state.draftText)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = onDiscard,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color(DesignTokens.ERROR_RED),
+            ),
+        ) {
+            Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(UiCopy.SYMPTOMS_STOP_DISCARD)
         }
     }
 }
@@ -187,6 +277,14 @@ private fun SymptomRow(
     onSpeak: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    var showFullText by remember(entry.id) { mutableStateOf(false) }
+    if (showFullText) {
+        SymptomDetailDialog(
+            text = entry.text,
+            createdAtMillis = entry.createdAtMillis,
+            onDismiss = { showFullText = false },
+        )
+    }
     Surface(
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -198,9 +296,10 @@ private fun SymptomRow(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                entry.text,
-                style = MaterialTheme.typography.bodyMedium,
+            SymptomPreviewText(
+                text = entry.text,
+                createdAtMillis = entry.createdAtMillis,
+                onOpen = { showFullText = true },
                 modifier = Modifier.weight(1f),
             )
             IconButton(

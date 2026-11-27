@@ -12,8 +12,4 @@
 
 ## Modules
 
-- `core/` — KMP: domain, failure, i18n, navigation, design tokens  
-- `shared/` — KMP features (vault, shield, FHIR mock, ViewModels)  
-- `ui/` — **Shared Compose UI** (Android library now; CMP iOS next)  
-- `androidApp/` — Thin Android application shell  
-- `iosApp/` — Placeholder for CMP iOS host (no SwiftUI)
+- `core/` · `shared/` · `ui/` · `androidApp/` · `iosApp/` (CMP host pending) · `ci/` (Obtainium preview keystore)

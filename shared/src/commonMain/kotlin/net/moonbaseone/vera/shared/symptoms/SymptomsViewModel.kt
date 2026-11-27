@@ -32,6 +32,9 @@ class SymptomsViewModel(
     private val _state = MutableStateFlow(SymptomsUiState())
     val state: StateFlow<SymptomsUiState> = _state.asStateFlow()
 
+    /** When false, a completed recognition session must not persist text. */
+    private var commitOnComplete: Boolean = true
+
     init {
         scope.launch {
             val available = speechToText.isAvailable()
@@ -48,6 +51,7 @@ class SymptomsViewModel(
         scope.launch {
             val current = _state.value
             if (!current.speechAvailable || current.isListening) return@launch
+            commitOnComplete = true
             _state.update { it.copy(isListening = true, draftText = "", errorMessage = null) }
             val result = speechToText.listen(
                 localeTag = "nl-NL",
@@ -57,16 +61,17 @@ class SymptomsViewModel(
             )
             result.fold(
                 onSuccess = { text ->
+                    val shouldCommit = commitOnComplete
                     val finalText = text.trim().ifBlank { _state.value.draftText.trim() }
-                    if (finalText.isNotEmpty()) {
+                    if (shouldCommit && finalText.isNotEmpty()) {
                         symptomStore.add(finalText)
                     }
                     _state.update { it.copy(isListening = false, draftText = "") }
                 },
                 onFailure = { err ->
                     _state.update { current ->
-                        if (!current.isListening) {
-                            // Explicit cancel already cleared listening; don't surface an error.
+                        if (!current.isListening || !commitOnComplete) {
+                            // Explicit discard / dismiss already cleared listening; don't surface an error.
                             current.copy(isListening = false, draftText = "")
                         } else {
                             current.copy(
@@ -82,19 +87,30 @@ class SymptomsViewModel(
         }
     }
 
-    fun stopListening() {
+    /** Finish recognition and keep the transcript if any. */
+    fun stopAndSave() {
+        if (!_state.value.isListening) return
+        commitOnComplete = true
         speechToText.stop()
-        _state.update { it.copy(isListening = false) }
+    }
+
+    /** Abort recognition and drop any draft transcript. */
+    fun stopAndDiscard() {
+        if (!_state.value.isListening) return
+        commitOnComplete = false
+        speechToText.cancel()
+        _state.update { it.copy(isListening = false, draftText = "") }
     }
 
     /** Abort an in-flight recognition session (e.g. sheet dismissed). */
     fun cancelListening() {
+        commitOnComplete = false
         speechToText.cancel()
         _state.update { it.copy(isListening = false, draftText = "") }
     }
 
     fun toggleListening() {
-        if (_state.value.isListening) stopListening() else startListening()
+        if (_state.value.isListening) stopAndSave() else startListening()
     }
 
     fun speak(entryId: String) {
@@ -102,6 +118,13 @@ class SymptomsViewModel(
         scope.launch {
             textToSpeech.speak(entry.text, localeTag = "nl-NL")
         }
+    }
+
+    fun addTyped(text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return false
+        symptomStore.add(trimmed)
+        return true
     }
 
     fun delete(entryId: String) {

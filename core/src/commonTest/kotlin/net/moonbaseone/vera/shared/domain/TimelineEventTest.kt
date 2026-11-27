@@ -41,7 +41,69 @@ class TimelineEventTest {
         assertEquals(TimelinePhase.Current, events[1].phase)
         assertEquals(TimelinePhase.Future, events[2].phase)
         assertEquals("Chemo", events[0].title)
+        assertEquals("Chemotherapie", events[0].chipLabel())
+        assertEquals("Chemotherapie", events[0].shortTitle)
         assertEquals("2024-12-20", events[0].dateIso)
+    }
+
+    @Test
+    fun fromCarePlanActivities_derivesShortTitleWhenMissing() {
+        val activities = listOf(
+            mapOf(
+                "detail" to mapOf(
+                    "kind" to "ServiceRequest",
+                    "code" to mapOf("text" to "Adjuvante radiotherapie – ACTIEF"),
+                    "status" to "in-progress",
+                    "scheduledPeriod" to mapOf("start" to "2025-03-01"),
+                ),
+            ),
+        )
+        val event = TimelineEvent.fromCarePlanActivities(activities).single()
+        assertEquals("Adjuvante radiotherapie", event.title)
+        assertEquals("Radiotherapie", event.shortTitle)
+        assertEquals("Radiotherapie", event.chipLabel())
+    }
+
+    @Test
+    fun fromCarePlanActivities_prefersExplicitShortTitle() {
+        val activities = listOf(
+            mapOf(
+                "detail" to mapOf(
+                    "kind" to "ServiceRequest",
+                    "code" to mapOf("text" to "Adjuvante radiotherapie – ACTIEF"),
+                    "shortTitle" to "Bestraling",
+                    "status" to "in-progress",
+                    "scheduledPeriod" to mapOf("start" to "2025-03-01"),
+                ),
+            ),
+        )
+        val event = TimelineEvent.fromCarePlanActivities(activities).single()
+        assertEquals("Bestraling", event.chipLabel())
+    }
+
+    @Test
+    fun deriveShortTitle_mapsCommonCareSteps() {
+        assertEquals(
+            "Chemotherapie",
+            TimelineEvent.deriveShortTitle("Neoadjuvante chemotherapie (TCHP schema)"),
+        )
+        assertEquals(
+            "Chirurgie",
+            TimelineEvent.deriveShortTitle("Borstsparende chirurgie + schildwachtklierprocedure"),
+        )
+        assertEquals(
+            "HER2-therapie",
+            TimelineEvent.deriveShortTitle("Adjuvant trastuzumab + pertuzumab (1 jaar)"),
+        )
+        assertEquals(
+            "Nacontrole",
+            TimelineEvent.deriveShortTitle("Jaarlijkse mammografie controle-plan"),
+        )
+        assertEquals("Nacontrole", TimelineEvent.deriveShortTitle("Follow-up CEA + CT"))
+        assertEquals("MDO", TimelineEvent.deriveShortTitle("MDO longoncologie"))
+        assertEquals("Behandeling", TimelineEvent.deriveShortTitle("Behandeling na MDO"))
+        assertEquals("Diagnostiek", TimelineEvent.deriveShortTitle("Diagnostiek NSCLC"))
+        assertEquals("Chirurgie", TimelineEvent.deriveShortTitle("Hemicolectomie rechts"))
     }
 
     @Test

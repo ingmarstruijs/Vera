@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import net.moonbaseone.vera.shared.ui.DesignTokens
 
-private val PrimaryGreen = Color(DesignTokens.PRIMARY_GREEN)
+private val PrimaryTeal = Color(DesignTokens.PRIMARY_GREEN)
 private val PrimaryContainer = Color(DesignTokens.PRIMARY_CONTAINER)
+private val AccentPurple = Color(DesignTokens.ACCENT_PURPLE)
+private val AccentPurpleContainer = Color(DesignTokens.ACCENT_PURPLE_CONTAINER)
 private val ErrorRed = Color(DesignTokens.ERROR_RED)
 private val TextDark = Color(DesignTokens.TEXT_DARK)
 private val TextSecondary = Color(DesignTokens.TEXT_SECONDARY)
@@ -25,16 +27,21 @@ private val SurfaceLight = Color(DesignTokens.SURFACE_LIGHT)
 private val OutlineSubtle = Color(DesignTokens.OUTLINE_SUBTLE)
 
 private val LightColors = lightColorScheme(
-    primary = PrimaryGreen,
+    primary = PrimaryTeal,
     onPrimary = Color.White,
     primaryContainer = PrimaryContainer,
     onPrimaryContainer = TextDark,
+    secondary = AccentPurple,
+    onSecondary = Color.White,
+    secondaryContainer = AccentPurpleContainer,
+    onSecondaryContainer = Color(0xFF2A1B55),
+    tertiary = PrimaryTeal,
     error = ErrorRed,
     errorContainer = Color(DesignTokens.BANNER_ERROR_BG),
     onErrorContainer = ErrorRed,
     surface = SurfaceLight,
     onSurface = TextDark,
-    surfaceVariant = Color(0xFFE4EBE8),
+    surfaceVariant = Color(DesignTokens.SURFACE_MINT),
     onSurfaceVariant = TextSecondary,
     outline = OutlineSubtle,
     outlineVariant = OutlineSubtle,
@@ -47,6 +54,11 @@ private val DarkColors = darkColorScheme(
     onPrimary = Color(DesignTokens.ON_PRIMARY_DARK),
     primaryContainer = Color(DesignTokens.PRIMARY_CONTAINER_DARK),
     onPrimaryContainer = Color(DesignTokens.ON_PRIMARY_CONTAINER_DARK),
+    secondary = Color(DesignTokens.ACCENT_PURPLE_DARK),
+    onSecondary = Color(0xFF2A1B55),
+    secondaryContainer = Color(DesignTokens.ACCENT_PURPLE_CONTAINER_DARK),
+    onSecondaryContainer = Color(DesignTokens.ACCENT_PURPLE_DARK),
+    tertiary = Color(DesignTokens.PRIMARY_GREEN_DARK),
     error = Color(DesignTokens.ERROR_RED_DARK),
     errorContainer = Color(DesignTokens.BANNER_ERROR_BG_DARK),
     onErrorContainer = Color(DesignTokens.ERROR_RED_DARK),
@@ -153,4 +165,18 @@ fun sentinelAccent(): Color =
     Color(
         if (isSystemInDarkTheme()) DesignTokens.SENTINEL_GREEN_DARK
         else DesignTokens.SENTINEL_GREEN,
+    )
+
+@Composable
+fun mintWash(): Color =
+    Color(
+        if (isSystemInDarkTheme()) DesignTokens.PRIMARY_CONTAINER_DARK
+        else DesignTokens.SURFACE_MINT,
+    )
+
+@Composable
+fun lavenderWash(): Color =
+    Color(
+        if (isSystemInDarkTheme()) DesignTokens.ACCENT_PURPLE_CONTAINER_DARK
+        else DesignTokens.SURFACE_LAVENDER,
     )

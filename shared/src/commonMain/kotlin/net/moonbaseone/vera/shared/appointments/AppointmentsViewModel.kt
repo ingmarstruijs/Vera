@@ -2,6 +2,7 @@ package net.moonbaseone.vera.shared.appointments
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,11 @@ import net.moonbaseone.vera.shared.careplan.LocalCarePlanRepository
 import net.moonbaseone.vera.shared.fhir.ActiveDatasetStore
 import net.moonbaseone.vera.shared.fhir.FhirResource
 import net.moonbaseone.vera.shared.fhir.MockDataService
+import net.moonbaseone.vera.shared.i18n.StringCatalog
+import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
+import net.moonbaseone.vera.shared.pocket.FakeAppointmentAudioPlayer
 import net.moonbaseone.vera.shared.pocket.PocketGuideStore
+import net.moonbaseone.vera.shared.translation.DatasetContentLocalizer
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.shared.util.DateDisplay
 
@@ -55,6 +60,7 @@ data class AppointmentsUiState(
     val upcoming: List<AppointmentListItem> = emptyList(),
     val past: List<AppointmentListItem> = emptyList(),
     val pastExpanded: Boolean = false,
+    val playingAppointmentId: String? = null,
     val errorMessage: String? = null,
 )
 
@@ -62,6 +68,8 @@ class AppointmentsViewModel(
     private val carePlanRepository: CarePlanRepository,
     private val datasetStore: ActiveDatasetStore = ActiveDatasetStore(),
     private val pocketGuideStore: PocketGuideStore? = null,
+    private val audioPlayer: AppointmentAudioPlayer = FakeAppointmentAudioPlayer(),
+    private val contentLocalizer: DatasetContentLocalizer? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     constructor(
@@ -72,11 +80,16 @@ class AppointmentsViewModel(
         LocalCarePlanRepository(mockData),
         mockData.datasetStore,
         pocketGuideStore,
+        FakeAppointmentAudioPlayer(),
+        null,
         scope,
     )
 
     private val _state = MutableStateFlow(AppointmentsUiState())
     val state: StateFlow<AppointmentsUiState> = _state.asStateFlow()
+
+    private var sourceSummaries: List<AppointmentSummary> = emptyList()
+    private var localizeJob: Job? = null
 
     init {
         scope.launch {
@@ -85,26 +98,23 @@ class AppointmentsViewModel(
         scope.launch {
             pocketGuideStore?.guides?.collect { refreshGuideStatuses() }
         }
+        scope.launch {
+            StringCatalog.activeLocaleFlow.collect {
+                if (sourceSummaries.isNotEmpty()) publishLocalized()
+            }
+        }
     }
 
     fun load() {
         scope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val summaries = carePlanRepository.fetchAppointments().map { it.toSummary() }
-                val sorted = summaries.sortedBy { it.startIso }
-                // Demo fixtures use 2025 dates; treat all as upcoming ordered, first = next.
-                val items = sorted.map { appt ->
-                    AppointmentListItem(appt, statusFor(appt.id))
-                }
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        next = items.firstOrNull(),
-                        upcoming = items.drop(1),
-                        past = emptyList(),
-                    )
-                }
+                val summaries = carePlanRepository.fetchAppointments()
+                    .map { it.toSummary() }
+                    .sortedBy { it.startIso }
+                sourceSummaries = summaries
+                publishItems(summaries)
+                publishLocalized()
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
@@ -116,9 +126,64 @@ class AppointmentsViewModel(
         }
     }
 
+    private fun publishItems(summaries: List<AppointmentSummary>) {
+        val items = summaries.map { appt ->
+            AppointmentListItem(appt, statusFor(appt.id))
+        }
+        _state.update {
+            it.copy(
+                isLoading = false,
+                next = items.firstOrNull(),
+                upcoming = items.drop(1),
+                past = emptyList(),
+            )
+        }
+    }
+
+    private fun publishLocalized() {
+        val localizer = contentLocalizer ?: return
+        val source = sourceSummaries
+        if (source.isEmpty()) return
+        localizeJob?.cancel()
+        localizeJob = scope.launch {
+            val target = StringCatalog.activeLocale.tag
+            val localized = localizer.localizeAppointments(source, target)
+            if (sourceSummaries !== source) return@launch
+            publishItems(localized)
+        }
+    }
+
     fun ensureGuide(appointmentId: String) {
         pocketGuideStore?.ensure(appointmentId)
         refreshGuideStatuses()
+    }
+
+    fun playRecording(appointmentId: String) {
+        val path = pocketGuideStore?.get(appointmentId)?.recordingPath ?: return
+        scope.launch {
+            if (_state.value.playingAppointmentId != null) {
+                audioPlayer.stop()
+            }
+            _state.update { it.copy(playingAppointmentId = appointmentId, errorMessage = null) }
+            try {
+                audioPlayer.play(path)
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message) }
+            } finally {
+                _state.update { state ->
+                    if (state.playingAppointmentId == appointmentId) {
+                        state.copy(playingAppointmentId = null)
+                    } else {
+                        state
+                    }
+                }
+            }
+        }
+    }
+
+    fun stopPlayback() {
+        audioPlayer.stop()
+        _state.update { it.copy(playingAppointmentId = null) }
     }
 
     fun togglePastExpanded() {
@@ -126,6 +191,7 @@ class AppointmentsViewModel(
     }
 
     fun dispose() {
+        audioPlayer.stop()
         scope.cancel()
     }
 

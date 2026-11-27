@@ -14,6 +14,9 @@ Notable changes to the Vera repository. Dates are UTC.
 - Demo dataset switcher for debug builds only (long-press care-plan title): HER2+ mamma, colon stadium III, lung early start; appointments reload with the same selection
 - Clear IKNL source note on the care plan: Vera does not invent clinical content; citations open Richtlijnendatabase
 - Header mic + symptoms list; spoken symptoms store with TTS replay
+- Demo symptom samples seeded for emulator (STT often unavailable); visible in symptoms list + appointment notes
+- Tap a symptom (list or appointment notes) to open a dialog with the full text
+- Symptoms store and show local date/time in the list, appointment notes, and detail dialog
 - Appointments list redesign (Volgende / Straks) and full-screen pocket guide per appointment (keep screen on, sections, local recording)
 - Link care-plan / decoder action points into a pocket guide with persistent “In gids” state
 - Inline glossary highlights with tap-to-explain sheet
@@ -21,30 +24,65 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Changed
 
-- App icon: clinical compass (proposal A) replaces shield+V; master + adaptive/mipmaps match the approved artwork (not a simplified vector)
-- Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
-- Root README compacted (release table inline; screenshots removed)
+- Soft teal + lavender visual system (mock-inspired): gradient wash, rounded elevated cards, circular icon badges; primary teal `#006054`, secondary purple for nav/chips
+- Graceful mint→aqua→lavender hero wash behind app header + timeline (soft orbs, fades to surface under detail cards)
+- Unified app header (actions + title + subtitle) on the same soft wash as page content; timeline chips show short care-step names (e.g. Chirurgie / Radiotherapie), status pill (Afgerond/Huidig/Gepland) on the phase detail card, purple mode pills, appointment hero without overlapping badge
+- Care-plan timeline pills are taller with a phase-status icon (done / current / planned) and a compact date under the step name — no per-treatment-type icons
+- Timeline pills: balanced capsule padding; current step uses a radio/“here” icon instead of play
+- Care-plan chip short titles are derived from activity titles when a dataset omits `shortTitle` (e.g. Chemotherapie / Chirurgie / HER2-therapie)
+- App icon: soft mint→lavender compass mark aligned with the new UI wash (organic soft ring, not a hard geometric circle)
 - Care-plan steps use a swipeable carousel synced with the timeline navigator; vertical scroll stays inside the detail card
+- Compact next-appointment hint on the current care-plan step (mint strip under body copy; opens Afspraken)
+- Woordenboek + Contact restyled to the same soft card / icon-circle language
+- Contact “Bellen” is an outlined button instead of a solid teal CTA
 - Care-plan jargon: tap underlined terms for uitleg (chip strip + helper copy removed); actiepunten only from the care step
 - Trimmed shell/screen helper subtitles, care-plan legend / IKNL chip row, and compact top app bar
 - Symptoms list is a closable overlay (✕ / system back); bottom tabs stay on the main IA
+- Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
 - Demo dataset chips removed from the care-plan screen (debug long-press only; not in release)
-- “Toevoegen aan pocket gids” is a compact text link instead of a large button
+- “Pocket gids” renamed to **afspraak notities** (EN: appointment notes)
+- “Toevoegen aan afspraak notities” is a compact text link instead of a large button
+- Symptom recording offers **Stop en sla op** / **Stop en gooi weg** while listening
+- Appointments list opens notes on card tap (no notes CTA / status chip); play icon only when a recording exists
+- Appointment recording uses an on-page text button (Start opname / Stop en sla op); playback scrubber stays below when a recording exists
+- Appointment recording stop defaults to **Stop en sla op**; playback has scrubber, progress, ±10s, stop, and delete-with-confirm
+- Manual questions on appointment notes (type + add; suggested questions can be added; delete per question); hospital memo labeled as care-team prep
+- Appointment notes: “Vraag toevoegen” sits under suggested questions, same TextButton style as “+ …” suggestions
+- Appointment notes: symptoms, my questions, and suggested questions sections are collapsible
+- Patient-facing “symptomen” renamed to **Hoe het gaat** (EN: How I’m doing) — everyday wording for spoken wellbeing notes
+- How I’m doing: type an entry as well as speak it (text field + add on the screen and record sheet)
+- App language picker (NL/EN/DE/FR) on Contact; choice persists and refreshes UI copy
+- How I’m doing header action uses a heart outline (FavoriteBorder) instead of a list/smiley icon
+- Woordenboek: determinate progress bar while translating glossary entries; partial results appear as they complete
+- Care-plan / appointments / contacts / notes content localizes with app language (Dutch source → on-device translation)
+- Woordenboek follows app language (separate doeltaal picker removed; compact privacy note kept)
+- Care-plan subtitle uses the compass tagline (“Jouw persoonlijke oncologie kompas”)
+- Appointment notes: empty state for My questions when none are added yet
+- Appointments navigator: “Straks” renamed to “Later”
+- Stable Obtainium signing via committed `ci/obtainium.keystore` (no more per-run debug fingerprints that block updates)
+- Care-plan Begrijpelijk / Dokterstekst is a single segmented toggle
+- Care-plan mode toggle labels: **Eenvoudig** / **Origineel** (was Begrijpelijk / Dokterstekst)
+- Language switch shows a global progress dialog while on-device content translation runs (woordenboek inline progress removed)
+- README compacted; Obtainium signing and current product IA reflected
+- On-device translation: download NL→target model pair (fixes FR hang), serialize downloads, timeout + progress pulse
 
 ### Fixed
 
 - App icon compass optically recentered in master + launcher assets
 - Appointments (and related) double header: title only in the top app bar
+- Next-appointment calendar badge no longer overflows the card
 - Symptomen inspreken no longer crashes when the speech service fails or the sheet is dismissed (main-thread recognizer + soft-fail)
 - IKNL guideline buttons now open the official Richtlijnendatabase URLs (care plan, decoder, jargon)
 
 ### Removed
 
+- IKNL Richtlijn link and “Gebaseerd op de Richtlijnendatabase…” footer from appointment notes
 - Green privacy sentinel dot from the top app bar
 - SwiftUI `iosApp` screens / Xcode project (placeholder README for CMP host)
 - `docs/screenshots/` promo images
 - GitHub Actions changelog-on-merge bot (follow-up `chore/changelog-record-*` PRs); agents own the changelog instead
 - Migration docs (`docs/migration/`), product-ideas backlog, and CMP/P11 gate text from README
+
 ### Merged
 
 - [#32](https://github.com/ingmarstruijs/Vera/pull/32) — chore: replace changelog bot with agent rule (2026-11-23)

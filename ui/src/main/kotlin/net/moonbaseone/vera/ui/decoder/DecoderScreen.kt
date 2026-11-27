@@ -1,6 +1,5 @@
 package net.moonbaseone.vera.ui.decoder
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,162 +20,97 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.TaskAlt
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import net.moonbaseone.vera.ui.common.AddToPocketGuideButton
-import net.moonbaseone.vera.ui.util.openExternalUrl
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
-import net.moonbaseone.vera.shared.decoder.SupportedDecoderLanguages
 import net.moonbaseone.vera.shared.decoder.TranslatedGlossaryFields
 import net.moonbaseone.vera.shared.domain.JargonEntry
+import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.ui.common.AddToPocketGuideButton
+import net.moonbaseone.vera.ui.common.SoftIconCircle
 import net.moonbaseone.vera.ui.theme.errorBannerBackground
+import net.moonbaseone.vera.ui.theme.lavenderWash
+import net.moonbaseone.vera.ui.theme.mintWash
 import net.moonbaseone.vera.ui.theme.sentinelAccent
 import net.moonbaseone.vera.ui.theme.sentinelBackground
 import net.moonbaseone.vera.ui.theme.warningBannerBackground
 import net.moonbaseone.vera.ui.theme.warningBannerForeground
+import net.moonbaseone.vera.ui.util.openExternalUrl
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DecoderScreen(viewModel: DecoderViewModel) {
     val state by viewModel.state.collectAsState()
-    var languageMenuOpen by remember { mutableStateOf(false) }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
+        modifier = Modifier.fillMaxSize(),
     ) {
         item {
+            Spacer(modifier = Modifier.height(4.dp))
+            PrivacyNote(modifier = Modifier.padding(horizontal = 20.dp))
             Spacer(modifier = Modifier.height(12.dp))
+        }
 
-            Text(UiCopy.DECODER_LANGUAGE_LABEL, style = MaterialTheme.typography.labelMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            ExposedDropdownMenuBox(
-                expanded = languageMenuOpen,
-                onExpandedChange = { languageMenuOpen = it },
-            ) {
-                val label = SupportedDecoderLanguages
-                    .firstOrNull { it.code == state.selectedLanguage }
-                    ?.label
-                    ?: state.selectedLanguage
-                TextField(
-                    value = label,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = languageMenuOpen) },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth(),
-                )
-                ExposedDropdownMenu(
-                    expanded = languageMenuOpen,
-                    onDismissRequest = { languageMenuOpen = false },
-                ) {
-                    SupportedDecoderLanguages.forEach { lang ->
-                        DropdownMenuItem(
-                            text = { Text(lang.label) },
-                            onClick = {
-                                viewModel.setLanguage(lang.code)
-                                languageMenuOpen = false
-                            },
-                        )
+        item {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                if (!state.isTranslating && state.downloadProgress == null) {
+                    state.translationNotice?.let { notice ->
+                        StatusBanner(notice, warningBannerBackground(), warningBannerForeground())
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            PrivacyNote()
-            Spacer(modifier = Modifier.height(12.dp))
-
-            state.downloadProgress?.let { progress ->
-                Text(
-                    UiCopy.DECODER_DOWNLOADING_MODEL,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (state.isTranslating) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        state.translationNotice ?: UiCopy.DECODER_TRANSLATING,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            } else {
-                state.translationNotice?.let { notice ->
-                    StatusBanner(notice, warningBannerBackground(), warningBannerForeground())
+                state.translationError?.let { error ->
+                    StatusBanner(error, errorBannerBackground(), MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
-            }
 
-            state.translationError?.let { error ->
-                StatusBanner(error, errorBannerBackground(), MaterialTheme.colorScheme.error)
+                OutlinedTextField(
+                    value = state.query,
+                    onValueChange = viewModel::setQuery,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = UiCopy.DECODER_SEARCH_HINT },
+                    shape = RoundedCornerShape(16.dp),
+                    placeholder = { Text(UiCopy.DECODER_SEARCH_HINT) },
+                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (state.query.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.setQuery("") }) {
+                                Icon(Icons.Outlined.Clear, contentDescription = "Zoekopdracht wissen")
+                            }
+                        }
+                    },
+                    singleLine = true,
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
-
-            OutlinedTextField(
-                value = state.query,
-                onValueChange = viewModel::setQuery,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = UiCopy.DECODER_SEARCH_HINT },
-                placeholder = { Text(UiCopy.DECODER_SEARCH_HINT) },
-                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (state.query.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.setQuery("") }) {
-                            Icon(Icons.Outlined.Clear, contentDescription = "Zoekopdracht wissen")
-                        }
-                    }
-                },
-                singleLine = true,
-            )
-            Spacer(modifier = Modifier.height(12.dp))
         }
 
         if (state.entries.isEmpty()) {
             item {
-                Text(UiCopy.DECODER_NO_RESULTS, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    UiCopy.DECODER_NO_RESULTS,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
         } else {
             items(state.entries, key = { it.term }) { entry ->
@@ -185,6 +119,7 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
                     translated = state.translatedEntries[entry.term],
                     expanded = state.expandedTerm == entry.term,
                     onToggle = { viewModel.toggleExpanded(entry.term) },
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
             }
         }
@@ -197,7 +132,7 @@ fun DecoderScreen(viewModel: DecoderViewModel) {
 private fun StatusBanner(message: String, background: Color, foreground: Color) {
     Surface(
         color = background,
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
@@ -210,23 +145,22 @@ private fun StatusBanner(message: String, background: Color, foreground: Color) 
 }
 
 @Composable
-private fun PrivacyNote() {
+private fun PrivacyNote(modifier: Modifier = Modifier) {
     val accent = sentinelAccent()
     Surface(
         color = sentinelBackground(),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, accent),
-        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                Icons.Outlined.Shield,
-                contentDescription = null,
+            SoftIconCircle(
+                icon = Icons.Outlined.Shield,
+                size = 28.dp,
+                wash = mintWash(),
                 tint = accent,
-                modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -244,37 +178,47 @@ private fun JargonCard(
     translated: TranslatedGlossaryFields?,
     expanded: Boolean,
     onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val explanation = translated?.explanation ?: entry.dutchExplanation
     val actionItem = translated?.actionItem ?: entry.actionItem
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        tonalElevation = 0.dp,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant,
-        ),
-        modifier = Modifier
+        shape = RoundedCornerShape(DesignTokens.CARD_RADIUS_DP.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 1.dp,
+        modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 10.dp)
             .clickable(onClick = onToggle),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                SoftIconCircle(
+                    icon = Icons.Outlined.Translate,
+                    size = 36.dp,
+                    wash = lavenderWash(),
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     entry.term,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     modifier = Modifier.weight(1f),
                 )
                 if (entry.category.isNotEmpty()) {
-                    FilterChip(
-                        selected = false,
-                        onClick = {},
-                        enabled = false,
-                        label = { Text(entry.category, style = MaterialTheme.typography.labelSmall) },
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(999.dp),
+                        color = mintWash(),
+                    ) {
+                        Text(
+                            entry.category,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
                 Icon(
@@ -288,8 +232,8 @@ private fun JargonCard(
                 Text(explanation, style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(12.dp))
                 Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(12.dp),
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
@@ -298,7 +242,7 @@ private fun JargonCard(
                         Icon(
                             Icons.Outlined.TaskAlt,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(20.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -306,7 +250,7 @@ private fun JargonCard(
                             Text(
                                 UiCopy.DECODER_ACTION_LABEL,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(actionItem, style = MaterialTheme.typography.bodySmall)
