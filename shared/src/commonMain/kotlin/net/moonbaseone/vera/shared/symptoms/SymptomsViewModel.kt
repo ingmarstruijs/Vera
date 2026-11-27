@@ -64,12 +64,18 @@ class SymptomsViewModel(
                     _state.update { it.copy(isListening = false, draftText = "") }
                 },
                 onFailure = { err ->
-                    _state.update {
-                        it.copy(
-                            isListening = false,
-                            draftText = "",
-                            errorMessage = err.message ?: UiCopy.APPOINTMENTS_SPEECH_UNAVAILABLE,
-                        )
+                    _state.update { current ->
+                        if (!current.isListening) {
+                            // Explicit cancel already cleared listening; don't surface an error.
+                            current.copy(isListening = false, draftText = "")
+                        } else {
+                            current.copy(
+                                isListening = false,
+                                draftText = "",
+                                errorMessage = err.message
+                                    ?: UiCopy.APPOINTMENTS_SPEECH_UNAVAILABLE,
+                            )
+                        }
                     }
                 },
             )
@@ -79,6 +85,12 @@ class SymptomsViewModel(
     fun stopListening() {
         speechToText.stop()
         _state.update { it.copy(isListening = false) }
+    }
+
+    /** Abort an in-flight recognition session (e.g. sheet dismissed). */
+    fun cancelListening() {
+        speechToText.cancel()
+        _state.update { it.copy(isListening = false, draftText = "") }
     }
 
     fun toggleListening() {

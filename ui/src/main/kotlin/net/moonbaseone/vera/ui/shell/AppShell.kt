@@ -1,18 +1,17 @@
 package net.moonbaseone.vera.ui.shell
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.EventNote
 import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,9 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -56,7 +53,6 @@ import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.navigation.AppDestination
 import net.moonbaseone.vera.shared.pocket.PocketGuideViewModel
 import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
-import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.ui.appointments.AppointmentsScreen
 import net.moonbaseone.vera.ui.blueprint.BlueprintScreen
@@ -95,6 +91,7 @@ fun AppShell(
     val currentDestination = backStack?.destination
     val route = currentDestination?.route
     val onPocketRoute = route?.startsWith("pocketGuide") == true
+    val onSymptomsRoute = route == AppDestination.Symptoms.route
     var showRecordSheet by remember { mutableStateOf(false) }
     var showDatasetPicker by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -107,13 +104,6 @@ fun AppShell(
         AppDestination.Symptoms.route -> UiCopy.SYMPTOMS_TITLE
         else -> UiCopy.APP_NAME
     }
-    val headerSubtitle = when (route) {
-        AppDestination.CarePlan.route -> UiCopy.BLUEPRINT_SUBTITLE
-        AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_SUBTITLE
-        AppDestination.Decoder.route -> UiCopy.DECODER_SUBTITLE
-        AppDestination.Contacts.route -> UiCopy.APPOINTMENTS_CONTACTS_SUBTITLE
-        else -> null
-    }
     // Debug builds only: long-press the care-plan title to switch demo datasets.
     val titleModifier = if (isDebug && route == AppDestination.CarePlan.route) {
         Modifier.combinedClickable(
@@ -124,6 +114,16 @@ fun AppShell(
         Modifier
     }
 
+    fun closeSymptoms() {
+        if (!navController.popBackStack()) {
+            navController.navigate(AppDestination.CarePlan.route) {
+                launchSingleTop = true
+            }
+        }
+    }
+
+    BackHandler(enabled = onSymptomsRoute) { closeSymptoms() }
+
     if (isDebug && showDatasetPicker) {
         DebugDatasetPickerDialog(
             viewModel = blueprintViewModel,
@@ -133,61 +133,71 @@ fun AppShell(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
+        // TopAppBar already accounts for status bars; avoid double top inset padding.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (!onPocketRoute) {
                 TopAppBar(
+                    expandedHeight = 48.dp,
+                    windowInsets = WindowInsets.statusBars,
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
-                    title = {
-                        Column(modifier = titleModifier) {
-                            Text(
-                                headerTitle,
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.semantics { heading() },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (headerSubtitle != null) {
-                                Text(
-                                    headerSubtitle,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+                    navigationIcon = {
+                        if (onSymptomsRoute) {
+                            IconButton(
+                                onClick = { closeSymptoms() },
+                                modifier = Modifier.semantics {
+                                    contentDescription = UiCopy.APPOINTMENTS_CLOSE_FULL
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Close,
+                                    contentDescription = UiCopy.APPOINTMENTS_CLOSE_FULL,
                                 )
                             }
                         }
                     },
+                    title = {
+                        Text(
+                            headerTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = titleModifier.semantics { heading() },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     actions = {
-                        IconButton(
-                            onClick = { showRecordSheet = true },
-                            modifier = Modifier.semantics {
-                                contentDescription = UiCopy.SYMPTOMS_RECORD_CTA
-                            },
-                        ) {
-                            Icon(Icons.Outlined.MicNone, contentDescription = UiCopy.SYMPTOMS_RECORD_CTA)
+                        if (!onSymptomsRoute) {
+                            IconButton(
+                                onClick = { showRecordSheet = true },
+                                modifier = Modifier.semantics {
+                                    contentDescription = UiCopy.SYMPTOMS_RECORD_CTA
+                                },
+                            ) {
+                                Icon(Icons.Outlined.MicNone, contentDescription = UiCopy.SYMPTOMS_RECORD_CTA)
+                            }
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(AppDestination.Symptoms.route) {
+                                        launchSingleTop = true
+                                    }
+                                },
+                                modifier = Modifier.semantics {
+                                    contentDescription = UiCopy.SYMPTOMS_TITLE
+                                },
+                            ) {
+                                Icon(Icons.AutoMirrored.Outlined.ListAlt, contentDescription = UiCopy.SYMPTOMS_TITLE)
+                            }
                         }
-                        IconButton(
-                            onClick = {
-                                navController.navigate(AppDestination.Symptoms.route) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            modifier = Modifier.semantics {
-                                contentDescription = UiCopy.SYMPTOMS_TITLE
-                            },
-                        ) {
-                            Icon(Icons.AutoMirrored.Outlined.ListAlt, contentDescription = UiCopy.SYMPTOMS_TITLE)
-                        }
-                        PrivacySentinelDot()
                     },
                 )
             }
         },
         bottomBar = {
-            if (!onPocketRoute) {
+            // Pocket + symptoms are overlays; use ✕ / system back to leave symptoms.
+            if (!onPocketRoute && !onSymptomsRoute) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     tabs.forEach { tab ->
                         val selected =
@@ -254,31 +264,19 @@ fun AppShell(
 
     if (showRecordSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showRecordSheet = false },
+            onDismissRequest = {
+                symptomsViewModel.cancelListening()
+                showRecordSheet = false
+            },
             sheetState = sheetState,
         ) {
             SymptomRecordSheetContent(
                 viewModel = symptomsViewModel,
-                onFinished = { showRecordSheet = false },
+                onFinished = {
+                    symptomsViewModel.cancelListening()
+                    showRecordSheet = false
+                },
             )
         }
-    }
-}
-
-@Composable
-private fun PrivacySentinelDot() {
-    val label = "${UiCopy.SENTINEL_LOCAL_TITLE}. ${UiCopy.SENTINEL_LOCAL_SUBTITLE}"
-    Box(
-        modifier = Modifier
-            .padding(end = 12.dp)
-            .size(48.dp)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(12.dp)
-                .background(Color(DesignTokens.SENTINEL_GREEN), CircleShape),
-        )
     }
 }

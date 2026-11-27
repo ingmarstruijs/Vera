@@ -24,9 +24,8 @@ sealed class BlueprintUiState {
     data object Loading : BlueprintUiState()
     data class Ready(
         val events: List<TimelineEvent>,
-        val expandedId: String? = null,
-        /** Term currently expanded inline (tap-to-explain); null = chips only. */
-        val expandedJargonTerm: String? = null,
+        /** Currently visible care-step (timeline + pager stay in sync). */
+        val selectedId: String? = null,
         /** false = plain-language patient view (default); true = original clinical text. */
         val showClinicalText: Boolean = false,
     ) : BlueprintUiState()
@@ -79,8 +78,7 @@ class BlueprintViewModel(
                 }?.id
                 _state.value = BlueprintUiState.Ready(
                     events = events,
-                    expandedId = currentId,
-                    expandedJargonTerm = null,
+                    selectedId = currentId ?: events.firstOrNull()?.id,
                 )
             } catch (e: Exception) {
                 _state.value = BlueprintUiState.Error(e.message ?: UiCopy.BLUEPRINT_NO_DATA)
@@ -88,28 +86,17 @@ class BlueprintViewModel(
         }
     }
 
-    fun toggleExpanded(eventId: String) {
+    /** Select a care-step via the timeline navigator (or pager sync). */
+    fun selectEvent(eventId: String) {
         val current = _state.value as? BlueprintUiState.Ready ?: return
-        _state.value = current.copy(
-            expandedId = if (current.expandedId == eventId) null else eventId,
-            expandedJargonTerm = null,
-        )
-    }
-
-    /** Tap-to-explain a linked glossary term inside the open timeline item. */
-    fun toggleJargon(term: String) {
-        val current = _state.value as? BlueprintUiState.Ready ?: return
-        _state.value = current.copy(
-            expandedJargonTerm = if (current.expandedJargonTerm == term) null else term,
-        )
+        if (current.selectedId == eventId) return
+        if (current.events.none { it.id == eventId }) return
+        _state.value = current.copy(selectedId = eventId)
     }
 
     fun setShowClinicalText(showClinical: Boolean) {
         val current = _state.value as? BlueprintUiState.Ready ?: return
-        _state.value = current.copy(
-            showClinicalText = showClinical,
-            expandedJargonTerm = if (showClinical) null else current.expandedJargonTerm,
-        )
+        _state.value = current.copy(showClinicalText = showClinical)
     }
 
     fun jargonMatches(event: TimelineEvent): List<JargonEntry> =

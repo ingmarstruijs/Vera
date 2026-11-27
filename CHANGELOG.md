@@ -24,18 +24,23 @@ Notable changes to the Vera repository. Dates are UTC.
 - App icon: clinical compass (proposal A) replaces shield+V; master + adaptive/mipmaps match the approved artwork (not a simplified vector)
 - Product UI decision: **shared Compose** — no separate iOS SwiftUI; CMP iOS host is next
 - Root README compacted (release table inline; screenshots removed)
-- Care-plan timeline nodes reduced to 108×72.dp
+- Care-plan steps use a swipeable carousel synced with the timeline navigator; vertical scroll stays inside the detail card
+- Care-plan jargon: tap underlined terms for uitleg (chip strip + helper copy removed); actiepunten only from the care step
+- Trimmed shell/screen helper subtitles, care-plan legend / IKNL chip row, and compact top app bar
+- Symptoms list is a closable overlay (✕ / system back); bottom tabs stay on the main IA
 - Demo dataset chips removed from the care-plan screen (debug long-press only; not in release)
-- Care-plan jargon uitleg shows explanation only; jargon actiepunten live under Actiepunten with pocket-guide link
 - “Toevoegen aan pocket gids” is a compact text link instead of a large button
 
 ### Fixed
 
-- App icon mark optically centered in the circular launcher mask (was sitting high)
+- App icon compass optically recentered in master + launcher assets
+- Appointments (and related) double header: title only in the top app bar
+- Symptomen inspreken no longer crashes when the speech service fails or the sheet is dismissed (main-thread recognizer + soft-fail)
 - IKNL guideline buttons now open the official Richtlijnendatabase URLs (care plan, decoder, jargon)
 
 ### Removed
 
+- Green privacy sentinel dot from the top app bar
 - SwiftUI `iosApp` screens / Xcode project (placeholder README for CMP host)
 - `docs/screenshots/` promo images
 - GitHub Actions changelog-on-merge bot (follow-up `chore/changelog-record-*` PRs); agents own the changelog instead

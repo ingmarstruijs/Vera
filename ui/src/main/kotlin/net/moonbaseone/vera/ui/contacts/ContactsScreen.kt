@@ -56,15 +56,7 @@ fun ContactsScreen(viewModel: ContactsViewModel) {
             .fillMaxSize()
             .padding(horizontal = 20.dp),
     ) {
-        item {
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                UiCopy.APPOINTMENTS_CONTACTS_SUBTITLE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        item { Spacer(modifier = Modifier.height(12.dp)) }
 
         state.errorMessage?.let { msg ->
             item {

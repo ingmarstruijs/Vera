@@ -27,20 +27,18 @@ class BlueprintViewModelTest {
         val ready = awaitReady(vm)
         assertTrue(ready.events.isNotEmpty())
         assertTrue(ready.events.any { it.phase == TimelinePhase.Current })
-        assertNotNull(ready.expandedId)
+        assertNotNull(ready.selectedId)
         vm.dispose()
     }
 
     @Test
-    fun toggleExpanded_collapsesCurrent() = runBlocking {
+    fun selectEvent_updatesSelection() = runBlocking {
         val vm = BlueprintViewModel(MockDataService())
         vm.load()
         val ready = awaitReady(vm)
-        val id = ready.expandedId!!
-        vm.toggleExpanded(id)
-        assertEquals(null, (vm.state.value as BlueprintUiState.Ready).expandedId)
-        vm.toggleExpanded(id)
-        assertEquals(id, (vm.state.value as BlueprintUiState.Ready).expandedId)
+        val other = ready.events.first { it.id != ready.selectedId }
+        vm.selectEvent(other.id)
+        assertEquals(other.id, (vm.state.value as BlueprintUiState.Ready).selectedId)
         vm.dispose()
     }
 
@@ -57,12 +55,6 @@ class BlueprintViewModelTest {
 
         val withJargon = ready.events.count { vm.jargonMatches(it).isNotEmpty() }
         assertTrue(withJargon >= 4, "expected most timeline items to link glossary terms")
-
-        val firstTerm = vm.jargonMatches(ready.events.first()).first().term
-        vm.toggleJargon(firstTerm)
-        assertEquals(firstTerm, (vm.state.value as BlueprintUiState.Ready).expandedJargonTerm)
-        vm.toggleJargon(firstTerm)
-        assertEquals(null, (vm.state.value as BlueprintUiState.Ready).expandedJargonTerm)
         vm.dispose()
     }
 }

@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,21 +61,7 @@ fun AppointmentsScreen(
             .fillMaxSize()
             .padding(horizontal = 20.dp),
     ) {
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                UiCopy.APPOINTMENTS_TITLE,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.semantics { heading() },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                UiCopy.APPOINTMENTS_SUBTITLE,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        item { Spacer(modifier = Modifier.height(12.dp)) }
 
         val next = state.next
         if (next == null) {

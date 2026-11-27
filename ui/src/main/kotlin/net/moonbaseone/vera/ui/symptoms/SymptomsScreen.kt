@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -70,13 +69,7 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
             .fillMaxSize()
             .padding(horizontal = 20.dp),
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            UiCopy.SYMPTOMS_TITLE,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.semantics { heading() },
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         if (state.speechAvailable) {
             Button(
                 onClick = { requestOrToggle() },
