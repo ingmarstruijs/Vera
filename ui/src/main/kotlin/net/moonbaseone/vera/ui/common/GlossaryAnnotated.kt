@@ -1,6 +1,5 @@
 package net.moonbaseone.vera.ui.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -105,7 +104,7 @@ fun GlossaryLinkedText(
 fun JargonExplainSheet(
     entry: JargonEntry,
     onDismiss: () -> Unit,
-    onAddToPocketGuide: (() -> Unit)? = null,
+    @Suppress("UNUSED_PARAMETER") onAddToPocketGuide: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -117,27 +116,6 @@ fun JargonExplainSheet(
             entry.iknlRef?.let { url ->
                 TextButton(onClick = { context.openExternalUrl(url) }) {
                     Text(UiCopy.DECODER_IKNL_BUTTON)
-                }
-            }
-            if (entry.actionItem.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(UiCopy.DECODER_ACTION_LABEL, style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(entry.actionItem, style = MaterialTheme.typography.bodySmall)
-                if (onAddToPocketGuide != null) {
-                    Text(
-                        UiCopy.ADD_TO_POCKET_GUIDE,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .clickable(onClick = onAddToPocketGuide)
-                            .padding(top = 2.dp, bottom = 2.dp),
-                    )
-                } else {
-                    AddToPocketGuideButton(
-                        actionSource = "jargon:${entry.term}",
-                        actionText = entry.actionItem,
-                    )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

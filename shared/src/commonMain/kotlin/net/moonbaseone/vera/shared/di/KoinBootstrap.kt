@@ -127,6 +127,8 @@ fun appointmentsModule(): Module = module {
             symptomStore = get(),
             speechToText = get(),
             textToSpeech = get(),
+            audioRecorder = get(),
+            audioPlayer = get(),
         )
     }
     single {

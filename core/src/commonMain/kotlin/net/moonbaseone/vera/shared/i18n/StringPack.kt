@@ -111,6 +111,7 @@ data class StringPack(
     val symptomsRecordCta: String,
     val symptomsDelete: String,
     val symptomsSpeak: String,
+    val symptomsVoiceNote: String,
     val symptomsStopSave: String,
     val symptomsStopDiscard: String,
     val symptomsViewFull: String,

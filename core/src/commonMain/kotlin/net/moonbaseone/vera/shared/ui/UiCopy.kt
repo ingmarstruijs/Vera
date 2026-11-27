@@ -126,6 +126,7 @@ object UiCopy {
     val SYMPTOMS_RECORD_CTA get() = s.symptomsRecordCta
     val SYMPTOMS_DELETE get() = s.symptomsDelete
     val SYMPTOMS_SPEAK get() = s.symptomsSpeak
+    val SYMPTOMS_VOICE_NOTE get() = s.symptomsVoiceNote
     val SYMPTOMS_STOP_SAVE get() = s.symptomsStopSave
     val SYMPTOMS_STOP_DISCARD get() = s.symptomsStopDiscard
     val SYMPTOMS_VIEW_FULL get() = s.symptomsViewFull

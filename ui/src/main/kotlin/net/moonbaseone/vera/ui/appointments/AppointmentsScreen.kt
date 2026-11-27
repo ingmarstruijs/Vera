@@ -76,6 +76,7 @@ fun AppointmentsScreen(
                     UiCopy.APPOINTMENTS_NO_DATA,
                     modifier = Modifier.padding(horizontal = 20.dp),
                     style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         } else {
@@ -217,6 +218,7 @@ private fun NextAppointmentCard(
             Text(
                 appt.serviceType,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
             )
             if (appt.location.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -282,6 +284,7 @@ private fun CompactAppointmentRow(
                 Text(
                     appt.serviceType,
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             if (item.guideStatus == PocketGuideStatus.RecordingPresent) {
@@ -305,7 +308,11 @@ private fun CompactAppointmentRow(
                 tint = MaterialTheme.colorScheme.secondary,
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null)
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

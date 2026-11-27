@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,7 +42,6 @@ import net.moonbaseone.vera.shared.decoder.TranslatedGlossaryFields
 import net.moonbaseone.vera.shared.domain.JargonEntry
 import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
-import net.moonbaseone.vera.ui.common.AddToPocketGuideButton
 import net.moonbaseone.vera.ui.common.SoftIconCircle
 import net.moonbaseone.vera.ui.theme.errorBannerBackground
 import net.moonbaseone.vera.ui.theme.lavenderWash
@@ -182,7 +179,6 @@ private fun JargonCard(
 ) {
     val context = LocalContext.current
     val explanation = translated?.explanation ?: entry.dutchExplanation
-    val actionItem = translated?.actionItem ?: entry.actionItem
 
     Surface(
         shape = RoundedCornerShape(DesignTokens.CARD_RADIUS_DP.dp),
@@ -205,6 +201,7 @@ private fun JargonCard(
                 Text(
                     entry.term,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
                 if (entry.category.isNotEmpty()) {
@@ -229,44 +226,15 @@ private fun JargonCard(
             }
             if (expanded) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(explanation, style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.Top,
-                    ) {
-                        Icon(
-                            Icons.Outlined.TaskAlt,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                UiCopy.DECODER_ACTION_LABEL,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(actionItem, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
+                Text(
+                    explanation,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 entry.iknlRef?.let { url ->
                     TextButton(onClick = { context.openExternalUrl(url) }) {
                         Text(UiCopy.DECODER_IKNL_BUTTON)
                     }
-                }
-                if (actionItem.isNotBlank()) {
-                    AddToPocketGuideButton(
-                        actionSource = "decoder:${entry.term}",
-                        actionText = actionItem,
-                    )
                 }
             }
         }
