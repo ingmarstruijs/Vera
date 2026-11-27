@@ -94,15 +94,20 @@ jobs:
           echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
           echo "Resolved versionName=$VERSION_NAME versionCode=$VERSION_CODE channel=$CHANNEL"
 
-      - name: Decode keystore
+      - name: Decode project keystore (optional)
         id: keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
           if [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
-            echo "No ANDROID_KEYSTORE_BASE64 — APK will use debug signing (fine for early Obtainium until project key exists)."
-            echo "signed=false" >> "$GITHUB_OUTPUT"
+            if [ -f ci/obtainium.keystore ]; then
+              echo "No ANDROID_KEYSTORE_BASE64 — using committed ci/obtainium.keystore (stable Obtainium fingerprint)."
+              echo "signed=obtainium" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::No project keystore secrets and ci/obtainium.keystore missing — refusing ephemeral debug signing (breaks Obtainium updates)."
+              exit 1
+            fi
             exit 0
           fi
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore.jks
@@ -111,10 +116,10 @@ jobs:
             echo "Decoded keystore too small ($SIZE bytes)"
             exit 1
           fi
-          echo "signed=true" >> "$GITHUB_OUTPUT"
+          echo "signed=project" >> "$GITHUB_OUTPUT"
 
       - name: Write keystore.properties
-        if: steps.keystore.outputs.signed == 'true'
+        if: steps.keystore.outputs.signed == 'project'
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -199,26 +204,34 @@ jobs:
           name: vera-release-apk
           path: artifacts
 
-      - name: Certificate fingerprint (optional)
+      - name: Certificate fingerprint
         id: cert
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          SIGNED: ${{ needs.build.outputs.signed }}
         run: |
           set -euo pipefail
-          if [ "${{ needs.build.outputs.signed }}" != "true" ] || [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
-            echo "fingerprint=debug-or-unsigned" >> "$GITHUB_OUTPUT"
-            exit 0
+          if [ "$SIGNED" = "project" ] && [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
+            FP=$(keytool -list -v \
+              -keystore /tmp/keystore.jks \
+              -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+              -alias "$ANDROID_KEY_ALIAS" \
+              2>/dev/null | grep "SHA256:" | awk '{print $2}')
+            rm -f /tmp/keystore.jks
+            echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+          elif [ "$SIGNED" = "obtainium" ] || [ -f ci/obtainium.keystore ]; then
+            FP=$(keytool -list -v \
+              -keystore ci/obtainium.keystore \
+              -storepass vera-obtainium \
+              -alias vera_obtainium \
+              2>/dev/null | grep "SHA256:" | awk '{print $2}')
+            echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+          else
+            echo "fingerprint=unknown" >> "$GITHUB_OUTPUT"
           fi
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
-          FP=$(keytool -list -v \
-            -keystore /tmp/keystore.jks \
-            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -alias "$ANDROID_KEY_ALIAS" \
-            2>/dev/null | grep "SHA256:" | awk '{print $2}')
-          rm -f /tmp/keystore.jks
-          echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
 
       - name: Build release notes
         env:

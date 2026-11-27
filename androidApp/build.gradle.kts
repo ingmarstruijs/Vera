@@ -27,6 +27,10 @@ val hasReleaseKeystore =
         !keystoreProperties.getProperty("storePassword").isNullOrBlank() &&
         !keystoreProperties.getProperty("keyPassword").isNullOrBlank()
 
+/** Stable CI/Obtainium preview key — avoids ephemeral debug certs that break updates. */
+val obtainiumKeystoreFile = rootProject.file("ci/obtainium.keystore")
+val hasObtainiumKeystore = obtainiumKeystoreFile.isFile
+
 android {
     namespace = "net.moonbaseone.vera"
     compileSdk = 35
@@ -53,17 +57,25 @@ android {
                 storePassword = keystoreProperties.getProperty("storePassword")
             }
         }
+        if (hasObtainiumKeystore) {
+            create("obtainium") {
+                keyAlias = "vera_obtainium"
+                keyPassword = "vera-obtainium"
+                storeFile = obtainiumKeystoreFile
+                storePassword = "vera-obtainium"
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig =
-                if (hasReleaseKeystore) {
-                    signingConfigs.getByName("release")
-                } else {
-                    signingConfigs.getByName("debug")
-                }
+            // Prefer project/secrets keystore, then committed Obtainium key, never ephemeral debug.
+            signingConfig = when {
+                hasReleaseKeystore -> signingConfigs.getByName("release")
+                hasObtainiumKeystore -> signingConfigs.getByName("obtainium")
+                else -> signingConfigs.getByName("debug")
+            }
         }
     }
 

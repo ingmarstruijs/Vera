@@ -23,7 +23,15 @@ data class TimelineEvent(
     val patientInstruction: String? = null,
     /** Concrete next clinical step after this activity. */
     val nextSteps: String? = null,
+    /**
+     * Compact label for timeline chips (care-step name, not Afgerond/Huidig).
+     * Always set when mapped from CarePlan activities ([deriveShortTitle] if absent).
+     */
+    val shortTitle: String? = null,
 ) {
+    /** Label shown on the care-plan timeline chip. */
+    fun chipLabel(): String = chipLabelFromTitle(shortTitle, title)
+
     /** Haystack used for inline glossary linking. */
     fun glossaryHaystack(): String = listOfNotNull(
         title,
@@ -38,7 +46,8 @@ data class TimelineEvent(
          * Maps CarePlan.activity entries (FHIR-ish maps) into timeline events.
          *
          * Recognises Vera mock extensions on `detail`:
-         * `patientInstruction`, `nextStep`, `actionItem` (list), `iknlGuidelineRef`.
+         * `shortTitle`, `patientInstruction`, `nextStep`, `actionItem` (list), `iknlGuidelineRef`.
+         * Missing `shortTitle` is derived from the activity title so every dataset gets chip labels.
          */
         @Suppress("UNCHECKED_CAST")
         fun fromCarePlanActivities(
@@ -51,6 +60,7 @@ data class TimelineEvent(
                 val status = detail["status"] as? String ?: "unknown"
                 val period = detail["scheduledPeriod"] as? Map<String, Any?>
                 val startDate = period?.get("start") as? String ?: ""
+                val title = code.split("–").first().trim()
 
                 val phase = when (status) {
                     "completed" -> TimelinePhase.Completed
@@ -64,9 +74,12 @@ data class TimelineEvent(
                     ?.filter { it.isNotEmpty() }
                     .orEmpty()
 
+                val explicitShort = (detail["shortTitle"] as? String)?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+
                 TimelineEvent(
                     id = code.hashCode().toString(),
-                    title = code.split("–").first().trim(),
+                    title = title,
                     description = (detail["description"] as? String) ?: code,
                     dateIso = startDate,
                     phase = phase,
@@ -79,8 +92,94 @@ data class TimelineEvent(
                     actionItems = actionItems,
                     iknlGuidelineRef = (detail["iknlGuidelineRef"] as? String)?.trim()
                         ?.takeIf { it.isNotEmpty() },
+                    shortTitle = explicitShort ?: deriveShortTitle(title),
                 )
             }
         }
+
+        /** Prefer explicit short title; otherwise derive a compact care-step label. */
+        fun chipLabelFromTitle(shortTitle: String?, title: String): String {
+            shortTitle?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }
+            return deriveShortTitle(title)
+        }
+
+        /**
+         * Builds a chip-sized care-step name from a long activity title (NL/EN keywords).
+         * Used for datasets without a Vera `shortTitle` extension (e.g. future MedMij feeds).
+         */
+        fun deriveShortTitle(title: String): String {
+            val cleaned = title
+                .substringBefore("(")
+                .substringBefore("+")
+                .trim()
+            if (cleaned.isEmpty()) return title.ifBlank { "—" }
+            val t = cleaned.lowercase()
+
+            return when {
+                containsAny(t, "her2", "trastuzumab", "pertuzumab", "herceptin", "perjeta") ->
+                    "HER2-therapie"
+                containsAny(t, "immuno", "immunotherapy", "immunotherapie", "checkpoint") ->
+                    "Immunotherapie"
+                containsAny(t, "radio", "bestraling", "radiation", "radiotherapy") ->
+                    "Radiotherapie"
+                containsAny(
+                    t,
+                    "chemo",
+                    "chemotherapie",
+                    "chemotherapy",
+                    "tchp",
+                    "capox",
+                    "folfox",
+                    "oxaliplatine",
+                    "oxaliplatin",
+                ) -> "Chemotherapie"
+                containsAny(
+                    t,
+                    "chirurgie",
+                    "surgery",
+                    "operatie",
+                    "resectie",
+                    "resection",
+                    "colectomie",
+                    "hemicolectomie",
+                    "lumpectomie",
+                    "mastectomie",
+                    "borstsparend",
+                ) || t.split(Regex("\\s+")).any { it == "bcs" } -> "Chirurgie"
+                t.startsWith("mdo") || containsAny(t, "multidisciplinair", "multidisciplinary") ->
+                    "MDO"
+                containsAny(
+                    t,
+                    "nacontrole",
+                    "follow-up",
+                    "follow up",
+                    "survivorship",
+                    "controle-plan",
+                    "controleplan",
+                ) || (containsAny(t, "mammografie", "mammography", "cea") &&
+                    containsAny(t, "controle", "control", "jaarlijks", "annual")) ->
+                    "Nacontrole"
+                containsAny(
+                    t,
+                    "diagnostiek",
+                    "diagnostics",
+                    "diagnostic",
+                    "biopsie",
+                    "biopsy",
+                    "pet-ct",
+                    "pet/ct",
+                ) -> "Diagnostiek"
+                containsAny(t, "behandeling", "treatment", "therapy", "therapie") &&
+                    !containsAny(t, "her2", "immuno", "chemo", "radio") ->
+                    "Behandeling"
+                else -> {
+                    val words = cleaned.split(Regex("\\s+")).filter { it.isNotBlank() }
+                    words.take(2).joinToString(" ").ifBlank { cleaned }
+                }
+            }
+        }
+
+        private fun containsAny(haystack: String, vararg needles: String): Boolean =
+            needles.any { haystack.contains(it) }
     }
 }

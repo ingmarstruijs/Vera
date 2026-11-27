@@ -1,5 +1,7 @@
 package net.moonbaseone.vera.shared.translation
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.moonbaseone.vera.shared.failure.TranslationFailure
 import net.moonbaseone.vera.shared.failure.TranslationModelNotDownloadedFailure
 import net.moonbaseone.vera.shared.platformCurrentTimeMillis
@@ -13,6 +15,7 @@ data class TranslationResult(
 /**
  * Privacy-safe translation: Identity Shield → on-device [OnDeviceTranslator].
  * Never sends medical text to a remote API.
+ * Model downloads are serialized so parallel ViewModels share one download.
  */
 class LocalTranslationService(
     private val engine: OnDeviceTranslator,
@@ -21,16 +24,41 @@ class LocalTranslationService(
 ) {
     private val cache = mutableMapOf<String, Pair<String, Long>>()
     private val cacheTtlMs = 60L * 60L * 1000L
+    private val downloadMutex = Mutex()
+    private val downloadedOk = mutableSetOf<String>()
 
     suspend fun isAvailable(): Boolean = engine.isAvailable()
 
-    suspend fun isModelDownloaded(languageCode: String): Boolean =
-        languageCode == sourceLanguage || engine.isModelDownloaded(languageCode)
+    suspend fun isModelDownloaded(languageCode: String): Boolean {
+        if (languageCode == sourceLanguage) return true
+        if (languageCode in downloadedOk) return true
+        return engine.isModelDownloaded(languageCode).also { ok ->
+            if (ok) downloadedOk.add(languageCode)
+        }
+    }
 
     suspend fun downloadModel(
         languageCode: String,
         onProgress: (Float) -> Unit = {},
-    ): Result<Unit> = engine.downloadModel(languageCode, onProgress)
+    ): Result<Unit> {
+        if (languageCode == sourceLanguage) {
+            onProgress(1f)
+            return Result.success(Unit)
+        }
+        if (isModelDownloaded(languageCode)) {
+            onProgress(1f)
+            return Result.success(Unit)
+        }
+        return downloadMutex.withLock {
+            if (isModelDownloaded(languageCode)) {
+                onProgress(1f)
+                return@withLock Result.success(Unit)
+            }
+            val result = engine.downloadModel(languageCode, onProgress)
+            if (result.isSuccess) downloadedOk.add(languageCode)
+            result
+        }
+    }
 
     suspend fun translate(
         text: String,
@@ -55,7 +83,7 @@ class LocalTranslationService(
             return TranslationResult(text = cached.first)
         }
 
-        if (!engine.isModelDownloaded(targetLanguage)) {
+        if (!isModelDownloaded(targetLanguage)) {
             return TranslationResult(
                 failure = TranslationModelNotDownloadedFailure(
                     "Taalmodel voor \"$targetLanguage\" niet gedownload.",

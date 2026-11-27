@@ -6,8 +6,8 @@
 
 | Channel | When | Signing | Consumer |
 | --- | --- | --- | --- |
-| **GitHub preview `0.1.<N>`** | Every `main` push that builds Android (and `workflow_dispatch`) | Project keystore if secrets exist; else debug | Obtainium (include pre-releases) |
-| **GitHub `v*`** | Annotated tag on `main` | Project keystore (CI) | Obtainium / sideload |
+| **GitHub preview `0.1.<N>`** | Every `main` push that builds Android (and `workflow_dispatch`) | Project secrets if set; else committed `ci/obtainium.keystore` | Obtainium (include pre-releases) |
+| **GitHub `v*`** | Annotated tag on `main` | Same signing precedence | Obtainium / sideload |
 | **Play / TestFlight / F-Droid** | Later product decision | Store / F-Droid keys | Later |
 
 Agents: follow this file. Quality gate before merge: [contributing.md](contributing.md) (KMP smoke). Signing secrets: [setup/signing.md](setup/signing.md).
@@ -53,7 +53,9 @@ Workflow: [`.github/workflows/build-release.yml`](../.github/workflows/build-rel
 | APK filter | `^vera-[0-9].*\.apk$` |
 | Release title as version | Off (not needed — tag == versionName) |
 
-Without `ANDROID_KEYSTORE_*` secrets, CI signs with the debug key — fine for private testing; set the project keystore before sharing widely (especially before any patient-facing installs) so updates stay on one cert.
+CI **never** publishes with ephemeral debug signing (that gave every preview a new fingerprint and broke Obtainium updates). Without `ANDROID_KEYSTORE_*` secrets it uses the committed Obtainium preview key — see [setup/signing.md](setup/signing.md) and [ci/README.md](../ci/README.md).
+
+**Note:** phones that already installed a **debug-signed** preview must uninstall once, then install a build signed with `ci/obtainium.keystore` (or the project key). After that, Obtainium updates work in place.
 
 ### Required GitHub secrets (project signing)
 

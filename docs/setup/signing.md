@@ -1,17 +1,29 @@
 # Signing (Android / iOS)
 
-Release signing material is **not** stored in this repository. GitHub Actions may use **optional** secrets for Android Obtainium builds; see [RELEASING.md](../RELEASING.md).
-
 ## CI policy
 
 | Workflow | What it builds | Signing |
 | --- | --- | --- |
 | **KMP smoke** | `:ui` + `:androidApp` `assembleDebug` + tests / detekt / lint | Debug (always) |
-| **Build & Sign Android** | `assembleRelease` → GitHub Release APK | Project keystore if `ANDROID_KEYSTORE_*` secrets exist; otherwise **debug** signing |
+| **Build & Sign Android** | `assembleRelease` → GitHub Release APK | See precedence below |
 
-Do **not** block smoke CI on missing signing secrets. Do **not** share debug-signed APKs as patient-facing builds.
+### Release signing precedence
+
+1. **Project key** via `ANDROID_KEYSTORE_*` secrets / local `keystore.properties` (preferred for production)
+2. **Committed Obtainium preview key** [`ci/obtainium.keystore`](../../ci/README.md) — stable fingerprint so Obtainium can update `0.1.<N>` builds
+3. Debug — **local only**; CI refuses to publish without (1) or (2)
+
+Ephemeral debug signing on GitHub runners creates a **new certificate every run**, so Obtainium cannot update in place. That is why the preview keystore is committed.
+
+Do **not** block smoke CI on missing project secrets. Do **not** use the Obtainium preview key for Play Store / patient-facing production.
 
 ## Android (CI / Obtainium)
+
+### Preview (default)
+
+Uses `ci/obtainium.keystore` when project secrets are absent. Details: [ci/README.md](../../ci/README.md).
+
+### Project / production key (optional secrets)
 
 Set these repository secrets once a project keystore exists:
 
@@ -22,7 +34,7 @@ Set these repository secrets once a project keystore exists:
 | `ANDROID_KEY_ALIAS` | Key alias |
 | `ANDROID_KEY_PASSWORD` | Key password (CI falls back to store password if empty) |
 
-The release workflow decodes the keystore to `keystore.jks` and writes `keystore.properties` on the runner. Both paths are gitignored.
+The release workflow decodes the keystore to `keystore.jks` and writes `keystore.properties` on the runner. Those paths are gitignored.
 
 ## Android (local release)
 

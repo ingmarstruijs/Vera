@@ -1,33 +1,41 @@
 package net.moonbaseone.vera.ui.shell
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.EventNote
-import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,8 +47,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -54,13 +65,18 @@ import net.moonbaseone.vera.shared.appointments.ContactsViewModel
 import net.moonbaseone.vera.shared.blueprint.BlueprintViewModel
 import net.moonbaseone.vera.shared.decoder.DecoderViewModel
 import net.moonbaseone.vera.shared.navigation.AppDestination
+import net.moonbaseone.vera.shared.i18n.LocaleController
+import net.moonbaseone.vera.shared.i18n.StringCatalog
 import net.moonbaseone.vera.shared.pocket.PocketGuideViewModel
 import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
-import net.moonbaseone.vera.shared.ui.DesignTokens
+import net.moonbaseone.vera.shared.translation.DatasetContentLocalizer
 import net.moonbaseone.vera.shared.ui.UiCopy
+import net.moonbaseone.vera.shared.util.DateDisplay
 import net.moonbaseone.vera.ui.appointments.AppointmentsScreen
 import net.moonbaseone.vera.ui.blueprint.BlueprintScreen
 import net.moonbaseone.vera.ui.blueprint.DebugDatasetPickerDialog
+import net.moonbaseone.vera.ui.common.SoftRoundIconButton
+import net.moonbaseone.vera.ui.common.SoftScreenBackground
 import net.moonbaseone.vera.ui.contacts.ContactsScreen
 import net.moonbaseone.vera.ui.decoder.DecoderScreen
 import net.moonbaseone.vera.ui.pocket.PocketGuideScreen
@@ -95,6 +111,7 @@ fun AppShell(
     val currentDestination = backStack?.destination
     val route = currentDestination?.route
     val onPocketRoute = route?.startsWith("pocketGuide") == true
+    val onSymptomsRoute = route == AppDestination.Symptoms.route
     var showRecordSheet by remember { mutableStateOf(false) }
     var showDatasetPicker by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -109,8 +126,8 @@ fun AppShell(
     }
     val headerSubtitle = when (route) {
         AppDestination.CarePlan.route -> UiCopy.BLUEPRINT_SUBTITLE
-        AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_SUBTITLE
         AppDestination.Decoder.route -> UiCopy.DECODER_SUBTITLE
+        AppDestination.Appointments.route -> UiCopy.APPOINTMENTS_NEXT_LABEL
         AppDestination.Contacts.route -> UiCopy.APPOINTMENTS_CONTACTS_SUBTITLE
         else -> null
     }
@@ -124,6 +141,16 @@ fun AppShell(
         Modifier
     }
 
+    fun closeSymptoms() {
+        if (!navController.popBackStack()) {
+            navController.navigate(AppDestination.CarePlan.route) {
+                launchSingleTop = true
+            }
+        }
+    }
+
+    BackHandler(enabled = onSymptomsRoute) { closeSymptoms() }
+
     if (isDebug && showDatasetPicker) {
         DebugDatasetPickerDialog(
             viewModel = blueprintViewModel,
@@ -131,130 +158,179 @@ fun AppShell(
         )
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            if (!onPocketRoute) {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    title = {
-                        Column(modifier = titleModifier) {
-                            Text(
-                                headerTitle,
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.semantics { heading() },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (headerSubtitle != null) {
-                                Text(
-                                    headerSubtitle,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+    val appointmentsState by appointmentsViewModel.state.collectAsState()
+    val nextAppointment = appointmentsState.next
+    val locale by StringCatalog.activeLocaleFlow.collectAsState()
+    val localeController = koinInject<LocaleController>()
+    val contentLocalizer = koinInject<DatasetContentLocalizer>()
+    val contentStatus by contentLocalizer.status.collectAsState()
+    val decoderState by decoderViewModel.state.collectAsState()
+    val switchPending by localeController.switchInProgress.collectAsState()
+
+    val localizationBusy = contentStatus.isActive ||
+        decoderState.isTranslating ||
+        decoderState.downloadProgress != null
+    val showLocaleDialog = switchPending || localizationBusy
+    val localeProgress = when {
+        decoderState.downloadProgress != null -> decoderState.downloadProgress
+        decoderState.translationProgress != null -> decoderState.translationProgress
+        contentStatus.progress != null -> contentStatus.progress
+        else -> null
+    }
+    val localeDialogMessage = when {
+        decoderState.downloadProgress != null -> UiCopy.DECODER_DOWNLOADING_MODEL
+        else -> UiCopy.DECODER_TRANSLATING
+    }
+
+    LaunchedEffect(locale) {
+        appointmentsViewModel.load()
+    }
+    // Close the global switch dialog once workers have started and finished.
+    LaunchedEffect(switchPending, localizationBusy) {
+        if (!switchPending) return@LaunchedEffect
+        if (localizationBusy) return@LaunchedEffect
+        // Brief grace so parallel jobs can register as active after setLocale.
+        delay(150)
+        if (!contentLocalizer.status.value.isActive) {
+            val decoder = decoderViewModel.state.value
+            if (!decoder.isTranslating && decoder.downloadProgress == null) {
+                localeController.markSwitchFinished()
+            }
+        }
+    }
+
+    if (showLocaleDialog) {
+        LocaleSwitchProgressDialog(
+            message = localeDialogMessage,
+            progress = localeProgress,
+        )
+    }
+
+    // One continuous wash behind header + content so the app header matches the page.
+    SoftScreenBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            topBar = {
+                if (!onPocketRoute) {
+                    VeraAppHeader(
+                        title = headerTitle,
+                        subtitle = headerSubtitle,
+                        titleModifier = titleModifier,
+                        showClose = onSymptomsRoute,
+                        onClose = { closeSymptoms() },
+                        actions = {
+                            if (!onSymptomsRoute) {
+                                SoftRoundIconButton(
+                                    icon = Icons.Outlined.MicNone,
+                                    contentDescription = UiCopy.SYMPTOMS_RECORD_CTA,
+                                    onClick = { showRecordSheet = true },
+                                )
+                                SoftRoundIconButton(
+                                    icon = Icons.Outlined.FavoriteBorder,
+                                    contentDescription = UiCopy.SYMPTOMS_TITLE,
+                                    onClick = {
+                                        navController.navigate(AppDestination.Symptoms.route) {
+                                            launchSingleTop = true
+                                        }
+                                    },
                                 )
                             }
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = { showRecordSheet = true },
-                            modifier = Modifier.semantics {
-                                contentDescription = UiCopy.SYMPTOMS_RECORD_CTA
-                            },
-                        ) {
-                            Icon(Icons.Outlined.MicNone, contentDescription = UiCopy.SYMPTOMS_RECORD_CTA)
-                        }
-                        IconButton(
-                            onClick = {
-                                navController.navigate(AppDestination.Symptoms.route) {
-                                    launchSingleTop = true
-                                }
-                            },
-                            modifier = Modifier.semantics {
-                                contentDescription = UiCopy.SYMPTOMS_TITLE
-                            },
-                        ) {
-                            Icon(Icons.AutoMirrored.Outlined.ListAlt, contentDescription = UiCopy.SYMPTOMS_TITLE)
-                        }
-                        PrivacySentinelDot()
-                    },
-                )
-            }
-        },
-        bottomBar = {
-            if (!onPocketRoute) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    tabs.forEach { tab ->
-                        val selected =
-                            currentDestination?.hierarchy?.any { it.route == tab.destination.route } == true
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(tab.destination.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+                        },
+                    )
+                }
+            },
+            bottomBar = {
+                if (!onPocketRoute && !onSymptomsRoute) {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)) {
+                        tabs.forEach { tab ->
+                            val selected =
+                                currentDestination?.hierarchy?.any { it.route == tab.destination.route } == true
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    navController.navigate(tab.destination.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(tab.icon, contentDescription = tab.label) },
-                            label = { Text(tab.label) },
-                        )
+                                },
+                                icon = { Icon(tab.icon, contentDescription = tab.label) },
+                                label = { Text(tab.label) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.secondary,
+                                    selectedTextColor = MaterialTheme.colorScheme.secondary,
+                                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
+                            )
+                        }
                     }
                 }
-            }
-        },
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = AppDestination.CarePlan.route,
-            modifier = Modifier.padding(padding),
-        ) {
-            composable(AppDestination.CarePlan.route) {
-                BlueprintScreen(viewModel = blueprintViewModel)
-            }
-            composable(AppDestination.Decoder.route) {
-                DecoderScreen(viewModel = decoderViewModel)
-            }
-            composable(AppDestination.Appointments.route) {
-                AppointmentsScreen(
-                    viewModel = appointmentsViewModel,
-                    onOpenPocketGuide = { id ->
-                        navController.navigate(AppDestination.PocketGuide.routeFor(id))
-                    },
-                )
-            }
-            composable(AppDestination.Contacts.route) {
-                ContactsScreen(viewModel = contactsViewModel)
-            }
-            composable(AppDestination.Symptoms.route) {
-                SymptomsScreen(viewModel = symptomsViewModel)
-            }
-            composable(
-                route = AppDestination.PocketGuide.routePattern,
-                arguments = listOf(navArgument("appointmentId") { type = NavType.StringType }),
-            ) { entry ->
-                val id = entry.arguments?.getString("appointmentId").orEmpty()
-                val koin = getKoin()
-                val pocketVm = remember(id) { koin.get<PocketGuideViewModel>() }
-                PocketGuideScreen(
-                    appointmentId = id,
-                    viewModel = pocketVm,
-                    onBack = { navController.popBackStack() },
-                )
+            },
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = AppDestination.CarePlan.route,
+                modifier = Modifier.padding(padding),
+            ) {
+                composable(AppDestination.CarePlan.route) {
+                    BlueprintScreen(
+                        viewModel = blueprintViewModel,
+                        nextAppointmentWhen = nextAppointment?.appointment?.startIso
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { DateDisplay.formatIso(it) },
+                        nextAppointmentTitle = nextAppointment?.appointment?.serviceType,
+                        onOpenAppointments = {
+                            navController.navigate(AppDestination.Appointments.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                    )
+                }
+                composable(AppDestination.Decoder.route) {
+                    DecoderScreen(viewModel = decoderViewModel)
+                }
+                composable(AppDestination.Appointments.route) {
+                    AppointmentsScreen(
+                        viewModel = appointmentsViewModel,
+                        onOpenPocketGuide = { id ->
+                            navController.navigate(AppDestination.PocketGuide.routeFor(id))
+                        },
+                    )
+                }
+                composable(AppDestination.Contacts.route) {
+                    ContactsScreen(viewModel = contactsViewModel)
+                }
+                composable(AppDestination.Symptoms.route) {
+                    SymptomsScreen(viewModel = symptomsViewModel)
+                }
+                composable(
+                    route = AppDestination.PocketGuide.routePattern,
+                    arguments = listOf(navArgument("appointmentId") { type = NavType.StringType }),
+                ) { entry ->
+                    val id = entry.arguments?.getString("appointmentId").orEmpty()
+                    val koin = getKoin()
+                    val pocketVm = remember(id) { koin.get<PocketGuideViewModel>() }
+                    PocketGuideScreen(
+                        appointmentId = id,
+                        viewModel = pocketVm,
+                        onBack = { navController.popBackStack() },
+                    )
+                }
             }
         }
     }
 
     if (showRecordSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showRecordSheet = false },
+            onDismissRequest = {
+                symptomsViewModel.cancelListening()
+                showRecordSheet = false
+            },
             sheetState = sheetState,
         ) {
             SymptomRecordSheetContent(
@@ -266,19 +342,80 @@ fun AppShell(
 }
 
 @Composable
-private fun PrivacySentinelDot() {
-    val label = "${UiCopy.SENTINEL_LOCAL_TITLE}. ${UiCopy.SENTINEL_LOCAL_SUBTITLE}"
-    Box(
+private fun LocaleSwitchProgressDialog(
+    message: String,
+    progress: Float?,
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text(UiCopy.SETTINGS_LANGUAGE_LABEL) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(message, style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                if (progress != null) {
+                    LinearProgressIndicator(
+                        progress = { progress.coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                } else {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+        },
+        confirmButton = {},
+    )
+}
+
+/** Single app header: title + subtitle left, actions right — one visual band. */
+@Composable
+private fun VeraAppHeader(
+    title: String,
+    subtitle: String?,
+    titleModifier: Modifier,
+    showClose: Boolean,
+    onClose: () -> Unit,
+    actions: @Composable RowScope.() -> Unit,
+) {
+    Row(
         modifier = Modifier
-            .padding(end = 12.dp)
-            .size(48.dp)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(start = 20.dp, end = 16.dp, top = 6.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(12.dp)
-                .background(Color(DesignTokens.SENTINEL_GREEN), CircleShape),
+        if (showClose) {
+            SoftRoundIconButton(
+                icon = Icons.Outlined.Close,
+                contentDescription = UiCopy.APPOINTMENTS_CLOSE_FULL,
+                onClick = onClose,
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = titleModifier.semantics { heading() },
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (!subtitle.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = actions,
         )
     }
 }

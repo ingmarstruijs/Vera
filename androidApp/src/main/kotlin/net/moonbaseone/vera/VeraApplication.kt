@@ -4,6 +4,9 @@ import android.app.Application
 import net.moonbaseone.vera.audio.AndroidAppointmentAudioPlayer
 import net.moonbaseone.vera.audio.AndroidAppointmentAudioRecorder
 import net.moonbaseone.vera.shared.di.initKoin
+import net.moonbaseone.vera.shared.i18n.AndroidLocalePreferenceStore
+import net.moonbaseone.vera.shared.i18n.LocaleController
+import net.moonbaseone.vera.shared.i18n.LocalePreferenceStore
 import net.moonbaseone.vera.shared.pocket.AppointmentAudioPlayer
 import net.moonbaseone.vera.shared.pocket.AppointmentAudioRecorder
 import net.moonbaseone.vera.shared.shield.AndroidNerEngine
@@ -19,6 +22,7 @@ import net.moonbaseone.vera.shared.vault.MedicalRecordStore
 import net.moonbaseone.vera.shared.vault.SecureKeyStore
 import net.moonbaseone.vera.shared.vault.SqlDelightMedicalRecordStore
 import net.moonbaseone.vera.shared.vault.createAndroidVeraDatabase
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -40,8 +44,10 @@ class VeraApplication : Application() {
                     single<NerEngine> { AndroidNerEngine() }
                     single<AppointmentAudioRecorder> { AndroidAppointmentAudioRecorder(get()) }
                     single<AppointmentAudioPlayer> { AndroidAppointmentAudioPlayer() }
+                    single<LocalePreferenceStore> { AndroidLocalePreferenceStore(get()) }
                 },
             )
         }
+        getKoin().get<LocaleController>().bootstrap()
     }
 }

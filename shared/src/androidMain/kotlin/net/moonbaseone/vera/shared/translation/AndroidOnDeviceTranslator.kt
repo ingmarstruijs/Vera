@@ -7,12 +7,21 @@ import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import net.moonbaseone.vera.shared.failure.TranslationFailure
 import net.moonbaseone.vera.shared.failure.TranslationModelNotDownloadedFailure
 
 /**
  * Google ML Kit on-device Translate API (Android).
+ * Downloads the **Dutch → target** model pair (what Vera actually uses).
  * Model download may use the network once; inference is fully on-device.
  */
 class AndroidOnDeviceTranslator : OnDeviceTranslator {
@@ -22,10 +31,13 @@ class AndroidOnDeviceTranslator : OnDeviceTranslator {
     override suspend fun isAvailable(): Boolean = true
 
     override suspend fun isModelDownloaded(languageCode: String): Boolean {
-        val lang = toTranslateLanguage(languageCode) ?: return false
+        if (languageCode.equals("nl", ignoreCase = true)) return true
+        val target = toTranslateLanguage(languageCode) ?: return false
         return try {
-            val model = TranslateRemoteModel.Builder(lang).build()
-            modelManager.isModelDownloaded(model).await()
+            val sourceModel = TranslateRemoteModel.Builder(TranslateLanguage.DUTCH).build()
+            val targetModel = TranslateRemoteModel.Builder(target).build()
+            modelManager.isModelDownloaded(sourceModel).await() &&
+                modelManager.isModelDownloaded(targetModel).await()
         } catch (_: Exception) {
             false
         }
@@ -35,17 +47,35 @@ class AndroidOnDeviceTranslator : OnDeviceTranslator {
         languageCode: String,
         onProgress: (Float) -> Unit,
     ): Result<Unit> {
-        val lang = toTranslateLanguage(languageCode)
+        if (languageCode.equals("nl", ignoreCase = true)) {
+            onProgress(1f)
+            return Result.success(Unit)
+        }
+        val target = toTranslateLanguage(languageCode)
             ?: return Result.failure(TranslationFailure("Onbekende taalcode: $languageCode"))
         return try {
-            onProgress(0.1f)
-            val model = TranslateRemoteModel.Builder(lang).build()
-            val conditions = DownloadConditions.Builder().build()
-            modelManager.download(model, conditions).await()
+            // ML Kit has no granular download progress for translate models — pulse while waiting.
+            val pulse = startProgressPulse(onProgress)
+            try {
+                withTimeout(DOWNLOAD_TIMEOUT_MS) {
+                    val translator = translatorFor(TranslateLanguage.DUTCH, target)
+                    val conditions = DownloadConditions.Builder().build()
+                    // Downloads both source (nl) and target packs for this pair.
+                    translator.downloadModelIfNeeded(conditions).await()
+                }
+            } finally {
+                pulse.cancel()
+            }
             onProgress(1f)
             Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Result.failure(TranslationFailure("Model download mislukt: ${e.message}"))
+            Result.failure(
+                TranslationFailure(
+                    e.message?.takeIf { it.isNotBlank() } ?: "Model download mislukt",
+                ),
+            )
         }
     }
 
@@ -70,12 +100,23 @@ class AndroidOnDeviceTranslator : OnDeviceTranslator {
 
         return try {
             val translator = translatorFor(source, target)
-            // Ensure model ready (no-op if already downloaded).
-            translator.downloadModelIfNeeded().await()
             val out = translator.translate(text).await()
             Result.success(out)
         } catch (e: Exception) {
             Result.failure(TranslationFailure(e.message ?: e.toString()))
+        }
+    }
+
+    private fun startProgressPulse(onProgress: (Float) -> Unit): Job {
+        // Indeterminate-ish pulse 0.05 → 0.9 while ML Kit downloads (no real bytes callback).
+        return CoroutineScope(Dispatchers.Default).launch {
+            var p = 0.05f
+            onProgress(p)
+            while (isActive) {
+                delay(400)
+                p = (p + 0.04f).coerceAtMost(0.9f)
+                onProgress(p)
+            }
         }
     }
 
@@ -103,5 +144,9 @@ class AndroidOnDeviceTranslator : OnDeviceTranslator {
         "ru" -> TranslateLanguage.RUSSIAN
         "zh" -> TranslateLanguage.CHINESE
         else -> null
+    }
+
+    companion object {
+        private const val DOWNLOAD_TIMEOUT_MS = 180_000L
     }
 }

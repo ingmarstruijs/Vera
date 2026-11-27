@@ -1,5 +1,8 @@
 package net.moonbaseone.vera.shared.util
 
+import net.moonbaseone.vera.shared.i18n.AppLocale
+import net.moonbaseone.vera.shared.i18n.StringCatalog
+
 /**
  * Formats FHIR/ISO-8601 instant strings for patient-facing UI without a datetime dependency.
  * Examples: `2025-04-22T09:00:00+02:00` → `22 apr 2025 · 09:00`
@@ -14,7 +17,10 @@ object DateDisplay {
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     )
 
-    fun formatIso(iso: String, dutch: Boolean = true): String {
+    fun formatIso(
+        iso: String,
+        dutch: Boolean = StringCatalog.activeLocale == AppLocale.NL,
+    ): String {
         val trimmed = iso.trim()
         if (trimmed.isEmpty()) return ""
         val match = ISO_REGEX.matchEntire(trimmed) ?: return trimmed
@@ -25,11 +31,7 @@ object DateDisplay {
         val minute = match.groupValues[5]
         if (month !in 1..12) return trimmed
         val monthLabel = (if (dutch) monthNl else monthEn)[month - 1]
-        val datePart = if (dutch) {
-            "$day $monthLabel $year"
-        } else {
-            "$day $monthLabel $year"
-        }
+        val datePart = "$day $monthLabel $year"
         return if (hour.isNotEmpty() && minute.isNotEmpty()) {
             "$datePart · $hour:$minute"
         } else {

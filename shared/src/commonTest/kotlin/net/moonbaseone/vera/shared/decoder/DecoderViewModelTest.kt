@@ -2,10 +2,13 @@ package net.moonbaseone.vera.shared.decoder
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import net.moonbaseone.vera.shared.i18n.AppLocale
+import net.moonbaseone.vera.shared.i18n.StringCatalog
 import net.moonbaseone.vera.shared.shield.IdentityShieldService
 import net.moonbaseone.vera.shared.translation.FakeOnDeviceTranslator
 import net.moonbaseone.vera.shared.translation.LocalTranslationService
 import net.moonbaseone.vera.shared.ui.UiCopy
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,6 +17,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DecoderViewModelTest {
+    @AfterTest
+    fun resetLocale() {
+        StringCatalog.setLocale(AppLocale.NL)
+    }
+
     private fun translation(
         translator: FakeOnDeviceTranslator = FakeOnDeviceTranslator(),
     ) = LocalTranslationService(
@@ -44,10 +52,10 @@ class DecoderViewModelTest {
     }
 
     @Test
-    fun setLanguage_en_downloadsAndTranslates() = runBlocking {
+    fun appLocale_en_downloadsAndTranslates() = runBlocking {
         val translator = FakeOnDeviceTranslator(downloaded = mutableSetOf())
         val vm = DecoderViewModel(translation(translator))
-        vm.setLanguage("en")
+        StringCatalog.setLocale(AppLocale.EN)
         awaitStep(vm) {
             !it.isTranslating &&
                 it.translatedEntries.isNotEmpty() &&
@@ -63,10 +71,10 @@ class DecoderViewModelTest {
     }
 
     @Test
-    fun setLanguage_unavailable_showsNotice() = runBlocking {
+    fun appLocale_unavailable_showsNotice() = runBlocking {
         val translator = FakeOnDeviceTranslator(available = false)
         val vm = DecoderViewModel(translation(translator))
-        vm.setLanguage("en")
+        StringCatalog.setLocale(AppLocale.EN)
         awaitStep(vm) { it.translationNotice != null }
         assertEquals(UiCopy.DECODER_TRANSLATION_UNAVAILABLE, vm.state.value.translationNotice)
         assertTrue(vm.state.value.translatedEntries.isEmpty())
@@ -75,13 +83,16 @@ class DecoderViewModelTest {
     }
 
     @Test
-    fun setLanguage_backToNl_clearsTranslations() = runBlocking {
+    fun appLocale_backToNl_clearsTranslations() = runBlocking {
         val vm = DecoderViewModel(translation())
-        vm.setLanguage("de")
+        StringCatalog.setLocale(AppLocale.DE)
         awaitStep(vm) { it.translatedEntries.isNotEmpty() }
-        vm.setLanguage("nl")
-        assertEquals("nl", vm.state.value.selectedLanguage)
-        assertTrue(vm.state.value.translatedEntries.isEmpty())
+        StringCatalog.setLocale(AppLocale.NL)
+        awaitStep(vm) {
+            it.selectedLanguage == "nl" &&
+                it.translatedEntries.isEmpty() &&
+                !it.isTranslating
+        }
         assertNull(vm.state.value.translationNotice)
         assertFalse(vm.state.value.isTranslating)
         vm.dispose()
@@ -102,7 +113,7 @@ class DecoderViewModelTest {
     fun translatedEntry_coversKnownTerm() = runBlocking {
         val vm = DecoderViewModel(translation())
         val term = vm.state.value.entries.first().term
-        vm.setLanguage("fr")
+        StringCatalog.setLocale(AppLocale.FR)
         awaitStep(vm) { it.translatedEntries.containsKey(term) }
         assertNotNull(vm.state.value.translatedEntries[term])
         vm.dispose()
