@@ -7,6 +7,8 @@ Notable changes to the Vera repository. Dates are UTC.
 ### Fixed
 
 - Detekt `LoopWithTooManyJumpStatements` in appointment-notes playback progress ticker
+- Hoe het gaat: when on-device speech recognition is missing (e.g. GrapheneOS), fall back to the same mic recording/playback as appointment notes
+- Dark-mode section labels (e.g. “Later” on Afspraken) use on-surface colors so text stays readable
 
 ### Added
 
@@ -28,6 +30,7 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ### Changed
 
+- Glossary bottomsheet and Woordenboek cards no longer show action points / “toevoegen aan notities”
 - Soft teal + lavender visual system (mock-inspired): gradient wash, rounded elevated cards, circular icon badges; primary teal `#006054`, secondary purple for nav/chips
 - Graceful mint→aqua→lavender hero wash behind app header + timeline (soft orbs, fades to surface under detail cards)
 - Unified app header (actions + title + subtitle) on the same soft wash as page content; timeline chips show short care-step names (e.g. Chirurgie / Radiotherapie), status pill (Afgerond/Huidig/Gepland) on the phase detail card, purple mode pills, appointment hero without overlapping badge

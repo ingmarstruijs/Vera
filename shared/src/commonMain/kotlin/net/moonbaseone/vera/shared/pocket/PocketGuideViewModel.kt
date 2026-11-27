@@ -159,7 +159,13 @@ class PocketGuideViewModel(
     fun speakSymptom(entryId: String) {
         val entry = _state.value.recentSymptoms.firstOrNull { it.id == entryId } ?: return
         scope.launch {
-            textToSpeech.speak(entry.text, localeTag = "nl-NL")
+            val path = entry.audioPath
+            if (!path.isNullOrBlank() && audioPlayer.isAvailable()) {
+                textToSpeech.stop()
+                audioPlayer.play(path)
+            } else {
+                textToSpeech.speak(entry.text, localeTag = "nl-NL")
+            }
         }
     }
 

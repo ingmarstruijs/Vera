@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -41,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import net.moonbaseone.vera.shared.symptoms.SymptomEntry
 import net.moonbaseone.vera.shared.symptoms.SymptomsViewModel
-import net.moonbaseone.vera.shared.ui.DesignTokens
 import net.moonbaseone.vera.shared.ui.UiCopy
 import net.moonbaseone.vera.ui.common.SymptomDetailDialog
 import net.moonbaseone.vera.ui.common.SymptomPreviewText
@@ -99,11 +98,15 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     UiCopy.APPOINTMENTS_VOICE_LISTENING,
-                    color = Color(DesignTokens.ERROR_RED),
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
                 if (state.draftText.isNotBlank()) {
-                    Text(state.draftText, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        state.draftText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             } else {
                 Button(
@@ -118,7 +121,11 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
                 }
             }
         } else {
-            Text(UiCopy.APPOINTMENTS_SPEECH_UNAVAILABLE, style = MaterialTheme.typography.bodySmall)
+            Text(
+                UiCopy.APPOINTMENTS_SPEECH_UNAVAILABLE,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         state.errorMessage?.let {
@@ -134,6 +141,7 @@ fun SymptomsScreen(viewModel: SymptomsViewModel) {
                 items(state.entries, key = { it.id }) { entry ->
                     SymptomRow(
                         entry = entry,
+                        isPlaying = state.playingEntryId == entry.id,
                         onSpeak = { viewModel.speak(entry.id) },
                         onDelete = { viewModel.delete(entry.id) },
                     )
@@ -261,7 +269,7 @@ private fun RecordingStopChoices(
                 .fillMaxWidth()
                 .height(52.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color(DesignTokens.ERROR_RED),
+                contentColor = MaterialTheme.colorScheme.error,
             ),
         ) {
             Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
@@ -274,6 +282,7 @@ private fun RecordingStopChoices(
 @Composable
 private fun SymptomRow(
     entry: SymptomEntry,
+    isPlaying: Boolean,
     onSpeak: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -287,6 +296,7 @@ private fun SymptomRow(
     }
     Surface(
         shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .fillMaxWidth()
@@ -306,13 +316,22 @@ private fun SymptomRow(
                 onClick = onSpeak,
                 modifier = Modifier.semantics { contentDescription = UiCopy.SYMPTOMS_SPEAK },
             ) {
-                Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = UiCopy.SYMPTOMS_SPEAK)
+                Icon(
+                    if (isPlaying) Icons.Outlined.Stop else Icons.AutoMirrored.Outlined.VolumeUp,
+                    contentDescription = UiCopy.SYMPTOMS_SPEAK,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier.semantics { contentDescription = UiCopy.SYMPTOMS_DELETE },
             ) {
-                Icon(Icons.Outlined.Delete, contentDescription = UiCopy.SYMPTOMS_DELETE, modifier = Modifier.size(22.dp))
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = UiCopy.SYMPTOMS_DELETE,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp),
+                )
             }
         }
     }

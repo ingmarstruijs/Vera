@@ -28,7 +28,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -204,7 +206,11 @@ fun SoftScreenBackground(modifier: Modifier = Modifier, content: @Composable Box
                     )
                 },
         )
-        Box(modifier = Modifier.fillMaxSize(), content = content)
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onSurface,
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), content = content)
+        }
     }
 }
 
@@ -358,7 +364,11 @@ fun SectionAccentLabel(text: String, modifier: Modifier = Modifier) {
                 .background(MaterialTheme.colorScheme.primary),
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+        Text(
+            text,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

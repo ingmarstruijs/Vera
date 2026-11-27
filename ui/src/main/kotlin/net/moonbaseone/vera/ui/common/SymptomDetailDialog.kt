@@ -88,6 +88,7 @@ fun SymptomPreviewText(
         Text(
             text,
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = maxLines,
             overflow = TextOverflow.Ellipsis,
         )
