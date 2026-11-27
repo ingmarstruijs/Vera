@@ -358,14 +358,16 @@ class PocketGuideViewModel(
                         playbackDurationMs = duration.coerceAtLeast(it.playbackDurationMs),
                     )
                 }
-                if (!playing) break
-                if (duration > 0L && position >= duration) {
-                    audioPlayer.stop()
-                    _state.update {
-                        it.copy(
-                            isPlaying = false,
-                            playbackPositionMs = duration,
-                        )
+                val finished = duration > 0L && position >= duration
+                if (!playing || finished) {
+                    if (finished) {
+                        audioPlayer.stop()
+                        _state.update {
+                            it.copy(
+                                isPlaying = false,
+                                playbackPositionMs = duration,
+                            )
+                        }
                     }
                     break
                 }

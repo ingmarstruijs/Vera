@@ -4,6 +4,10 @@ Notable changes to the Vera repository. Dates are UTC.
 
 ## Unreleased
 
+### Fixed
+
+- Detekt `LoopWithTooManyJumpStatements` in appointment-notes playback progress ticker
+
 ### Added
 
 - Shared Compose UI module `:ui` (single UI codebase); thin `androidApp` host
